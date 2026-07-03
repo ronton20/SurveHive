@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7b30d0eaebd4f858646395a8fa5403, type: 3}
+  m_Name: WarriorBee
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.EnemyStatsSO
+  _displayName: Warrior Bee
+  _rank: 1
+  _maxHealth: 45
+  _moveSpeed: 2.6
+  _contactDamage: 8
+  _contactDamageInterval: 1
+  _expReward: 9
+  _currencyDropChance: 0.35
+  _currencyDropMin: 2
+  _currencyDropMax: 4
+  _spriteTint: {r: 1, g: 1, b: 1, a: 1}
+  _prefab: {fileID: 6484636889515418260, guid: 69c337ebebcce486692c221ca64af629, type: 3}
+  _poolId: 1

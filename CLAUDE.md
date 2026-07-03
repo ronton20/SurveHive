@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Documentation Policy
+
+`README.md` is a **living document** holding the current game vision, story, and gameplay/systems design. Whenever a change in this repo alters scope, story, mechanics, or systems described there — new/changed worlds, enemies, progression systems, controls, etc. — update `README.md` in the same session/commit as the change. Don't let it drift out of date; treat it as required upkeep, not optional polish.
+
 ## Project Overview
 
 SurveHive is a Unity project targeting mobile platforms, built on Unity 6000.5.2f1 with the Universal Render Pipeline (2D). The project is in an early/greenfield state — currently just the default 2D URP template (sample scene, input actions, renderer/volume assets) with no gameplay scripts yet.

@@ -1,0 +1,70 @@
+# SurveHive
+
+> **Living document.** This README tracks the current game vision and design as it evolves. Update it whenever scope, story, or systems change — see `CLAUDE.md` for the update policy.
+
+## Elevator Pitch
+
+A worker bee breaks free of his hive queen's corrupted mind-control and must fight through swarms of his former colony to escape — only to discover the queen wasn't the source of the corruption at all. An alien invasion is brainwashing the world's creatures one species at a time, and our hero must grow from a fleeing survivor into the world's last line of defense.
+
+## Story & Setting
+
+- **The Colony**: The player is a worker bee, one of countless drones loosely bound to the hive queen's will — never questioning it, just doing the job to survive.
+- **The Corruption**: The queen's mind is corrupted, twisting her from ruler to weapon. Every bee under her control turns violently aggressive, attacking anything not under her command.
+- **The Break**: The player is somehow free of her control. To the corrupted hive, that makes him the nearest, most obvious enemy — his entire colony turns on him.
+- **The Escape**: The opening arc is a desperate fight through the beehive itself, surviving hordes of former hivemates to reach the outside world.
+- **The Reveal**: Outside the hive, it becomes clear the queen wasn't a unique case — an alien invasion is brainwashing living things across the world in an attempt at conquest. What began as a survival story becomes a fight to push back the invasion (and maybe save the world along the way).
+
+## Gameplay Overview
+
+SurveHive is a **Vampire Survivors-style horde survival game**: the player auto-attacks endless waves of enemies while manually focusing on movement and positioning, growing more powerful over the course of a run and, over multiple runs, permanently stronger via meta-progression.
+
+### Worlds
+
+The game is structured into distinct **Worlds**, each a themed run environment with its own enemy roster and narrative beat:
+
+| World | Theme | Example enemies |
+|---|---|---|
+| Beehive | Escaping the corrupted colony | Worker bees, warrior bees, queen's guard, queen's royal guard (miniboss), Queen Bee (boss) |
+| Garden | Fleeing into the wider world | Corrupted insects |
+| Woods | Deeper into corrupted nature | Corrupted animals |
+| City | Civilization has fallen too | TBD |
+| Alien Ship | Confronting the source | Aliens |
+
+Each world's enemy roster is organized into **ranks** — common trash mobs scale up to tougher variants, then minibosses, then a world-ending boss (e.g. Beehive: worker bee → warrior bee → queen's guard → queen's royal guard → Queen Bee).
+
+### Core Loop (per run)
+
+1. Drop into a world and survive as enemy hordes escalate over time.
+2. Auto-attack targets the nearest enemy automatically — no manual aim/shoot.
+3. Killing enemies grants **EXP** (leveling) and, from certain enemies, a **run currency**.
+4. Leveling up offers a choice of **3 skills/abilities/power-ups**, plus a small automatic bump to base stats.
+5. Survive escalating waves, reach world milestones (minibosses, boss), and eventually clear or fall in the world.
+
+### Meta-Progression (roguelite)
+
+Currency earned during a run carries over between runs and is spent on **permanent character upgrades**, making future runs progressively more survivable — the roguelite backbone tying individual runs into a larger campaign of growth.
+
+### Controls
+
+- **Mobile**: on-screen simulated joystick for movement.
+- **PC**: choice of WASD or mouse-driven movement (left/right click).
+- **Attacks**: fully automatic, always targeting the nearest enemy — the player's manual input is movement/positioning only.
+
+## Development Status
+
+**Milestone 1 (Beehive vertical slice) is implemented and playable in-editor.** Open `Assets/Scenes/Beehive.unity` and press Play.
+
+What exists now:
+- Core architecture: input abstraction (WASD, click-to-move, and simulated on-screen joystick behind one interface), zero-GC nearest-enemy auto-targeting, pooled enemies/pickups/projectiles, EXP/leveling with a 3-choice skill pick-up screen, a run currency wallet, and a `IMetaProgressionStore` seam for future permanent meta-progression (not yet implemented).
+- One world, the **Beehive**, with two data-driven enemy types (Worker Bee, Warrior Bee — same `EnemyController` script, different `EnemyStatsSO` data) spawned by an escalating wave spawner.
+- 4 starter skills (Swift Wings, Thicker Chitin, Longer Stinger, Twin Stingers) offered on level-up; each level also grants a small automatic bump to base stats (max health, damage, attack speed — move speed grows only via the Swift Wings power-up) and pauses the game with a choice screen.
+- Skills have per-run **levels**: the choice card shows the growth (e.g. `Lv. 1 → Lv. 2`), and skills that hit their level cap stop being offered. Some stats are capped (e.g. projectile count maxes at 5).
+- Player stats include an **attack speed** multiplier (higher = faster firing) that scales on level-up and is open to future modifiers.
+- Enemies scale up over the course of a run — health and contact damage grow per minute (tunable in the wave config), so upgrades stay meaningful.
+- EXP/currency pickups drift toward the player within a pickup radius (magnet-style, standard for the genre) instead of requiring a pixel-perfect walk-over.
+- Floating health bars above enemies, floating damage-number popups on hit, and a procedurally-generated placeholder shooting sound.
+- Death & restart: when the player's health hits zero the run ends — the game freezes, a "YOU DIED" screen appears, and pressing R / tapping reloads the run. Level-up pacing and per-level bonuses are tunable via the `LevelCurve` asset and the level-up controller.
+- Placeholder art/audio only: solid-colored circle sprites per entity type and one synthesized SFX blip — no real art or sound assets yet.
+- Not yet built: other worlds (Garden/Woods/City/Alien Ship), miniboss/boss ranks, the meta-progression currency shop and save/persistence, animations/VFX, and mobile build/platform passes.
+
+All gameplay scripts live under `Assets/Scripts/` (single `SurveHive.Runtime` assembly). The Beehive scene, its prefabs, ScriptableObject data assets, placeholder sprites/audio, and the input actions asset were generated by editor tooling at `Assets/Editor/BuildTools/`: `BeehiveSceneBuilder` (menu `SurveHive/Build Beehive Vertical Slice`, full from-scratch build) plus its additive `BuildAdditions` pass (menu `SurveHive/Add Health Bars, Damage Numbers, SFX`, edits the already-built scene/prefabs in place) and `BeehiveSceneValidator` (menu `SurveHive/Validate Beehive Vertical Slice`) — kept in the project as a reusable way to regenerate or extend the scene as data changes, rather than a one-off throwaway script.

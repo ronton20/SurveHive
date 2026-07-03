@@ -1,2 +1,5 @@
 ﻿<Solution>
+  <Project Path="SurveHive.Runtime.csproj" />
+  <Project Path="SurveHive.BuildTools.csproj" />
+  <Project Path="SurveHive.Editor.csproj" />
 </Solution>

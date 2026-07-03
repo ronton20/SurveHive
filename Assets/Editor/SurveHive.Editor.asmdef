@@ -1,0 +1,18 @@
+{
+    "name": "SurveHive.Editor",
+    "rootNamespace": "SurveHive.EditorTools",
+    "references": [
+        "SurveHive.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

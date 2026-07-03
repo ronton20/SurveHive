@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78e0f96eb7cb743e5a11ec5e76ca82e2, type: 3}
+  m_Name: BeehiveWaveConfig
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.WaveSpawnerConfigSO
+  _entries:
+  - enemyStats: {fileID: 11400000, guid: 576e6cce5c98a414ebd0ac82862b21a1, type: 2}
+    spawnWeight: 1
+    unlockTimeSeconds: 0
+  - enemyStats: {fileID: 11400000, guid: aabdff4ac4a494abe81387f694ed3255, type: 2}
+    spawnWeight: 0.4
+    unlockTimeSeconds: 45
+  _initialSpawnInterval: 1.5
+  _minSpawnInterval: 0.25
+  _intervalRampPerMinute: 0.2
+  _maxConcurrentEnemies: 60
+  _spawnRadiusMin: 6
+  _spawnRadiusMax: 9

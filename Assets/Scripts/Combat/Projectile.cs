@@ -1,0 +1,94 @@
+using SurveHive.Core;
+using SurveHive.Health;
+using SurveHive.UI;
+using UnityEngine;
+
+namespace SurveHive.Combat
+{
+    [RequireComponent(typeof(Collider2D))]
+    public sealed class Projectile : MonoBehaviour
+    {
+        [SerializeField] private int _poolId;
+        [SerializeField] private string _targetTag = "Enemy";
+
+        private Vector2 _direction;
+        private float _damage;
+        private float _speed;
+        private float _remainingRange;
+        private bool _released;
+
+        public void Launch(Vector2 direction, float damage, float speed, float maxRange)
+        {
+            _direction = direction;
+            _damage = damage;
+            _speed = speed;
+            _remainingRange = maxRange;
+        }
+
+        private void OnEnable()
+        {
+            _released = false;
+        }
+
+        private void Update()
+        {
+            float step = _speed * Time.deltaTime;
+            transform.position += (Vector3)(_direction * step);
+            _remainingRange -= step;
+
+            if (_remainingRange <= 0f)
+            {
+                ReleaseSelf();
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (!other.CompareTag(_targetTag))
+            {
+                return;
+            }
+
+            if (other.TryGetComponent(out IDamageable damageable))
+            {
+                damageable.TakeDamage(_damage, gameObject);
+                SpawnDamageNumber(other.transform.position);
+            }
+
+            ReleaseSelf();
+        }
+
+        private void SpawnDamageNumber(Vector3 hitPosition)
+        {
+            if (PoolManager.Instance == null)
+            {
+                return;
+            }
+
+            Vector3 popupPosition = hitPosition + (Vector3.up * 0.6f);
+            GameObject popupObj = PoolManager.Instance.Get(PoolIds.DamageNumber, popupPosition, Quaternion.identity);
+            if (popupObj.TryGetComponent(out DamageNumberPopup popup))
+            {
+                popup.Show(_damage);
+            }
+        }
+
+        private void ReleaseSelf()
+        {
+            // A single physics step can overlap multiple colliders (or a hit and a
+            // range expiry) before this instance is actually deactivated, so guard
+            // against releasing the same pooled instance back more than once.
+            if (_released)
+            {
+                return;
+            }
+
+            _released = true;
+
+            if (PoolManager.Instance != null)
+            {
+                PoolManager.Instance.Release(_poolId, gameObject);
+            }
+        }
+    }
+}
