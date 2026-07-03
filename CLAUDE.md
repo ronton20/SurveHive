@@ -14,7 +14,7 @@ Key packages in use: URP 2D (`com.unity.render-pipelines.universal`), the new In
 
 ## Commands
 
-There is no CLI build/lint/test pipeline yet (no scripts, no CI config, no custom `.asmdef` assemblies). Development happens through the Unity Editor:
+There is no CLI build/lint/test pipeline yet (no build scripts, no CI config). Code lives in three assemblies: `SurveHive.Runtime` (Assets/Scripts), `SurveHive.Editor` (Assets/Editor), and `SurveHive.BuildTools` (Assets/Editor/BuildTools). Development happens through the Unity Editor:
 
 - **Open project**: open the repo root in Unity Hub / Unity Editor 6000.5.2f1 (must match `ProjectSettings/ProjectVersion.txt`).
 - **Run tests**: Unity Test Framework is installed but no test assemblies/tests exist yet. Once added, run via `Window > General > Test Runner` in-editor, or headlessly with:
@@ -24,7 +24,8 @@ There is no CLI build/lint/test pipeline yet (no scripts, no CI config, no custo
 
 ## Repository Structure
 
-- `Assets/` — all game content. Currently only `Scenes/SampleScene.unity` and `Settings/` (URP renderer, global settings, default volume profile, input actions, scene template). Scripts should be organized here as the project grows (e.g. `Assets/Scripts/`), each Unity-facing feature typically colocated with its scene/prefab.
+- `Assets/` — all game content: `Scripts/` (single `SurveHive.Runtime` assembly), `Scenes/`, `Prefabs/`, `Data/` (ScriptableObject assets), `Sprites/`, `Audio/`, `Settings/` (URP renderer, volume profile, input actions), and `Editor/BuildTools/` (scene builder/validator tooling).
+- `Assets/ThirdParty/` — Unity Store packs only (PixelFantasy monsters, `SpriteEffects/` VFX sheets, `PixelUI/` button kit, `Fonts/BoldPixels/`, `IconsTemp/` placeholder glyphs). New store packs go here; our own content stays in the sibling `Assets/` folders and references pack assets rather than moving/editing them.
 - `Packages/manifest.json` — package dependencies; edit through the Package Manager rather than by hand when possible.
 - `ProjectSettings/` — serialized Unity project configuration (physics, quality, tags, input, render pipeline, etc.). These are YAML assets checked into git and change often as project settings are tuned in-editor — review diffs carefully, they are not hand-authored.
 - `Library/`, `Temp/`, `Logs/`, `UserSettings/` — Unity-generated caches/local state, not source of truth, and not meaningful to edit directly.

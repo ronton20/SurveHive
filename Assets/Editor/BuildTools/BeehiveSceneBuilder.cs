@@ -16,6 +16,7 @@ using UnityEditor.SceneManagement;
 using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.SceneManagement;
@@ -133,6 +134,37 @@ namespace SurveHive.BuildTools
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
             Debug.Log("SurveHive game-over + death handling build complete.");
+        }
+
+        // Additive pass: adds the URP Pixel Perfect Camera to the scene's main camera
+        // (PLAN.md Phase 0 rendering foundation). Idempotent: safe to re-run.
+        [MenuItem("SurveHive/Apply Pixel Perfect Camera")]
+        public static void ApplyPixelPerfectCamera()
+        {
+            EditorSceneManager.OpenScene("Assets/Scenes/Beehive.unity", OpenSceneMode.Single);
+
+            GameObject cameraGo = GameObject.FindWithTag("MainCamera");
+            ConfigurePixelPerfectCamera(cameraGo);
+
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+            Debug.Log("SurveHive pixel perfect camera applied.");
+        }
+
+        // PLAN.md rendering foundation: PPU 32, 640x360 reference resolution (integer
+        // scales at 720p/1080p/1440p), upscale render texture so rotated sprites/VFX
+        // stay crisp.
+        private static void ConfigurePixelPerfectCamera(GameObject cameraGo)
+        {
+            if (!cameraGo.TryGetComponent(out PixelPerfectCamera pixelPerfect))
+            {
+                pixelPerfect = cameraGo.AddComponent<PixelPerfectCamera>();
+            }
+
+            pixelPerfect.assetsPPU = 32;
+            pixelPerfect.refResolutionX = 640;
+            pixelPerfect.refResolutionY = 360;
+            pixelPerfect.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
+            pixelPerfect.cropFrame = PixelPerfectCamera.CropFrame.None;
         }
 
         // Runtime scene reload (SceneManager.LoadScene by name) requires the scene to
@@ -687,6 +719,7 @@ namespace SurveHive.BuildTools
             camera.orthographic = true;
             camera.orthographicSize = 6f;
             cameraGo.transform.position = new Vector3(0f, 0f, -10f);
+            ConfigurePixelPerfectCamera(cameraGo);
             CameraFollow cameraFollow = cameraGo.AddComponent<CameraFollow>();
 
             var playerGo = new GameObject("Player");

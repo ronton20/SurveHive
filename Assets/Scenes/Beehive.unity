@@ -1810,6 +1810,7 @@ MonoBehaviour:
   _attackCooldown: 1
   _attackSpeed: 1
   _projectileCount: 1
+  _maxProjectileCount: 5
 --- !u!114 &1089349800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2573,7 +2574,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1309064552
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3509,6 +3510,7 @@ GameObject:
   - component: {fileID: 2090728239}
   - component: {fileID: 2090728240}
   - component: {fileID: 2090728242}
+  - component: {fileID: 2090728243}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -3604,6 +3606,30 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2090728238}
   m_Enabled: 1
+--- !u!114 &2090728243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2090728238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.2D.Runtime::UnityEngine.Rendering.Universal.PixelPerfectCamera
+  m_ComponentVersion: 1
+  m_AssetsPPU: 32
+  m_RefResolutionX: 640
+  m_RefResolutionY: 360
+  m_CropFrame: 0
+  m_GridSnapping: 2
+  m_FilterMode: 0
+  m_UpscaleRT: 0
+  m_PixelSnapping: 0
+  m_CropFrameX: 0
+  m_CropFrameY: 0
+  m_StretchFill: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
