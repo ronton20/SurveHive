@@ -145,7 +145,9 @@ namespace SurveHive.BuildTools
 
             GameObject levelUpPanel = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, "LevelUpPanel") : null;
             ok &= Check(levelUpPanel != null, "LevelUpPanel exists");
-            ok &= Check(levelUpPanel != null && !levelUpPanel.activeSelf, "LevelUpPanel starts inactive");
+            // Active by design: LevelUpUIController subscribes in OnEnable and hides
+            // the panel via CanvasGroup alpha, not SetActive.
+            ok &= Check(levelUpPanel != null && levelUpPanel.activeSelf, "LevelUpPanel starts active (CanvasGroup drives visibility)");
             if (levelUpPanel != null)
             {
                 var controller = levelUpPanel.GetComponent<UI.LevelUpUIController>();

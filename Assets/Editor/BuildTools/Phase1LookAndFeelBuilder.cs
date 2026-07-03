@@ -1140,6 +1140,9 @@ namespace SurveHive.BuildTools
         {
             Transform panelTransform = canvas.Find("LevelUpPanel");
             GameObject panel = panelTransform.gameObject;
+            // The panel object must stay active for its controller to subscribe to
+            // level-up events; the CanvasGroup handles hiding (see controller Awake).
+            panel.SetActive(true);
             SetSlicedSprite(panel, uiKit.Panel, new Color(DeepBrown.r, DeepBrown.g, DeepBrown.b, 0.97f), 1f);
 
             LevelUpUIController controller = panel.GetComponent<LevelUpUIController>();

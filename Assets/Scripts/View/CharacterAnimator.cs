@@ -3,19 +3,21 @@ using UnityEngine;
 namespace SurveHive.View
 {
     /// <summary>
-    /// Drives the shared PixelFantasy monster Animator (Idle/movement bools,
-    /// Hit/Attack triggers) from rigidbody motion, and flips the visual root
-    /// horizontally to face the move direction (the pack's sprites face right).
+    /// Drives the shared PixelFantasy monster Animator by playing its states
+    /// directly (Idle / Runing / Attack). The pack controller's AnyState
+    /// transitions re-fire every frame while their bool conditions hold, which
+    /// restarts the clip and freezes it on frame 0 — so bools are bypassed
+    /// entirely. The attack animation takes priority over movement states (death
+    /// aside) and its playback speed scales with the attack-speed stat. Also
+    /// flips the visual root to face the move direction (pack art faces right).
     /// </summary>
     public sealed class CharacterAnimator : MonoBehaviour
     {
-        private static readonly int IdleParam = Animator.StringToHash("Idle");
-        private static readonly int WalkParam = Animator.StringToHash("Walk");
-        private static readonly int RunParam = Animator.StringToHash("Run");
-        private static readonly int MoveParam = Animator.StringToHash("Move");
+        // "Runing" is the pack's own state name (sic).
+        private static readonly int IdleState = Animator.StringToHash("Idle");
+        private static readonly int RunState = Animator.StringToHash("Runing");
+        private static readonly int AttackState = Animator.StringToHash("Attack");
         private static readonly int HitParam = Animator.StringToHash("Hit");
-        private static readonly int AttackParam = Animator.StringToHash("Attack");
-        private static readonly int DieParam = Animator.StringToHash("Die");
 
         [SerializeField] private Animator _animator;
         [SerializeField] private Rigidbody2D _rigidbody;
@@ -24,30 +26,49 @@ namespace SurveHive.View
         // How long an explicit FaceDirection call (e.g. firing at a target) wins
         // over movement-based facing.
         [SerializeField] private float _faceOverrideDuration = 0.15f;
+        // Attack clip speed = 1 + (attackSpeed - 1) * factor, clamped to max —
+        // faster attack stat reads as snappier swings without becoming a blur.
+        [SerializeField] private float _attackAnimSpeedFactor = 0.5f;
+        [SerializeField] private float _maxAttackAnimSpeed = 2.5f;
 
         private float _faceOverrideRemaining;
         private float _faceOverrideSign;
         private bool _isMoving;
+        private bool _isAttacking;
+        private float _attackElapsed;
+        private bool _isDead;
 
         private void OnEnable()
         {
             // Pooled instances must not inherit animation state from a previous life.
             _isMoving = false;
+            _isAttacking = false;
+            _isDead = false;
             _faceOverrideRemaining = 0f;
-            _animator.SetBool(DieParam, false);
-            _animator.SetBool(IdleParam, true);
-            SetMovementBools(false);
+            _animator.speed = 1f;
+            _animator.Play(IdleState, 0, 0f);
         }
 
         private void Update()
         {
             Vector2 velocity = _rigidbody.linearVelocity;
             bool moving = velocity.sqrMagnitude > _movingSpeedThreshold * _movingSpeedThreshold;
-            if (moving != _isMoving)
+
+            if (_isAttacking)
+            {
+                _attackElapsed += Time.deltaTime;
+                if (IsAttackFinished())
+                {
+                    _isAttacking = false;
+                    _animator.speed = 1f;
+                    _isMoving = moving;
+                    _animator.Play(moving ? RunState : IdleState, 0, 0f);
+                }
+            }
+            else if (!_isDead && moving != _isMoving)
             {
                 _isMoving = moving;
-                _animator.SetBool(IdleParam, !moving);
-                SetMovementBools(moving);
+                _animator.Play(moving ? RunState : IdleState, 0, 0f);
             }
 
             if (_faceOverrideRemaining > 0f)
@@ -73,23 +94,50 @@ namespace SurveHive.View
             ApplyFacing(_faceOverrideSign);
         }
 
-        public void PlayAttack()
+        /// <summary>
+        /// Plays the attack clip from the start, overriding whatever is playing
+        /// (except death). Playback speed scales with the attack-speed stat.
+        /// </summary>
+        public void PlayAttack(float attackSpeedMultiplier)
         {
-            _animator.SetTrigger(AttackParam);
+            if (_isDead)
+            {
+                return;
+            }
+
+            float speed = 1f + ((attackSpeedMultiplier - 1f) * _attackAnimSpeedFactor);
+            _animator.speed = Mathf.Clamp(speed, 0.75f, _maxAttackAnimSpeed);
+            _animator.Play(AttackState, 0, 0f);
+            _isAttacking = true;
+            _attackElapsed = 0f;
         }
 
         public void PlayHit()
         {
+            // The attack clip owns the body while it plays; the Hit trigger only
+            // feeds the controller's FX layer overlay, so it never interrupts it.
             _animator.SetTrigger(HitParam);
         }
 
-        // The shared controller has separate Walk/Run/Move bools whose usage varies
-        // per state machine revision; setting all three keeps every variant walking.
-        private void SetMovementBools(bool moving)
+        public void SetDead()
         {
-            _animator.SetBool(WalkParam, moving);
-            _animator.SetBool(RunParam, moving);
-            _animator.SetBool(MoveParam, moving);
+            _isDead = true;
+            _isAttacking = false;
+            _animator.speed = 1f;
+        }
+
+        private bool IsAttackFinished()
+        {
+            // Animator.Play only takes effect on the next animator update, so an
+            // immediate state query can still report the previous state — treat
+            // the first moments after PlayAttack as still-attacking.
+            AnimatorStateInfo state = _animator.GetCurrentAnimatorStateInfo(0);
+            if (state.shortNameHash == AttackState)
+            {
+                return !_animator.IsInTransition(0) && state.normalizedTime >= 1f;
+            }
+
+            return _attackElapsed > 0.1f;
         }
 
         private void ApplyFacing(float sign)

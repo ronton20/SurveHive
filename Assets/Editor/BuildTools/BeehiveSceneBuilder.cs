@@ -786,7 +786,10 @@ namespace SurveHive.BuildTools
 
             GameObject levelUpPanelGo = CreateUIImage("LevelUpPanel", canvasGo.transform, new Color(0f, 0f, 0f, 0.75f));
             SetAnchoredRect(levelUpPanelGo, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(900f, 500f));
-            levelUpPanelGo.SetActive(false);
+            // Must start ACTIVE: LevelUpUIController lives on this object and needs
+            // its OnEnable to subscribe to level-up events; visibility is driven by
+            // a CanvasGroup (alpha 0 in Awake), not SetActive.
+            levelUpPanelGo.SetActive(true);
 
             var choiceButtons = new Button[3];
             var choiceNameTexts = new Text[3];

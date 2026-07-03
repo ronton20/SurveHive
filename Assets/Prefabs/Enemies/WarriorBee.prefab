@@ -351,6 +351,8 @@ MonoBehaviour:
   _visualRoot: {fileID: 3984892175616376227}
   _movingSpeedThreshold: 0.05
   _faceOverrideDuration: 0.15
+  _attackAnimSpeedFactor: 0.5
+  _maxAttackAnimSpeed: 2.5
 --- !u!114 &1547348648024024284
 MonoBehaviour:
   m_ObjectHideFlags: 0

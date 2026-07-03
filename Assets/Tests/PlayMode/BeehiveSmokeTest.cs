@@ -25,6 +25,10 @@ namespace SurveHive.Tests
             Assert.IsNotNull(player, "Player exists after scene load");
             Assert.IsNotNull(RunSession.Instance, "RunSession singleton is up");
 
+            // GameObject.Find only sees active objects: the level-up panel must be
+            // active (its controller subscribes in OnEnable; CanvasGroup hides it).
+            Assert.IsNotNull(GameObject.Find("LevelUpPanel"), "LevelUpPanel is active at boot");
+
             // ~8 seconds of simulated gameplay: enemies spawn, chase, and the
             // player auto-attacks (spawn radius ~11, approach ~2.2u/s).
             float elapsed = 0f;

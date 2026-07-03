@@ -53,7 +53,7 @@ namespace SurveHive.Combat
 
             if (_characterAnimator != null)
             {
-                _characterAnimator.PlayAttack();
+                _characterAnimator.PlayAttack(_stats.AttackSpeed);
                 _characterAnimator.FaceDirection(direction.x);
             }
 

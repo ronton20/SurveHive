@@ -51,8 +51,9 @@ Shader "SurveHive/SpriteFlash"
             TEXTURE2D(_MainTex);
             SAMPLER(sampler_MainTex);
 
+            // No _MainTex_ST: sprites never tile, and _ST/_TexelSize properties
+            // disable the 2D SRP batcher for materials that declare them.
             CBUFFER_START(UnityPerMaterial)
-                float4 _MainTex_ST;
                 half4 _Color;
                 half _FlashAmount;
             CBUFFER_END
@@ -61,7 +62,7 @@ Shader "SurveHive/SpriteFlash"
             {
                 Varyings output;
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
-                output.uv = TRANSFORM_TEX(input.uv, _MainTex);
+                output.uv = input.uv;
                 output.color = input.color * _Color;
                 return output;
             }
