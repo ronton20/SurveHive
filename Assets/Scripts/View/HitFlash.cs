@@ -15,7 +15,7 @@ namespace SurveHive.View
 
         [SerializeField] private SpriteRenderer _renderer;
         [SerializeField] private HealthComponent _health;
-        [SerializeField] private float _flashDuration = 0.08f;
+        [SerializeField] private float _flashDuration = 0.12f;
 
         private MaterialPropertyBlock _propertyBlock;
         private float _flashRemaining;

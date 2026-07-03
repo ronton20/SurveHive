@@ -12,8 +12,8 @@ namespace SurveHive.Player
     {
         [SerializeField] private HealthComponent _health;
         [SerializeField] private CameraShaker _shaker;
-        [SerializeField] private float _hurtShakeAmplitude = 0.12f;
-        [SerializeField] private float _deathShakeAmplitude = 0.3f;
+        [SerializeField] private float _hurtShakeAmplitude = 0.3f;
+        [SerializeField] private float _deathShakeAmplitude = 0.5f;
 
         private void OnEnable()
         {

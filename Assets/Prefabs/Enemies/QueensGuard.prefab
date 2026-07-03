@@ -219,6 +219,7 @@ GameObject:
   - component: {fileID: 6612548514260260895}
   - component: {fileID: 334895934311372173}
   - component: {fileID: 687059243511138419}
+  - component: {fileID: 8935954791525041979}
   m_Layer: 0
   m_Name: QueensGuard
   m_TagString: Enemy
@@ -416,7 +417,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.View.HitFlash
   _renderer: {fileID: 8637230506965829929}
   _health: {fileID: 7535870585214769193}
-  _flashDuration: 0.08
+  _flashDuration: 0.12
+--- !u!114 &8935954791525041979
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7770775279293611669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e0fac1e46c674d838fdec5945da6f46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.View.DeathAnimation
+  _resolver: {fileID: 5474844783984825029}
+  _animator: {fileID: 6612548514260260895}
+  _collider: {fileID: 3752718954380597828}
+  _rigidbody: {fileID: 5564088697612130325}
+  _hideOnDeath: {fileID: 5209783187961882850}
+  _frameCount: 6
+  _framesPerSecond: 12
+  _holdLastFrameSeconds: 0.25
 --- !u!1 &8256129979899931889
 GameObject:
   m_ObjectHideFlags: 0

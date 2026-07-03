@@ -60,6 +60,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hit_1_normal
       objectReference: {fileID: 0}
+    - target: {fileID: 2499277236963918258, guid: 5b2189a0bf19c5c478fb8660a514cc46, type: 3}
+      propertyPath: looping
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2499277236963918269, guid: 5b2189a0bf19c5c478fb8660a514cc46, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.6

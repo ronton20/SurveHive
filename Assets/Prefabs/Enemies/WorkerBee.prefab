@@ -369,6 +369,7 @@ GameObject:
   - component: {fileID: 7067207055186406104}
   - component: {fileID: 5778014534122504628}
   - component: {fileID: 8763920752259601788}
+  - component: {fileID: 9159502870025687972}
   m_Layer: 0
   m_Name: WorkerBee
   m_TagString: Enemy
@@ -566,4 +567,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.View.HitFlash
   _renderer: {fileID: 687775269897071665}
   _health: {fileID: 6971983708384735652}
-  _flashDuration: 0.08
+  _flashDuration: 0.12
+--- !u!114 &9159502870025687972
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8914865433895963048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e0fac1e46c674d838fdec5945da6f46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.View.DeathAnimation
+  _resolver: {fileID: 8195734958816563559}
+  _animator: {fileID: 7067207055186406104}
+  _collider: {fileID: 1943443199223623910}
+  _rigidbody: {fileID: 8785516949298985251}
+  _hideOnDeath: {fileID: 3415539924707069159}
+  _frameCount: 6
+  _framesPerSecond: 12
+  _holdLastFrameSeconds: 0.25

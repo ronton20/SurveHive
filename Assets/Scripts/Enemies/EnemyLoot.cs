@@ -82,7 +82,16 @@ namespace SurveHive.Enemies
                 }
             }
 
-            PoolManager.Instance.Release(stats.PoolId, gameObject);
+            // With a death animation, the corpse plays out and releases itself;
+            // otherwise return to the pool immediately.
+            if (TryGetComponent(out View.DeathAnimation deathAnimation))
+            {
+                deathAnimation.Play(stats.PoolId);
+            }
+            else
+            {
+                PoolManager.Instance.Release(stats.PoolId, gameObject);
+            }
         }
     }
 }

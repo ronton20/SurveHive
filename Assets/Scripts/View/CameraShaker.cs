@@ -10,8 +10,10 @@ namespace SurveHive.View
     /// </summary>
     public sealed class CameraShaker : MonoBehaviour
     {
-        [SerializeField] private float _maxAmplitude = 0.3f;
-        [SerializeField] private float _decayPerSecond = 1.5f;
+        // Pixel-perfect snapping quantizes offsets to the 1/16-unit grid, so
+        // amplitudes need to be several pixels to actually read on screen.
+        [SerializeField] private float _maxAmplitude = 0.5f;
+        [SerializeField] private float _decayPerSecond = 1.2f;
 
         private float _amplitude;
 

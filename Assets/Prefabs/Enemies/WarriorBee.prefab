@@ -170,6 +170,7 @@ GameObject:
   - component: {fileID: 8042363696349606303}
   - component: {fileID: 2047535917640585307}
   - component: {fileID: 1547348648024024284}
+  - component: {fileID: 8343909970600598434}
   m_Layer: 0
   m_Name: WarriorBee
   m_TagString: Enemy
@@ -367,7 +368,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.View.HitFlash
   _renderer: {fileID: 2286337548197552695}
   _health: {fileID: 4401809941960203322}
-  _flashDuration: 0.08
+  _flashDuration: 0.12
+--- !u!114 &8343909970600598434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6484636889515418260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e0fac1e46c674d838fdec5945da6f46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.View.DeathAnimation
+  _resolver: {fileID: 336705477010628384}
+  _animator: {fileID: 8042363696349606303}
+  _collider: {fileID: 351529490175535981}
+  _rigidbody: {fileID: 2930737084301943777}
+  _hideOnDeath: {fileID: 563663533756459238}
+  _frameCount: 6
+  _framesPerSecond: 12
+  _holdLastFrameSeconds: 0.25
 --- !u!1 &6512828356454330888
 GameObject:
   m_ObjectHideFlags: 0

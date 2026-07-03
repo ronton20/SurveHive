@@ -239,6 +239,20 @@ namespace SurveHive.BuildTools
             ok &= ValidatePrefabSprite("Assets/Prefabs/Pickups/ExpPickup.prefab", "ExpMote");
             ok &= ValidatePrefabSprite("Assets/Prefabs/Pickups/CurrencyPickup.prefab", "HoneyDrop");
 
+            // Death VFX must be one-shot (the pack source loops).
+            var deathVfx = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/DeathPoof.prefab");
+            if (deathVfx != null)
+            {
+                bool anyLooping = false;
+                ParticleSystem[] systems = deathVfx.GetComponentsInChildren<ParticleSystem>(true);
+                for (int i = 0; i < systems.Length; i++)
+                {
+                    anyLooping |= systems[i].main.loop;
+                }
+
+                ok &= Check(systems.Length > 0 && !anyLooping, "DeathPoof particle systems are one-shot (no looping)");
+            }
+
             // Flash material.
             var flashMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/SpriteFlash.mat");
             ok &= Check(flashMaterial != null && flashMaterial.shader != null &&
@@ -327,6 +341,18 @@ namespace SurveHive.BuildTools
                 var so = new SerializedObject(enemyController);
                 ok &= Check(so.FindProperty("_characterAnimator").objectReferenceValue != null,
                     $"{prefabPath} EnemyController._characterAnimator wired");
+            }
+
+            var deathAnimation = prefab.GetComponent<View.DeathAnimation>();
+            ok &= Check(deathAnimation != null, $"{prefabPath} has DeathAnimation");
+            if (deathAnimation != null)
+            {
+                var so = new SerializedObject(deathAnimation);
+                ok &= Check(so.FindProperty("_resolver").objectReferenceValue != null &&
+                    so.FindProperty("_animator").objectReferenceValue != null &&
+                    so.FindProperty("_collider").objectReferenceValue != null &&
+                    so.FindProperty("_rigidbody").objectReferenceValue != null,
+                    $"{prefabPath} DeathAnimation fully wired");
             }
 
             return ok;

@@ -37,6 +37,7 @@ namespace SurveHive.Enemies
         {
             _knockbackVelocity = Vector2.zero;
             _health.OnDamaged += HandleDamaged;
+            _health.OnDied += HandleDied;
 
             if (EnemyRegistry.Instance != null)
             {
@@ -47,6 +48,7 @@ namespace SurveHive.Enemies
         private void OnDisable()
         {
             _health.OnDamaged -= HandleDamaged;
+            _health.OnDied -= HandleDied;
 
             if (EnemyRegistry.Instance != null)
             {
@@ -86,9 +88,25 @@ namespace SurveHive.Enemies
             }
         }
 
+        // Corpses leave the registry immediately so auto-targeting and the
+        // spawner's concurrent-enemy cap ignore them while the death animation
+        // plays out (Unregister is a no-op when called again from OnDisable).
+        private void HandleDied()
+        {
+            if (_characterAnimator != null)
+            {
+                _characterAnimator.SetDead();
+            }
+
+            if (EnemyRegistry.Instance != null)
+            {
+                EnemyRegistry.Instance.Unregister(this);
+            }
+        }
+
         private void FixedUpdate()
         {
-            if (_playerTransform == null || _stats == null)
+            if (_playerTransform == null || _stats == null || _health.IsDead)
             {
                 return;
             }

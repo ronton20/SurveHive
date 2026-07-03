@@ -580,30 +580,49 @@ namespace SurveHive.BuildTools
         private static GameObject BuildDeathVfxPrefab()
         {
             GameObject existing = AssetDatabase.LoadAssetAtPath<GameObject>(DeathVfxPrefabPath);
-            if (existing != null)
+            if (existing == null)
             {
-                return existing;
+                EnsureFolder("Assets/Prefabs/VFX");
+
+                var source = AssetDatabase.LoadAssetAtPath<GameObject>(DeathVfxSourcePath);
+                var root = new GameObject("DeathPoof");
+                var instance = (GameObject)PrefabUtility.InstantiatePrefab(source);
+                instance.transform.SetParent(root.transform, false);
+                instance.transform.localScale = Vector3.one * 0.6f;
+
+                ParticleSystem rootSystem = instance.GetComponentInChildren<ParticleSystem>();
+                PooledVfx pooledVfx = root.AddComponent<PooledVfx>();
+                var serialized = new SerializedObject(pooledVfx);
+                serialized.FindProperty("_poolId").intValue = PoolIds.DeathVfx;
+                serialized.FindProperty("_rootSystem").objectReferenceValue = rootSystem;
+                serialized.FindProperty("_maxLifetime").floatValue = 2f;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                PrefabUtility.SaveAsPrefabAsset(root, DeathVfxPrefabPath);
+                Object.DestroyImmediate(root);
             }
 
-            EnsureFolder("Assets/Prefabs/VFX");
+            // The pack effect ships with looping systems, which replay until the
+            // lifetime cap and read as random repeating explosions — force every
+            // system in the wrapper to one-shot.
+            GameObject contents = PrefabUtility.LoadPrefabContents(DeathVfxPrefabPath);
+            try
+            {
+                ParticleSystem[] systems = contents.GetComponentsInChildren<ParticleSystem>(true);
+                for (int i = 0; i < systems.Length; i++)
+                {
+                    ParticleSystem.MainModule main = systems[i].main;
+                    main.loop = false;
+                }
 
-            var source = AssetDatabase.LoadAssetAtPath<GameObject>(DeathVfxSourcePath);
-            var root = new GameObject("DeathPoof");
-            var instance = (GameObject)PrefabUtility.InstantiatePrefab(source);
-            instance.transform.SetParent(root.transform, false);
-            instance.transform.localScale = Vector3.one * 0.6f;
+                PrefabUtility.SaveAsPrefabAsset(contents, DeathVfxPrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
 
-            ParticleSystem rootSystem = instance.GetComponentInChildren<ParticleSystem>();
-            PooledVfx pooledVfx = root.AddComponent<PooledVfx>();
-            var serialized = new SerializedObject(pooledVfx);
-            serialized.FindProperty("_poolId").intValue = PoolIds.DeathVfx;
-            serialized.FindProperty("_rootSystem").objectReferenceValue = rootSystem;
-            serialized.FindProperty("_maxLifetime").floatValue = 2f;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, DeathVfxPrefabPath);
-            Object.DestroyImmediate(root);
-            return prefab;
+            return AssetDatabase.LoadAssetAtPath<GameObject>(DeathVfxPrefabPath);
         }
 
         // ------------------------------------------------------------------
@@ -681,6 +700,7 @@ namespace SurveHive.BuildTools
             var flashSerialized = new SerializedObject(hitFlash);
             flashSerialized.FindProperty("_renderer").objectReferenceValue = bodyRenderer;
             flashSerialized.FindProperty("_health").objectReferenceValue = root.GetComponent<HealthComponent>();
+            flashSerialized.FindProperty("_flashDuration").floatValue = 0.12f;
             flashSerialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -705,6 +725,22 @@ namespace SurveHive.BuildTools
                 {
                     healthBar.localPosition = new Vector3(0f, 1.1f, 0f);
                 }
+
+                // Corpse animation: plays the rig's Death frames, then self-releases.
+                if (!root.TryGetComponent(out DeathAnimation deathAnimation))
+                {
+                    deathAnimation = root.AddComponent<DeathAnimation>();
+                }
+
+                Transform body = root.transform.Find("Body");
+                var deathSerialized = new SerializedObject(deathAnimation);
+                deathSerialized.FindProperty("_resolver").objectReferenceValue = body.GetComponent<SpriteResolver>();
+                deathSerialized.FindProperty("_animator").objectReferenceValue = root.GetComponent<Animator>();
+                deathSerialized.FindProperty("_collider").objectReferenceValue = root.GetComponent<CircleCollider2D>();
+                deathSerialized.FindProperty("_rigidbody").objectReferenceValue = root.GetComponent<Rigidbody2D>();
+                deathSerialized.FindProperty("_hideOnDeath").objectReferenceValue =
+                    healthBar != null ? healthBar.gameObject : null;
+                deathSerialized.ApplyModifiedPropertiesWithoutUndo();
 
                 PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
             }
@@ -967,6 +1003,13 @@ namespace SurveHive.BuildTools
                 shaker = cameraGo.AddComponent<CameraShaker>();
             }
 
+            // Pixel-perfect snapping eats offsets under ~1px (1/16 unit), so the
+            // shake needs real amplitude to read on screen.
+            var shakerSerialized = new SerializedObject(shaker);
+            shakerSerialized.FindProperty("_maxAmplitude").floatValue = 0.5f;
+            shakerSerialized.FindProperty("_decayPerSecond").floatValue = 1.2f;
+            shakerSerialized.ApplyModifiedPropertiesWithoutUndo();
+
             var followSerialized = new SerializedObject(cameraGo.GetComponent<CameraFollow>());
             followSerialized.FindProperty("_shaker").objectReferenceValue = shaker;
             followSerialized.ApplyModifiedPropertiesWithoutUndo();
@@ -989,6 +1032,8 @@ namespace SurveHive.BuildTools
             var feedbackSerialized = new SerializedObject(hitFeedback);
             feedbackSerialized.FindProperty("_health").objectReferenceValue = playerGo.GetComponent<HealthComponent>();
             feedbackSerialized.FindProperty("_shaker").objectReferenceValue = shaker;
+            feedbackSerialized.FindProperty("_hurtShakeAmplitude").floatValue = 0.3f;
+            feedbackSerialized.FindProperty("_deathShakeAmplitude").floatValue = 0.5f;
             feedbackSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             var autoAttackSerialized = new SerializedObject(playerGo.GetComponent<AutoAttack>());
@@ -1159,12 +1204,33 @@ namespace SurveHive.BuildTools
                 Transform choice = panelTransform.Find($"Choice{i}");
                 SetSlicedSprite(choice.gameObject, uiKit.Button, Wax, 1f);
 
+                // Center the three cards inside the 900px panel (the original
+                // left-anchored layout hung card 0 off the panel's left edge).
+                var choiceRect = (RectTransform)choice;
+                choiceRect.anchorMin = new Vector2(0.5f, 0.5f);
+                choiceRect.anchorMax = new Vector2(0.5f, 0.5f);
+                choiceRect.pivot = new Vector2(0.5f, 0.5f);
+                choiceRect.anchoredPosition = new Vector2((i - 1) * 295f, 0f);
+                choiceRect.sizeDelta = new Vector2(280f, 400f);
+
                 GameObject nameGo = choice.Find($"Choice{i}Name").gameObject;
                 TMP_Text nameTmp = ReplaceTextWithTmp(nameGo, font, 26f, DeepBrown, TextAlignmentOptions.Center);
+                var nameRect = (RectTransform)nameGo.transform;
+                nameRect.anchorMin = new Vector2(0f, 1f);
+                nameRect.anchorMax = new Vector2(1f, 1f);
+                nameRect.pivot = new Vector2(0.5f, 1f);
+                nameRect.anchoredPosition = new Vector2(0f, -18f);
+                nameRect.sizeDelta = new Vector2(-28f, 52f);
                 namesProp.GetArrayElementAtIndex(i).objectReferenceValue = nameTmp;
 
                 GameObject descGo = choice.Find($"Choice{i}Desc").gameObject;
-                TMP_Text descTmp = ReplaceTextWithTmp(descGo, font, 20f, CombBrown, TextAlignmentOptions.Center);
+                TMP_Text descTmp = ReplaceTextWithTmp(descGo, font, 20f, CombBrown, TextAlignmentOptions.Top);
+                var descRect = (RectTransform)descGo.transform;
+                descRect.anchorMin = Vector2.zero;
+                descRect.anchorMax = Vector2.one;
+                descRect.pivot = new Vector2(0.5f, 0.5f);
+                descRect.offsetMin = new Vector2(16f, 16f);
+                descRect.offsetMax = new Vector2(-16f, -184f);
                 descsProp.GetArrayElementAtIndex(i).objectReferenceValue = descTmp;
 
                 Transform iconTransform = choice.Find("Icon");
@@ -1173,16 +1239,18 @@ namespace SurveHive.BuildTools
                 {
                     iconGo = new GameObject("Icon", typeof(RectTransform));
                     iconGo.transform.SetParent(choice, false);
-                    var rect = (RectTransform)iconGo.transform;
-                    rect.anchorMin = new Vector2(0.5f, 1f);
-                    rect.anchorMax = new Vector2(0.5f, 1f);
-                    rect.anchoredPosition = new Vector2(0f, -140f);
-                    rect.sizeDelta = new Vector2(96f, 96f);
                 }
                 else
                 {
                     iconGo = iconTransform.gameObject;
                 }
+
+                var iconRect = (RectTransform)iconGo.transform;
+                iconRect.anchorMin = new Vector2(0.5f, 1f);
+                iconRect.anchorMax = new Vector2(0.5f, 1f);
+                iconRect.pivot = new Vector2(0.5f, 1f);
+                iconRect.anchoredPosition = new Vector2(0f, -84f);
+                iconRect.sizeDelta = new Vector2(88f, 88f);
 
                 if (!iconGo.TryGetComponent(out Image iconImage))
                 {

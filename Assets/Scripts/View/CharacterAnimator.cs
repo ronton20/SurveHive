@@ -51,6 +51,11 @@ namespace SurveHive.View
 
         private void Update()
         {
+            if (_isDead)
+            {
+                return;
+            }
+
             Vector2 velocity = _rigidbody.linearVelocity;
             bool moving = velocity.sqrMagnitude > _movingSpeedThreshold * _movingSpeedThreshold;
 
