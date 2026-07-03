@@ -22,6 +22,9 @@ MonoBehaviour:
   _currencyDropChance: 0.25
   _currencyDropMin: 1
   _currencyDropMax: 2
-  _spriteTint: {r: 1, g: 1, b: 1, a: 1}
+  _spriteTint: {r: 0.85, g: 0.8, b: 0.62, a: 1}
+  _scale: 0.9
+  _knockbackResistance: 1
+  _deathHitStopSeconds: 0
   _prefab: {fileID: 8914865433895963048, guid: 3a0cdd1febd4549faa20f4ebed13217f, type: 3}
   _poolId: 0

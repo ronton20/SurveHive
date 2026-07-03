@@ -51,6 +51,21 @@ namespace SurveHive.Enemies
             EnemyStatsSO stats = _enemyController.Stats;
             Vector3 position = transform.position;
 
+            if (RunSession.Instance != null)
+            {
+                RunSession.Instance.RegisterKill();
+            }
+
+            if (stats.DeathHitStopSeconds > 0f && HitStop.Instance != null)
+            {
+                HitStop.Instance.Request(stats.DeathHitStopSeconds);
+            }
+
+            if (PoolManager.Instance.HasPool(PoolIds.DeathVfx))
+            {
+                PoolManager.Instance.Get(PoolIds.DeathVfx, position, Quaternion.identity);
+            }
+
             GameObject expPickup = PoolManager.Instance.Get(PoolIds.ExpPickup, position, Quaternion.identity);
             if (expPickup.TryGetComponent(out PickupItem expItem))
             {

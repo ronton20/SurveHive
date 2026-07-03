@@ -33,6 +33,11 @@ namespace SurveHive.Core
             _pools.Add(poolId, new GameObjectPool(prefab, parent, prewarmCount, maxSize));
         }
 
+        public bool HasPool(int poolId)
+        {
+            return _pools.ContainsKey(poolId);
+        }
+
         public GameObject Get(int poolId, Vector3 position, Quaternion rotation)
         {
             return _pools[poolId].Get(position, rotation);

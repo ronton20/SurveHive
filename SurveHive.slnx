@@ -4,4 +4,5 @@
   <Project Path="PixelFantasy.Common.Editor.csproj" />
   <Project Path="SurveHive.BuildTools.csproj" />
   <Project Path="SurveHive.Editor.csproj" />
+  <Project Path="SurveHive.Tests.PlayMode.csproj" />
 </Solution>

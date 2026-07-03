@@ -1,3 +1,4 @@
+using SurveHive.Core;
 using SurveHive.Health;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -40,7 +41,7 @@ namespace SurveHive.Player
                 _gameOverPanel.SetActive(true);
             }
 
-            Time.timeScale = 0f;
+            GamePause.SetPaused(true);
         }
 
         private void Update()
@@ -81,7 +82,7 @@ namespace SurveHive.Player
 
         private void Restart()
         {
-            Time.timeScale = 1f;
+            GamePause.SetPaused(false);
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7b30d0eaebd4f858646395a8fa5403, type: 3}
+  m_Name: QueensGuard
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.EnemyStatsSO
+  _displayName: Queen's Guard
+  _rank: 2
+  _maxHealth: 90
+  _moveSpeed: 2.4
+  _contactDamage: 12
+  _contactDamageInterval: 1
+  _expReward: 20
+  _currencyDropChance: 0.6
+  _currencyDropMin: 2
+  _currencyDropMax: 5
+  _spriteTint: {r: 0.85, g: 0.55, b: 1, a: 1}
+  _scale: 1.25
+  _knockbackResistance: 2.5
+  _deathHitStopSeconds: 0.05
+  _prefab: {fileID: 7770775279293611669, guid: e45e942fab02747dbb958d2b29e76086, type: 3}
+  _poolId: 6

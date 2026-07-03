@@ -1,13 +1,13 @@
 using System.Text;
 using SurveHive.Core;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SurveHive.UI
 {
     public sealed class DamageNumberPopup : MonoBehaviour
     {
-        [SerializeField] private Text _text;
+        [SerializeField] private TMP_Text _text;
         [SerializeField] private int _poolId;
         [SerializeField] private float _lifetime = 0.7f;
         [SerializeField] private float _riseSpeed = 1.5f;
@@ -20,7 +20,7 @@ namespace SurveHive.UI
         {
             _stringBuilder.Clear();
             _stringBuilder.Append(Mathf.RoundToInt(damageAmount));
-            _text.text = _stringBuilder.ToString();
+            _text.SetText(_stringBuilder);
         }
 
         private void OnEnable()

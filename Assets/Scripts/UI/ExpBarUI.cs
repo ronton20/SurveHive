@@ -1,5 +1,6 @@
 using System.Text;
 using SurveHive.Progression;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,7 +9,7 @@ namespace SurveHive.UI
     public sealed class ExpBarUI : MonoBehaviour
     {
         [SerializeField] private Image _fillImage;
-        [SerializeField] private Text _levelText;
+        [SerializeField] private TMP_Text _levelText;
         [SerializeField] private PlayerExperience _playerExperience;
 
         private readonly StringBuilder _stringBuilder = new StringBuilder(16);
@@ -36,7 +37,7 @@ namespace SurveHive.UI
             _stringBuilder.Clear();
             _stringBuilder.Append("Lv. ");
             _stringBuilder.Append(level);
-            _levelText.text = _stringBuilder.ToString();
+            _levelText.SetText(_stringBuilder);
         }
     }
 }

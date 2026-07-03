@@ -1,8 +1,10 @@
 using System.Text;
+using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Health;
 using SurveHive.Player;
 using SurveHive.Progression;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,8 +18,9 @@ namespace SurveHive.UI
         [SerializeField] private HealthComponent _playerHealth;
         [SerializeField] private GameObject _panelRoot;
         [SerializeField] private Button[] _choiceButtons;
-        [SerializeField] private Text[] _choiceNameTexts;
-        [SerializeField] private Text[] _choiceDescriptionTexts;
+        [SerializeField] private TMP_Text[] _choiceNameTexts;
+        [SerializeField] private TMP_Text[] _choiceDescriptionTexts;
+        [SerializeField] private Image[] _choiceIcons;
 
         // Move speed is intentionally excluded here — it grows only through power-ups
         // (the Swift Wings skill), keeping it a rarer, more meaningful stat.
@@ -99,7 +102,7 @@ namespace SurveHive.UI
                 }
 
                 Hide();
-                Time.timeScale = 1f;
+                GamePause.SetPaused(false);
                 return;
             }
 
@@ -112,6 +115,13 @@ namespace SurveHive.UI
 
                 _choiceNameTexts[i].text = skill.DisplayName;
                 _choiceDescriptionTexts[i].text = BuildDescription(skill, _skillLevels[dbIndex]);
+
+                if (_choiceIcons != null && i < _choiceIcons.Length && _choiceIcons[i] != null)
+                {
+                    _choiceIcons[i].sprite = skill.Icon;
+                    _choiceIcons[i].enabled = skill.Icon != null;
+                }
+
                 _choiceButtons[i].gameObject.SetActive(true);
             }
 
@@ -121,7 +131,7 @@ namespace SurveHive.UI
             }
 
             Show();
-            Time.timeScale = 0f;
+            GamePause.SetPaused(true);
         }
 
         private void ApplyAutoLevelBonus()
@@ -199,7 +209,7 @@ namespace SurveHive.UI
             else
             {
                 Hide();
-                Time.timeScale = 1f;
+                GamePause.SetPaused(false);
             }
         }
 

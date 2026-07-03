@@ -1,5 +1,6 @@
 using SurveHive.Core;
 using SurveHive.Player;
+using SurveHive.View;
 using UnityEngine;
 
 namespace SurveHive.Combat
@@ -12,6 +13,7 @@ namespace SurveHive.Combat
         [SerializeField] private float _projectileSpeed = 10f;
         [SerializeField] private AudioSource _audioSource;
         [SerializeField] private AudioClip _shootClip;
+        [SerializeField] private CharacterAnimator _characterAnimator;
 
         private float _cooldownRemaining;
 
@@ -48,6 +50,12 @@ namespace SurveHive.Combat
 
             Vector2 direction = ((Vector2)(target.position - transform.position)).normalized;
             int projectileCount = Mathf.Max(1, _stats.ProjectileCount);
+
+            if (_characterAnimator != null)
+            {
+                _characterAnimator.PlayAttack();
+                _characterAnimator.FaceDirection(direction.x);
+            }
 
             if (_audioSource != null && _shootClip != null)
             {

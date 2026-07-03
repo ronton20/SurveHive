@@ -150,19 +150,20 @@ namespace SurveHive.BuildTools
             Debug.Log("SurveHive pixel perfect camera applied.");
         }
 
-        // PLAN.md rendering foundation: PPU 32, 640x360 reference resolution (integer
-        // scales at 720p/1080p/1440p), upscale render texture so rotated sprites/VFX
-        // stay crisp.
-        private static void ConfigurePixelPerfectCamera(GameObject cameraGo)
+        // PLAN.md rendering foundation, revised in Phase 1: the PixelFantasy art is
+        // authored at PPU 16, so the whole game runs at PPU 16 with a 320x180
+        // reference resolution (integer 6x scale at 1080p) and an upscaled render
+        // texture so rotated sprites/VFX stay crisp.
+        public static void ConfigurePixelPerfectCamera(GameObject cameraGo)
         {
             if (!cameraGo.TryGetComponent(out PixelPerfectCamera pixelPerfect))
             {
                 pixelPerfect = cameraGo.AddComponent<PixelPerfectCamera>();
             }
 
-            pixelPerfect.assetsPPU = 32;
-            pixelPerfect.refResolutionX = 640;
-            pixelPerfect.refResolutionY = 360;
+            pixelPerfect.assetsPPU = 16;
+            pixelPerfect.refResolutionX = 320;
+            pixelPerfect.refResolutionY = 180;
             pixelPerfect.gridSnapping = PixelPerfectCamera.GridSnapping.UpscaleRenderTexture;
             pixelPerfect.cropFrame = PixelPerfectCamera.CropFrame.None;
         }

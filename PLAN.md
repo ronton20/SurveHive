@@ -1,6 +1,6 @@
 # SurveHive — Polish & Feature Implementation Plan
 
-> **Progress:** Phase 0 ✅ done (2026-07-04). Phases 1–5 not started.
+> **Progress:** Phase 0 ✅ and Phase 1 ✅ done (2026-07-04). Phases 2–5 not started.
 
 > Created 2026-07-04 with Ron. This is the agreed roadmap for the next development push.
 > Reference this file when starting implementation ("let's do Phase N from PLAN.md").
@@ -26,8 +26,8 @@ The agreed look, and how each part is achieved:
 
 ### Rendering foundation (locked decisions)
 
-- **PPU 32** everywhere (PixelFantasy sprites are authored around this scale). All imported sprites: `Point (no filter)`, `Compression: None`, mipmaps off.
-- **Pixel Perfect Camera** component on the main camera (built into URP 2D): reference resolution **640×360** (scales integer-perfect to 720p/1080p/1440p and most phones), upscale render texture ON for crisp rotation of VFX.
+- **PPU 16** everywhere *(revised in Phase 1: the PixelFantasy sprites turned out to be authored at PPU 16, not 32)*. All imported sprites: `Point (no filter)`, `Compression: None`, mipmaps off.
+- **Pixel Perfect Camera** component on the main camera (built into URP 2D): reference resolution **320×180** (integer 6× scale at 1080p), upscale render texture ON for crisp rotation of VFX.
 - **Honey/hive palette** (used for UI retints, VFX tints, backgrounds):
   - Honey gold `#FFC30B`, amber `#F5A623`, wax `#E8D8A0`, comb brown `#8C5A2B`, deep hive brown `#3A2416`, danger red `#D9483B`, poison green `#7CB518`, royal purple `#7B2D8B` (queen/royal rank accent).
 - **Glow accents**: URP Bloom post-processing (already have a Global Volume) with high threshold so only deliberately-bright VFX pixels bloom — gives "magic honey" pop without smearing the pixel art. Optional later: 2D lights for the hive interior mood.
@@ -63,7 +63,7 @@ New top-level folder: **`Assets/ThirdParty/`** — all store packs live there, o
 
 ---
 
-## 3. Phase 1 — Look & Feel (art swap + game feel + UI reskin)
+## 3. Phase 1 — Look & Feel (art swap + game feel + UI reskin) — ✅ DONE (2026-07-04)
 
 ### 3.1 Character art swap
 
@@ -101,6 +101,8 @@ New top-level folder: **`Assets/ThirdParty/`** — all store packs live there, o
 5. Pixel Perfect Camera active; sprites render crisp (no bilinear blur) at 1080p in Game view.
 6. Profiler over 60s of steady combat (~150 live enemies): **0 B/frame GC allocation** in gameplay code paths; stable 60 fps in-editor.
 7. Scene builder regenerates the scene with all of the above intact; validator passes.
+
+> **Phase 1 completion notes (2026-07-04):** delivered via a new idempotent pass `SurveHive/Apply Phase 1 Look & Feel` (`Phase1LookAndFeelBuilder`). Criteria 1–5 and 7 verified headlessly: the validator (extended with ~50 Phase 1 checks) passes 126/126, and a new **PlayMode smoke test** (`Assets/Tests/PlayMode`, run via Test Runner) boots the scene and plays ~8s with zero errors. Criterion 6 (Profiler 0 B/frame + 60 fps) can't be measured headlessly — code follows the zero-GC rules; **confirm with an in-editor Profiler session on your next play**. Deviations/extras vs the written plan: **PPU 16 / 320×180** replaced PPU 32 / 640×360 (the pack's true authoring scale); death feedback is a pooled particle **death-poof** (VFX pack, 512 materials bulk-converted to URP) rather than a corpse die-animation, keeping pooled release instant; the DEVNIK kit's gray elements are auto-sliced by pixel-region scanning and tinted at the Image level (no texture retint needed); **Queen's Guard** (3rd trash rank, purple, 1.25×, knockback-resistant, hit-stop on death) shipped now rather than Phase 3; kill counter + run timer HUD added; TMP Essential Resources had to be imported (found by the smoke test — TMP NREs without it); projectile/pickups use small code-generated pixel sprites (stinger dart, nectar mote, honey drop) pending custom art; bloom deferred to a later polish pass.
 
 ---
 
@@ -236,7 +238,7 @@ On death **or** victory: results screen — time survived, kills, level reached,
 | Phase | Content | Rough size |
 |---|---|---|
 | 0 ✅ | Asset triage + pixel-perfect camera foundation — done 2026-07-04 | small |
-| 1 | Art swap, game feel, UI reskin | large |
+| 1 ✅ | Art swap, game feel, UI reskin — done 2026-07-04 | large |
 | 2 | Status effects, 6 actives, 10 passives, rarity | large |
 | 3 | Stage timeline, bosses, drops, results | large |
 | 4 | Save, meta shop, menus, pause | medium |

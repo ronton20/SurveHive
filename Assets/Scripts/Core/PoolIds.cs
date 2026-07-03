@@ -8,5 +8,7 @@ namespace SurveHive.Core
         public const int CurrencyPickup = 3;
         public const int Projectile = 4;
         public const int DamageNumber = 5;
+        public const int QueensGuard = 6;
+        public const int DeathVfx = 7;
     }
 }

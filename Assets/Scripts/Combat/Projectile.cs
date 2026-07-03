@@ -10,6 +10,7 @@ namespace SurveHive.Combat
     {
         [SerializeField] private int _poolId;
         [SerializeField] private string _targetTag = "Enemy";
+        [SerializeField] private float _knockbackImpulse = 2.5f;
 
         private Vector2 _direction;
         private float _damage;
@@ -23,6 +24,8 @@ namespace SurveHive.Combat
             _damage = damage;
             _speed = speed;
             _remainingRange = maxRange;
+            // Point the sprite along the flight direction (art faces right).
+            transform.rotation = Quaternion.FromToRotation(Vector3.right, direction);
         }
 
         private void OnEnable()
@@ -53,6 +56,11 @@ namespace SurveHive.Combat
             {
                 damageable.TakeDamage(_damage, gameObject);
                 SpawnDamageNumber(other.transform.position);
+            }
+
+            if (other.TryGetComponent(out Enemies.EnemyController enemy))
+            {
+                enemy.ApplyKnockback(_direction * _knockbackImpulse);
             }
 
             ReleaseSelf();

@@ -19,9 +19,14 @@ MonoBehaviour:
   - enemyStats: {fileID: 11400000, guid: aabdff4ac4a494abe81387f694ed3255, type: 2}
     spawnWeight: 0.4
     unlockTimeSeconds: 45
+  - enemyStats: {fileID: 11400000, guid: 987bb9496325544a39792450d4f7b32f, type: 2}
+    spawnWeight: 0.2
+    unlockTimeSeconds: 120
   _initialSpawnInterval: 1.5
   _minSpawnInterval: 0.25
   _intervalRampPerMinute: 0.2
   _maxConcurrentEnemies: 60
-  _spawnRadiusMin: 6
-  _spawnRadiusMax: 9
+  _spawnRadiusMin: 11
+  _spawnRadiusMax: 14
+  _healthScalePerMinute: 0.18
+  _damageScalePerMinute: 0.1

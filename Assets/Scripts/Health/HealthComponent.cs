@@ -14,6 +14,9 @@ namespace SurveHive.Health
         private bool _isDead;
 
         public event Action<float, float> OnHealthChanged;
+        // Fired only for actual damage taken (not heals or max-health changes),
+        // with the damage amount — feeds hit feedback (flash, shake, knockback).
+        public event Action<float> OnDamaged;
         public event Action OnDied;
 
         public bool IsDead => _isDead;
@@ -36,6 +39,7 @@ namespace SurveHive.Health
 
             _currentHealth = Mathf.Max(0f, _currentHealth - amount);
             OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
+            OnDamaged?.Invoke(amount);
 
             if (_currentHealth <= 0f)
             {

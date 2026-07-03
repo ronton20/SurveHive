@@ -1,13 +1,13 @@
 using System.Text;
 using SurveHive.Currency;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SurveHive.UI
 {
     public sealed class CurrencyCounterUI : MonoBehaviour
     {
-        [SerializeField] private Text _currencyText;
+        [SerializeField] private TMP_Text _currencyText;
         [SerializeField] private RunCurrencyWallet _wallet;
 
         private readonly StringBuilder _stringBuilder = new StringBuilder(16);
@@ -27,7 +27,7 @@ namespace SurveHive.UI
         {
             _stringBuilder.Clear();
             _stringBuilder.Append(total);
-            _currencyText.text = _stringBuilder.ToString();
+            _currencyText.SetText(_stringBuilder);
         }
     }
 }

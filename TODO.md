@@ -25,7 +25,7 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 ## Meta & Content
 11. **Menus** — main menu, level/world selection, difficulty selection.
 12. **Meta progression** — the persistent between-run currency spend + upgrade system and its UI (the `IMetaProgressionStore` seam already exists for this).
-13. **Art & polish** — real sprites, animations, VFX, and proper UI elements to replace placeholders.
+13. **Art & polish** — ~~real sprites, animations, VFX, and proper UI elements to replace placeholders~~ *(done in Phase 1: PixelFantasy bee rig + animations, death VFX, pixel UI kit + BoldPixels TMP. Remaining: real audio, hive floor/tileset, custom Aseprite hero/boss art.)*
 
 ---
 
@@ -36,5 +36,5 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 - **Object-pool coverage for new spawners** — keep bosses / strong-wave hordes / drops pooled to hold the zero-GC guarantee as counts grow.
 - **Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, and drop rates.
 - **Audio pass** — SFX for hits/level-up/death/pickups and background music per world (currently only a placeholder shoot blip).
-- **Damage feedback** — hit flash / knockback / screen shake to make combat feel impactful (cheap wins alongside status effects).
+- ~~**Damage feedback** — hit flash / knockback / screen shake to make combat feel impactful (cheap wins alongside status effects).~~ *(done in Phase 1: hit flash, knockback, screen shake, hit-stop on elite kills, death VFX.)*
 - **Localization seam** — if wider release is a goal, isolate user-facing strings early rather than retrofitting later.

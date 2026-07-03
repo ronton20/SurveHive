@@ -16,6 +16,13 @@ namespace SurveHive.Data
         [SerializeField] private int _currencyDropMin = 1;
         [SerializeField] private int _currencyDropMax = 3;
         [SerializeField] private Color _spriteTint = Color.white;
+        // Uniform world-scale of the whole enemy — ranks share one rig and read
+        // bigger/smaller through this rather than separate art.
+        [SerializeField] private float _scale = 1f;
+        // Divides incoming knockback impulses; heavier ranks budge less.
+        [SerializeField] private float _knockbackResistance = 1f;
+        // Micro time-freeze on this enemy's death (0 = none); reserved for elites+.
+        [SerializeField] private float _deathHitStopSeconds;
         [SerializeField] private GameObject _prefab;
         [SerializeField] private int _poolId;
 
@@ -40,6 +47,12 @@ namespace SurveHive.Data
         public int CurrencyDropMax => _currencyDropMax;
 
         public Color SpriteTint => _spriteTint;
+
+        public float Scale => _scale;
+
+        public float KnockbackResistance => _knockbackResistance;
+
+        public float DeathHitStopSeconds => _deathHitStopSeconds;
 
         public GameObject Prefab => _prefab;
 
