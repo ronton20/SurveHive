@@ -22,6 +22,13 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 9. ~~**Stage progress bar** — a per-stage timeline: Strong Waves at 25% and 75%, mini-boss at 50%, final boss at 100%.~~ *(done in Phase 3: HUD bar with siren/skull/crown markers.)*
 10. ~~**Item drops** — potion / honey jar (heal), magnet (pull all pickups), shield, screen-nuke, etc.~~ *(done in Phase 3: Honey Jar / Magnet / Wax Shield / Royal Bomb, drop tables on enemy stats.)*
 
+## Mobile UI Overhaul
+*(from Device Simulator testing 2026-07-04 — PC-first for now, tackle alongside the Phase 5 mobile sanity pass)*
+14. **Safe area support** — the notch/punch-hole hides HUD meters (health/EXP bars, timer); all HUD anchors must respect `Screen.safeArea`.
+15. **UI scale pass for small screens** — HUD bars, counters, damage numbers, and card text are all too small at phone DPI; likely a `CanvasScaler` reference-resolution/match rework plus per-element size bumps.
+16. **Skill cards relayout for portrait/mobile** — cards should be oriented horizontally (icon left, name/description right) and stacked vertically instead of the current three tall side-by-side columns.
+17. **General mobile layout audit** — boss bar/banner, stage progress markers, results screens, and shield/aura indicators checked on tall aspect ratios (19.5:9+) in both orientations.
+
 ## Meta & Content
 11. **Menus** — main menu, level/world selection, difficulty selection.
 12. **Meta progression** — the persistent between-run currency spend + upgrade system and its UI (the `IMetaProgressionStore` seam already exists for this).

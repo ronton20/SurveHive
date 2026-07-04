@@ -51,13 +51,13 @@ namespace SurveHive.Input
                 : _keyboardSource.MoveDirection;
         }
 
+        // Runtime check rather than #if UNITY_ANDROID/IOS: compile-time defines
+        // follow the active build target, so Auto would stay on keyboard inside
+        // the Device Simulator. isMobilePlatform is shimmed by the simulator
+        // and true on real devices.
         private static InputSourceMode ResolvePlatformDefault()
         {
-#if UNITY_ANDROID || UNITY_IOS
-            return InputSourceMode.Touch;
-#else
-            return InputSourceMode.KeyboardMouse;
-#endif
+            return Application.isMobilePlatform ? InputSourceMode.Touch : InputSourceMode.KeyboardMouse;
         }
     }
 }
