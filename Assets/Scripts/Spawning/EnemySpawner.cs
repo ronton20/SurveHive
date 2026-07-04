@@ -41,13 +41,22 @@ namespace SurveHive.Spawning
         {
             float elapsedMinutes = _elapsedSeconds / 60f;
             float interval = _config.InitialSpawnInterval - elapsedMinutes * _config.IntervalRampPerMinute;
-            return Mathf.Max(_config.MinSpawnInterval, interval);
+            interval = Mathf.Max(_config.MinSpawnInterval, interval);
+
+            // Stage-driven escalation (PLAN §5.1): the stage director's curve
+            // multiplies spawn frequency on top of the config's own ramp.
+            if (SurveHive.Stage.StageDirector.Instance != null)
+            {
+                interval /= SurveHive.Stage.StageDirector.Instance.CurrentSpawnRateMultiplier;
+            }
+
+            return interval;
         }
 
         private void SpawnOne()
         {
             EnemyStatsSO stats = PickWeightedEnemy();
-            if (stats == null || PoolManager.Instance == null)
+            if (stats == null)
             {
                 return;
             }
@@ -55,8 +64,23 @@ namespace SurveHive.Spawning
             Vector2 randomDirection = Random.insideUnitCircle.normalized;
             float radius = Random.Range(_config.SpawnRadiusMin, _config.SpawnRadiusMax);
             Vector3 spawnPosition = _player.position + (Vector3)(randomDirection * radius);
+            SpawnAt(stats, spawnPosition);
+        }
 
-            GameObject instance = PoolManager.Instance.Get(stats.PoolId, spawnPosition, Quaternion.identity);
+        /// <summary>
+        /// Spawns and fully initializes one enemy at a world position, applying
+        /// the current time-based stat scaling. Used by the regular drip and by
+        /// the stage director's strong-wave/boss bursts (which bypass the
+        /// concurrent-enemy cap by design).
+        /// </summary>
+        public GameObject SpawnAt(EnemyStatsSO stats, Vector3 position)
+        {
+            if (stats == null || PoolManager.Instance == null)
+            {
+                return null;
+            }
+
+            GameObject instance = PoolManager.Instance.Get(stats.PoolId, position, Quaternion.identity);
 
             if (instance.TryGetComponent(out EnemyController controller))
             {
@@ -69,7 +93,11 @@ namespace SurveHive.Spawning
             {
                 loot.Initialize(_playerExperience, _currencyWallet, _player);
             }
+
+            return instance;
         }
+
+        public Transform Player => _player;
 
         private EnemyStatsSO PickWeightedEnemy()
         {

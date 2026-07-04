@@ -171,6 +171,7 @@ namespace SurveHive.BuildTools
 
             ok &= ValidatePhase1LookAndFeel(player, canvasGo);
             ok &= ValidatePhase2CombatDepth(player, canvasGo);
+            ok &= ValidatePhase3RunStructure(canvasGo);
 
             Debug.Log(ok ? "SurveHive Beehive scene validation PASSED." : "SurveHive Beehive scene validation FAILED - see errors above.");
         }
@@ -414,6 +415,84 @@ namespace SurveHive.BuildTools
             ok &= ValidateSkillPrefab("Assets/Prefabs/Skills/ZapArc.prefab", typeof(Combat.Skills.ZapArcVfx));
             ok &= ValidateSkillPrefab("Assets/Prefabs/VFX/EmberExplosion.prefab", typeof(View.PooledVfx));
             ok &= ValidateSkillPrefab("Assets/Prefabs/VFX/HoneySplash.prefab", typeof(View.PooledVfx));
+
+            return ok;
+        }
+
+        // --- Phase 3 (PLAN.md): stage timeline, bosses, drops, results ---
+        private static bool ValidatePhase3RunStructure(GameObject canvasGo)
+        {
+            bool ok = true;
+
+            // Stage config: 4 timeline events at the plan's milestones.
+            var stageConfig = AssetDatabase.LoadAssetAtPath<Data.StageConfigSO>("Assets/Data/Stage/BeehiveStageConfig.asset");
+            ok &= Check(stageConfig != null, "BeehiveStageConfig asset exists");
+            if (stageConfig != null)
+            {
+                ok &= Check(stageConfig.TotalDurationSeconds > 0f, "Stage duration is positive");
+                Data.StageTimelineEvent[] events = stageConfig.Events;
+                ok &= Check(events != null && events.Length == 4,
+                    $"Stage config has 4 timeline events (found {(events != null ? events.Length : 0)})");
+                if (events != null && events.Length == 4)
+                {
+                    ok &= Check(Mathf.Approximately(events[0].NormalizedTime, 0.25f) &&
+                        events[0].Type == Data.StageEventType.StrongWaveRing &&
+                        events[0].EnemyStats != null && events[0].Count > 0,
+                        "25% strong wave (ring) configured");
+                    ok &= Check(Mathf.Approximately(events[1].NormalizedTime, 0.5f) &&
+                        events[1].Type == Data.StageEventType.Miniboss,
+                        "50% miniboss event configured");
+                    ok &= Check(Mathf.Approximately(events[2].NormalizedTime, 0.75f) &&
+                        events[2].Type == Data.StageEventType.StrongWaveFlood &&
+                        events[2].EnemyStats != null && events[2].Count > 0,
+                        "75% strong wave (flood) configured");
+                    ok &= Check(Mathf.Approximately(events[3].NormalizedTime, 1f) &&
+                        events[3].Type == Data.StageEventType.FinalBoss,
+                        "100% final boss event configured");
+                }
+
+                ok &= Check(stageConfig.GetSpawnRateMultiplier(1f) > stageConfig.GetSpawnRateMultiplier(0f),
+                    "Spawn rate curve escalates over the stage");
+            }
+
+            // Director wired in scene.
+            GameObject directorGo = GameObject.Find("StageDirector");
+            ok &= Check(directorGo != null, "StageDirector GameObject exists");
+            if (directorGo != null && directorGo.TryGetComponent(out Stage.StageDirector director))
+            {
+                var so = new SerializedObject(director);
+                ok &= Check(so.FindProperty("_config").objectReferenceValue != null, "StageDirector._config wired");
+                ok &= Check(so.FindProperty("_spawner").objectReferenceValue != null, "StageDirector._spawner wired");
+            }
+
+            // HUD progress bar with fill + one marker per event.
+            GameObject barGo = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, "StageProgressBar") : null;
+            ok &= Check(barGo != null, "StageProgressBar exists on HUD");
+            if (barGo != null)
+            {
+                var barUi = barGo.GetComponent<UI.StageProgressBarUI>();
+                ok &= Check(barUi != null, "StageProgressBar has StageProgressBarUI");
+                if (barUi != null)
+                {
+                    var so = new SerializedObject(barUi);
+                    ok &= Check(so.FindProperty("_fillImage").objectReferenceValue != null &&
+                        so.FindProperty("_director").objectReferenceValue != null,
+                        "StageProgressBarUI fully wired");
+                }
+
+                int markers = 0;
+                foreach (Transform child in barGo.transform)
+                {
+                    if (child.name.StartsWith("Marker"))
+                    {
+                        markers++;
+                        var image = child.GetComponent<UnityEngine.UI.Image>();
+                        ok &= Check(image != null && image.sprite != null, $"{child.name} has an icon sprite");
+                    }
+                }
+
+                ok &= Check(markers == 4, $"StageProgressBar has 4 event markers (found {markers})");
+            }
 
             return ok;
         }

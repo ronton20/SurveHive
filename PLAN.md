@@ -161,6 +161,23 @@ New: **Nectar Sense** (pickup/magnet radius), **Keen Eye** (crit chance — crit
 
 ## 5. Phase 3 — Run Structure (waves, bosses, drops, results)
 
+> **Execution split (2026-07-04, agreed with Ron):** Phase 3 ships as three independently
+> verified + committed sub-phases so a session/token budget running out never strands
+> half-done work — resume from whichever sub-phase is unchecked:
+> - **3A — Stage timeline** ✅ (2026-07-04, validator 212/212, EditMode 25/25, PlayMode green): `StageConfigSO` (duration, escalating spawn-rate curve, timeline
+>   events), `StageDirector` + pure `StageTimeline` crossing logic (EditMode-tested), strong
+>   waves at 25%/75% (surround-ring + directional-flood formations via `EnemySpawner.SpawnAt`),
+>   HUD stage progress bar with siren/skull/crown event markers. Miniboss/boss events fire but
+>   only raise notifications until 3B.
+> - **3B — Bosses** ⬜: Queen's Royal Guard miniboss (telegraphed charge), Queen Bee (summon
+>   workers / radial stinger burst / charge sweep, enemy projectile pool), boss HP bar, spawn
+>   banner + shake, Queen death = victory path.
+> - **3C — Drops + results** ⬜: pooled item drops (Honey Jar / Magnet / Wax Shield / Royal
+>   Bomb) with drop tables, results screen on death & victory (time, kills, level, currency
+>   banked), restart flow, README/TODO refresh.
+> All three extend one `Phase3RunStructureBuilder` pass + the validator; each ends with
+> headless validator/tests green and a commit.
+
 ### 5.1 Stage timeline (TODO #6, #7, #9)
 
 - Stage defined by a `StageConfigSO`: total duration (e.g. 15 min), escalating spawn-rate curve (distinct from existing stat scaling), and timeline events:
