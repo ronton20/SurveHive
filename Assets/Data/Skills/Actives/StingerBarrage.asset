@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ed31418381494d0792d1f0b8e30af78, type: 3}
+  m_Name: StingerBarrage
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.ActiveSkillSO
+  _id: StingerBarrage
+  _displayName: Stinger Barrage
+  _behavior: 0
+  _levels:
+  - Damage: 8
+    Cooldown: 2.6
+    Count: 6
+    Area: 0
+    StatusChancePercent: 0
+  - Damage: 10
+    Cooldown: 2.4
+    Count: 7
+    Area: 0
+    StatusChancePercent: 0
+  - Damage: 12
+    Cooldown: 2.2
+    Count: 8
+    Area: 0
+    StatusChancePercent: 0
+  - Damage: 14
+    Cooldown: 2
+    Count: 10
+    Area: 0
+    StatusChancePercent: 0
+  - Damage: 17
+    Cooldown: 1.8
+    Count: 12
+    Area: 0
+    StatusChancePercent: 0
+  _projectileSpeed: 9
+  _range: 7
+  _projectilePoolId: 8
+  _impactVfxPoolId: -1
+  _zonePoolId: -1
+  _zoneDuration: 0
+  _zoneTickInterval: 0.5
+  _appliesStatus: 0
+  _statusType: 0
+  _statusPotency: 0
+  _statusDuration: 0

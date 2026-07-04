@@ -35,8 +35,15 @@ namespace SurveHive.Pickups
                 return;
             }
 
+            // Nectar Sense passive widens the attract radius via the magnet multiplier.
+            float radius = _attractRadius;
+            if (Player.PlayerContext.Stats != null)
+            {
+                radius *= Player.PlayerContext.Stats.MagnetRadiusMultiplier;
+            }
+
             Vector3 toPlayer = _playerTransform.position - transform.position;
-            if (toPlayer.sqrMagnitude > _attractRadius * _attractRadius)
+            if (toPlayer.sqrMagnitude > radius * radius)
             {
                 return;
             }

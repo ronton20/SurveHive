@@ -171,6 +171,7 @@ GameObject:
   - component: {fileID: 2047535917640585307}
   - component: {fileID: 1547348648024024284}
   - component: {fileID: 8343909970600598434}
+  - component: {fileID: 1185594119450858655}
   m_Layer: 0
   m_Name: WarriorBee
   m_TagString: Enemy
@@ -287,6 +288,7 @@ MonoBehaviour:
   _damage: 10
   _tickInterval: 1
   _targetTag: Player
+  _statusReceiver: {fileID: 1185594119450858655}
 --- !u!114 &1979612527865926530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -300,6 +302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Enemies.EnemyController
   _characterAnimator: {fileID: 2047535917640585307}
+  _statusReceiver: {fileID: 1185594119450858655}
   _knockbackDecayPerSecond: 14
 --- !u!114 &991021136791810367
 MonoBehaviour:
@@ -389,6 +392,20 @@ MonoBehaviour:
   _frameCount: 6
   _framesPerSecond: 12
   _holdLastFrameSeconds: 0.25
+--- !u!114 &1185594119450858655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6484636889515418260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a98ef6cfa58f647ec85a16b171208327, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Combat.Status.StatusEffectReceiver
+  _health: {fileID: 4401809941960203322}
+  _renderer: {fileID: 2286337548197552695}
 --- !u!1 &6512828356454330888
 GameObject:
   m_ObjectHideFlags: 0

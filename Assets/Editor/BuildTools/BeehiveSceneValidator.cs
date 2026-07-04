@@ -88,7 +88,7 @@ namespace SurveHive.BuildTools
                 {
                     var so = new SerializedObject(gb);
                     var pools = so.FindProperty("_pools");
-                    ok &= Check(pools.arraySize == 8, $"GameBootstrap._pools has 8 entries (found {pools.arraySize})");
+                    ok &= Check(pools.arraySize == 16, $"GameBootstrap._pools has 16 entries (found {pools.arraySize})");
                     bool hasDamageNumberPool = false;
                     bool hasQueensGuardPool = false;
                     bool hasDeathVfxPool = false;
@@ -170,6 +170,7 @@ namespace SurveHive.BuildTools
             ok &= ValidateDamageNumberPrefab("Assets/Prefabs/UI/DamageNumber.prefab");
 
             ok &= ValidatePhase1LookAndFeel(player, canvasGo);
+            ok &= ValidatePhase2CombatDepth(player, canvasGo);
 
             Debug.Log(ok ? "SurveHive Beehive scene validation PASSED." : "SurveHive Beehive scene validation FAILED - see errors above.");
         }
@@ -297,6 +298,208 @@ namespace SurveHive.BuildTools
             ok &= Check(swiftWings != null && swiftWings.Icon != null, "Skill icons assigned (SwiftWings)");
 
             return ok;
+        }
+
+        // --- Phase 2 (PLAN.md): status effects, active skill arsenal, rarity ---
+        private static bool ValidatePhase2CombatDepth(GameObject player, GameObject canvasGo)
+        {
+            bool ok = true;
+
+            // Player: active skill manager + aura visual.
+            if (player != null)
+            {
+                var manager = player.GetComponent<Combat.Skills.ActiveSkillManager>();
+                ok &= Check(manager != null, "Player has ActiveSkillManager");
+                if (manager != null)
+                {
+                    var so = new SerializedObject(manager);
+                    ok &= Check(so.FindProperty("_stats").objectReferenceValue != null, "ActiveSkillManager._stats wired");
+                    ok &= Check(so.FindProperty("_targeter").objectReferenceValue != null, "ActiveSkillManager._targeter wired");
+                    ok &= Check(so.FindProperty("_auraVisual").objectReferenceValue != null, "ActiveSkillManager._auraVisual wired");
+                }
+
+                Transform aura = player.transform.Find("PollenAura");
+                ok &= Check(aura != null, "Player has PollenAura visual child");
+                if (aura != null && aura.TryGetComponent(out SpriteRenderer auraRenderer))
+                {
+                    ok &= Check(!auraRenderer.enabled, "PollenAura renderer starts disabled");
+                }
+            }
+
+            // Enemy prefabs: status receivers wired.
+            ok &= ValidateEnemyStatusReceiver("Assets/Prefabs/Enemies/WorkerBee.prefab");
+            ok &= ValidateEnemyStatusReceiver("Assets/Prefabs/Enemies/WarriorBee.prefab");
+            ok &= ValidateEnemyStatusReceiver("Assets/Prefabs/Enemies/QueensGuard.prefab");
+
+            // Pools registered for every skill prefab.
+            var bootstrapGo = GameObject.Find("GameBootstrap");
+            if (bootstrapGo != null && bootstrapGo.TryGetComponent(out GameBootstrap gb))
+            {
+                var so = new SerializedObject(gb);
+                var pools = so.FindProperty("_pools");
+                ok &= Check(HasPoolEntry(pools, PoolIds.SkillStinger), "Pool: SkillStinger registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.SkillLance), "Pool: SkillLance registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.SkillHoneyGlob), "Pool: SkillHoneyGlob registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.SkillEmberBolt), "Pool: SkillEmberBolt registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.HoneyPuddle), "Pool: HoneyPuddle registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.ZapArcVfx), "Pool: ZapArcVfx registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.EmberExplosionVfx), "Pool: EmberExplosionVfx registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.HoneySplashVfx), "Pool: HoneySplashVfx registered");
+            }
+
+            // Level-up controller: manager reference for active skill cards.
+            GameObject levelUpPanel = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, "LevelUpPanel") : null;
+            if (levelUpPanel != null && levelUpPanel.TryGetComponent(out UI.LevelUpUIController controller))
+            {
+                var so = new SerializedObject(controller);
+                ok &= Check(so.FindProperty("_activeSkillManager").objectReferenceValue != null,
+                    "LevelUpUIController._activeSkillManager wired");
+
+                // Long Phase 2 skill descriptions must word-wrap inside the cards.
+                bool allWrap = true;
+                var cardTexts = levelUpPanel.GetComponentsInChildren<TMPro.TMP_Text>(true);
+                for (int i = 0; i < cardTexts.Length; i++)
+                {
+                    allWrap &= cardTexts[i].textWrappingMode == TMPro.TextWrappingModes.Normal;
+                }
+
+                ok &= Check(allWrap && cardTexts.Length > 0, "Level-up card texts use word wrapping");
+            }
+
+            // Skill database: 16 cards, all with icons; 6 active cards resolve.
+            var database = AssetDatabase.LoadAssetAtPath<Data.SkillDatabaseSO>("Assets/Data/Skills/SkillDatabase.asset");
+            ok &= Check(database != null && database.Skills != null && database.Skills.Length == 16,
+                $"SkillDatabase has 16 skills (found {(database != null && database.Skills != null ? database.Skills.Length : 0)})");
+            if (database != null && database.Skills != null)
+            {
+                int activeCards = 0;
+                bool allIcons = true;
+                bool activeRefsOk = true;
+                for (int i = 0; i < database.Skills.Length; i++)
+                {
+                    Data.SkillDefinitionSO skill = database.Skills[i];
+                    if (skill == null)
+                    {
+                        allIcons = false;
+                        continue;
+                    }
+
+                    allIcons &= skill.Icon != null;
+                    if (skill.EffectType == Progression.SkillEffectType.ActiveSkill)
+                    {
+                        activeCards++;
+                        activeRefsOk &= skill.ActiveSkill != null && skill.MaxLevel == skill.ActiveSkill.MaxLevel;
+                    }
+                }
+
+                ok &= Check(allIcons, "All database skills have icons");
+                ok &= Check(activeCards == 6, $"Database contains 6 active skill cards (found {activeCards})");
+                ok &= Check(activeRefsOk, "Active skill cards reference ActiveSkillSO with matching level caps");
+            }
+
+            // Active skill assets: 5-level tables with sane growth.
+            ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/StingerBarrage.asset");
+            ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/PiercingLance.asset");
+            ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/HoneySplash.asset");
+            ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/PollenCloud.asset");
+            ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/StaticWings.asset");
+            ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/EmberSting.asset");
+
+            // Pooled skill prefabs exist with the right components.
+            ok &= ValidateSkillPrefab("Assets/Prefabs/Skills/SkillStinger.prefab", typeof(Combat.Skills.SkillProjectile));
+            ok &= ValidateSkillPrefab("Assets/Prefabs/Skills/SkillLance.prefab", typeof(Combat.Skills.SkillProjectile));
+            ok &= ValidateSkillPrefab("Assets/Prefabs/Skills/HoneyGlobProjectile.prefab", typeof(Combat.Skills.SkillProjectile));
+            ok &= ValidateSkillPrefab("Assets/Prefabs/Skills/EmberBolt.prefab", typeof(Combat.Skills.SkillProjectile));
+            ok &= ValidateSkillPrefab("Assets/Prefabs/Skills/HoneyPuddle.prefab", typeof(Combat.Skills.AreaEffectZone));
+            ok &= ValidateSkillPrefab("Assets/Prefabs/Skills/ZapArc.prefab", typeof(Combat.Skills.ZapArcVfx));
+            ok &= ValidateSkillPrefab("Assets/Prefabs/VFX/EmberExplosion.prefab", typeof(View.PooledVfx));
+            ok &= ValidateSkillPrefab("Assets/Prefabs/VFX/HoneySplash.prefab", typeof(View.PooledVfx));
+
+            return ok;
+        }
+
+        private static bool ValidateEnemyStatusReceiver(string prefabPath)
+        {
+            bool ok = true;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            if (prefab == null)
+            {
+                return Check(false, $"{prefabPath} exists (status receiver)");
+            }
+
+            var receiver = prefab.GetComponent<Combat.Status.StatusEffectReceiver>();
+            ok &= Check(receiver != null, $"{prefabPath} has StatusEffectReceiver");
+            if (receiver != null)
+            {
+                var so = new SerializedObject(receiver);
+                ok &= Check(so.FindProperty("_health").objectReferenceValue != null &&
+                    so.FindProperty("_renderer").objectReferenceValue != null,
+                    $"{prefabPath} StatusEffectReceiver fully wired");
+            }
+
+            var enemyController = prefab.GetComponent<EnemyController>();
+            if (enemyController != null)
+            {
+                var so = new SerializedObject(enemyController);
+                ok &= Check(so.FindProperty("_statusReceiver").objectReferenceValue != null,
+                    $"{prefabPath} EnemyController._statusReceiver wired");
+            }
+
+            var contact = prefab.GetComponent<DamageOnContact>();
+            if (contact != null)
+            {
+                var so = new SerializedObject(contact);
+                ok &= Check(so.FindProperty("_statusReceiver").objectReferenceValue != null,
+                    $"{prefabPath} DamageOnContact._statusReceiver wired");
+            }
+
+            return ok;
+        }
+
+        private static bool ValidateActiveSkillGrowth(string assetPath)
+        {
+            var skill = AssetDatabase.LoadAssetAtPath<Data.ActiveSkillSO>(assetPath);
+            if (skill == null)
+            {
+                return Check(false, $"{assetPath} exists");
+            }
+
+            bool ok = Check(skill.MaxLevel >= 5, $"{assetPath} has >= 5 levels (found {skill.MaxLevel})");
+
+            bool damageGrows = true;
+            bool cooldownShrinks = true;
+            for (int level = 2; level <= skill.MaxLevel; level++)
+            {
+                Data.ActiveSkillLevelStats previous = skill.GetLevelStats(level - 1);
+                Data.ActiveSkillLevelStats current = skill.GetLevelStats(level);
+                damageGrows &= current.Damage >= previous.Damage;
+                cooldownShrinks &= current.Cooldown <= previous.Cooldown;
+            }
+
+            ok &= Check(damageGrows && cooldownShrinks, $"{assetPath} growth table is monotonic");
+            return ok;
+        }
+
+        private static bool ValidateSkillPrefab(string prefabPath, System.Type componentType)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            return Check(prefab != null && prefab.GetComponent(componentType) != null,
+                $"{prefabPath} exists with {componentType.Name}");
+        }
+
+        private static bool HasPoolEntry(SerializedProperty pools, int poolId)
+        {
+            for (int i = 0; i < pools.arraySize; i++)
+            {
+                var entry = pools.GetArrayElementAtIndex(i);
+                if (entry.FindPropertyRelative("poolId").intValue == poolId &&
+                    entry.FindPropertyRelative("prefab").objectReferenceValue != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static bool ValidateBeeRig(GameObject root, string label)

@@ -1,3 +1,4 @@
+using SurveHive.Combat.Status;
 using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Health;
@@ -10,6 +11,7 @@ namespace SurveHive.Enemies
     public sealed class EnemyController : MonoBehaviour
     {
         [SerializeField] private CharacterAnimator _characterAnimator;
+        [SerializeField] private StatusEffectReceiver _statusReceiver;
         [SerializeField] private float _knockbackDecayPerSecond = 14f;
 
         private Rigidbody2D _rigidbody;
@@ -24,6 +26,8 @@ namespace SurveHive.Enemies
         public EnemyStatsSO Stats => _stats;
 
         public HealthComponent Health => _health;
+
+        public StatusEffectReceiver StatusReceiver => _statusReceiver;
 
         private void Awake()
         {
@@ -67,6 +71,12 @@ namespace SurveHive.Enemies
             if (_spriteRenderer != null)
             {
                 _spriteRenderer.color = stats.SpriteTint;
+            }
+
+            // Elites+ (rank >= 2) get diminishing returns on stuns (PLAN.md §4.1).
+            if (_statusReceiver != null)
+            {
+                _statusReceiver.Configure(stats.SpriteTint, stats.Rank >= 2);
             }
         }
 
@@ -112,7 +122,8 @@ namespace SurveHive.Enemies
             }
 
             Vector2 direction = ((Vector2)(_playerTransform.position - transform.position)).normalized;
-            _rigidbody.linearVelocity = (direction * _stats.MoveSpeed) + _knockbackVelocity;
+            float statusSpeedMultiplier = _statusReceiver != null ? _statusReceiver.MoveSpeedMultiplier : 1f;
+            _rigidbody.linearVelocity = (direction * (_stats.MoveSpeed * statusSpeedMultiplier)) + _knockbackVelocity;
 
             _knockbackVelocity = Vector2.MoveTowards(
                 _knockbackVelocity, Vector2.zero, _knockbackDecayPerSecond * Time.fixedDeltaTime);

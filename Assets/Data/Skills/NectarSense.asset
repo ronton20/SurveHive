@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 825c26930808b4c1baad73be13240591, type: 3}
+  m_Name: NectarSense
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SkillDefinitionSO
+  _id: NectarSense
+  _displayName: Nectar Sense
+  _description: Pickups drift to you from 25% further away.
+  _effectType: 7
+  _magnitude: 25
+  _weight: 1
+  _maxLevel: 5
+  _icon: {fileID: 21300000, guid: 73bf33231a335447fa8e71939d4f0c83, type: 3}
+  _rarity: 0
+  _activeSkill: {fileID: 0}

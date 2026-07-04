@@ -5,13 +5,13 @@ running wishlist to pull from. Roughly grouped; order within a group is not prio
 See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 
 ## Skills & Progression
-1. **Skill rarity system** — some skills show up more often than others (weighted by rarity tier, not just the current flat `_weight`).
-2. **Skill double-level chance** — small chance a skill level-up grants +2 levels instead of +1; change the skill card background to indicate the lucky roll.
-3. **More skills** — pickup/magnet range, crit chance, lifesteal, projectile pierce, projectile speed, cooldown reduction, etc.
+1. ~~**Skill rarity system** — some skills show up more often than others (weighted by rarity tier, not just the current flat `_weight`).~~ *(done in Phase 2: Common/Rare/Epic tiers drive weighted offers + card frame colors.)*
+2. ~~**Skill double-level chance** — small chance a skill level-up grants +2 levels instead of +1; change the skill card background to indicate the lucky roll.~~ *(done in Phase 2: lucky picks with a green card.)*
+3. ~~**More skills** — pickup/magnet range, crit chance, lifesteal, projectile pierce, projectile speed, cooldown reduction, etc.~~ *(done in Phase 2: 10 passives incl. magnet, crit chance/damage, lifesteal, CDR; pierce lives on the Piercing Lance active.)*
 
 ## Combat Depth
-4. **Status effects** — burn, poison, slow, stun, freeze (damage-over-time + stat modifiers with durations).
-5. **Elemental abilities** — attacks/skills that apply status effects with a chance (e.g. fire → burn, ice → slow/freeze).
+4. ~~**Status effects** — burn, poison, slow, stun, freeze (damage-over-time + stat modifiers with durations).~~ *(done in Phase 2: all five, zero-GC fixed-slot buffers with stacking/freeze-break/stun-DR rules.)*
+5. ~~**Elemental abilities** — attacks/skills that apply status effects with a chance (e.g. fire → burn, ice → slow/freeze).~~ *(done in Phase 2: 6 active skills, four of which proc statuses — honey→slow, pollen→poison, static→stun, ember→burn. A frost "Chilling Nectar" freeze applier is designed as skill #7 if the roster needs it.)*
 
 ## Waves & Enemies
 6. **Escalating spawns** — increase enemy spawn rate/count as the run progresses (distinct from the current per-minute stat scaling).

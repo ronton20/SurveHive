@@ -1,8 +1,10 @@
+using SurveHive.Health;
 using SurveHive.Input;
 using UnityEngine;
 
 namespace SurveHive.Player
 {
+    [RequireComponent(typeof(HealthComponent))]
     public sealed class PlayerBootstrap : MonoBehaviour
     {
         [SerializeField] private PlayerMovement _movement;
@@ -12,6 +14,12 @@ namespace SurveHive.Player
         private void Awake()
         {
             _movement.Initialize(_inputController, _stats);
+            PlayerContext.Register(_stats, GetComponent<HealthComponent>(), transform);
+        }
+
+        private void OnDestroy()
+        {
+            PlayerContext.Clear();
         }
     }
 }

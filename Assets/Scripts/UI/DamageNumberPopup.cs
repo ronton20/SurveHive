@@ -15,12 +15,29 @@ namespace SurveHive.UI
         private readonly StringBuilder _stringBuilder = new StringBuilder(8);
         private float _elapsed;
         private bool _released;
+        private float _baseFontSize;
+        private bool _baseFontSizeCached;
 
         public void Show(float damageAmount)
         {
+            Show(damageAmount, Color.white, 1f);
+        }
+
+        // Pooled instances carry style from their previous life, so every Show
+        // sets color and size explicitly (crit = gold/large, DoT = tinted/small).
+        public void Show(float damageAmount, Color color, float sizeMultiplier)
+        {
+            if (!_baseFontSizeCached)
+            {
+                _baseFontSize = _text.fontSize;
+                _baseFontSizeCached = true;
+            }
+
             _stringBuilder.Clear();
             _stringBuilder.Append(Mathf.RoundToInt(damageAmount));
             _text.SetText(_stringBuilder);
+            _text.color = color;
+            _text.fontSize = _baseFontSize * sizeMultiplier;
         }
 
         private void OnEnable()

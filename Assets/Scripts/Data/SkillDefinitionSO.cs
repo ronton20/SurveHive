@@ -11,10 +11,16 @@ namespace SurveHive.Data
         [SerializeField, TextArea] private string _description;
         [SerializeField] private SkillEffectType _effectType;
         [SerializeField] private float _magnitude;
+        // Legacy flat weight — superseded by rarity-tier weighting (Phase 2);
+        // kept so existing assets deserialize cleanly.
         [SerializeField] private float _weight = 1f;
         // Maximum number of times this skill can be taken. 0 = unlimited.
         [SerializeField] private int _maxLevel;
         [SerializeField] private Sprite _icon;
+        [SerializeField] private SkillRarity _rarity = SkillRarity.Common;
+        // Set when _effectType == ActiveSkill: the auto-firing weapon this card
+        // unlocks/levels.
+        [SerializeField] private ActiveSkillSO _activeSkill;
 
         public string Id => _id;
 
@@ -34,5 +40,9 @@ namespace SurveHive.Data
         public bool HasLevelCap => _maxLevel > 0;
 
         public Sprite Icon => _icon;
+
+        public SkillRarity Rarity => _rarity;
+
+        public ActiveSkillSO ActiveSkill => _activeSkill;
     }
 }

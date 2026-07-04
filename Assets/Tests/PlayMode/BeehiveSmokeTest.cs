@@ -1,6 +1,10 @@
 using System.Collections;
 using NUnit.Framework;
+using SurveHive.Combat.Skills;
+using SurveHive.Combat.Status;
 using SurveHive.Core;
+using SurveHive.Data;
+using SurveHive.Enemies;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -31,12 +35,7 @@ namespace SurveHive.Tests
 
             // ~8 seconds of simulated gameplay: enemies spawn, chase, and the
             // player auto-attacks (spawn radius ~11, approach ~2.2u/s).
-            float elapsed = 0f;
-            while (elapsed < 8f)
-            {
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
+            yield return RunGameSeconds(8f);
 
             Assert.IsNotNull(EnemyRegistry.Instance, "EnemyRegistry singleton is up");
             Assert.Greater(EnemyRegistry.Instance.ActiveCount, 0, "Enemies have spawned");
@@ -45,6 +44,84 @@ namespace SurveHive.Tests
             Assert.IsNotNull(playerBody, "Player bee rig Body exists");
             var renderer = playerBody.GetComponent<SpriteRenderer>();
             Assert.IsNotNull(renderer.sprite, "Player Body has a sprite resolved");
+
+            // --- Phase 2: active skills + status effects live in the scene ---
+            var skillManager = player.GetComponent<ActiveSkillManager>();
+            Assert.IsNotNull(skillManager, "Player has ActiveSkillManager");
+
+#if UNITY_EDITOR
+            // Equip a spread of behaviors directly (radial volley, aura, chain)
+            // and let them fire for a few seconds — any wiring error (pools,
+            // prefabs, status application) surfaces as an error log and fails.
+            var barrage = UnityEditor.AssetDatabase.LoadAssetAtPath<ActiveSkillSO>(
+                "Assets/Data/Skills/Actives/StingerBarrage.asset");
+            var pollen = UnityEditor.AssetDatabase.LoadAssetAtPath<ActiveSkillSO>(
+                "Assets/Data/Skills/Actives/PollenCloud.asset");
+            var staticWings = UnityEditor.AssetDatabase.LoadAssetAtPath<ActiveSkillSO>(
+                "Assets/Data/Skills/Actives/StaticWings.asset");
+            Assert.IsNotNull(barrage, "StingerBarrage asset exists");
+            Assert.IsNotNull(pollen, "PollenCloud asset exists");
+            Assert.IsNotNull(staticWings, "StaticWings asset exists");
+
+            skillManager.AddOrLevelUp(barrage);
+            skillManager.AddOrLevelUp(pollen);
+            skillManager.AddOrLevelUp(staticWings);
+            Assert.AreEqual(3, skillManager.EquippedCount, "Three active skills equipped");
+            Assert.AreEqual(1, skillManager.GetLevel(barrage), "Barrage at level 1");
+            skillManager.AddOrLevelUp(barrage);
+            Assert.AreEqual(2, skillManager.GetLevel(barrage), "Barrage leveled to 2");
+#endif
+
+            // Status effect applied to a live enemy takes hold and slows it.
+            Assert.Greater(EnemyRegistry.Instance.ActiveCount, 0);
+            EnemyController enemy = EnemyRegistry.Instance.ActiveEnemies[0];
+            Assert.IsNotNull(enemy.StatusReceiver, "Enemy has StatusEffectReceiver");
+            enemy.StatusReceiver.ApplyEffect(StatusEffectType.Slow, 0.4f, 2f);
+            Assert.Less(enemy.StatusReceiver.MoveSpeedMultiplier, 1f, "Slow reduces move speed");
+
+            // Let the skills fire and the slow tick out with zero errors.
+            yield return RunGameSeconds(4f);
+        }
+
+        // Advances scaled game time, clicking through any level-up offer that
+        // pauses the run (skills kill fast enough to trigger them mid-test) —
+        // which also exercises the rarity-card selection path. An unscaled-time
+        // cap guards against hanging at timeScale 0.
+        private static IEnumerator RunGameSeconds(float seconds)
+        {
+            float elapsed = 0f;
+            float unscaledElapsed = 0f;
+            while (elapsed < seconds && unscaledElapsed < seconds + 30f)
+            {
+                if (GamePause.IsPaused)
+                {
+                    ClickFirstLevelUpChoice();
+                }
+                else
+                {
+                    elapsed += Time.deltaTime;
+                }
+
+                unscaledElapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            Assert.IsFalse(GamePause.IsPaused, "Run resumed after any level-up offers");
+        }
+
+        private static void ClickFirstLevelUpChoice()
+        {
+            GameObject panel = GameObject.Find("LevelUpPanel");
+            if (panel == null)
+            {
+                return;
+            }
+
+            var buttons = panel.GetComponentsInChildren<UnityEngine.UI.Button>(false);
+            if (buttons.Length > 0)
+            {
+                buttons[0].onClick.Invoke();
+            }
         }
     }
 }

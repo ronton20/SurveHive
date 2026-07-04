@@ -220,6 +220,7 @@ GameObject:
   - component: {fileID: 334895934311372173}
   - component: {fileID: 687059243511138419}
   - component: {fileID: 8935954791525041979}
+  - component: {fileID: 8784479981700874652}
   m_Layer: 0
   m_Name: QueensGuard
   m_TagString: Enemy
@@ -336,6 +337,7 @@ MonoBehaviour:
   _damage: 10
   _tickInterval: 1
   _targetTag: Player
+  _statusReceiver: {fileID: 8784479981700874652}
 --- !u!114 &4618685957424471442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -349,6 +351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Enemies.EnemyController
   _characterAnimator: {fileID: 334895934311372173}
+  _statusReceiver: {fileID: 8784479981700874652}
   _knockbackDecayPerSecond: 14
 --- !u!114 &4693005551844565526
 MonoBehaviour:
@@ -438,6 +441,20 @@ MonoBehaviour:
   _frameCount: 6
   _framesPerSecond: 12
   _holdLastFrameSeconds: 0.25
+--- !u!114 &8784479981700874652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7770775279293611669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a98ef6cfa58f647ec85a16b171208327, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Combat.Status.StatusEffectReceiver
+  _health: {fileID: 7535870585214769193}
+  _renderer: {fileID: 8637230506965829929}
 --- !u!1 &8256129979899931889
 GameObject:
   m_ObjectHideFlags: 0

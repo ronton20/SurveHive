@@ -48,6 +48,17 @@ namespace SurveHive.Health
             }
         }
 
+        public void Heal(float amount)
+        {
+            if (_isDead || amount <= 0f)
+            {
+                return;
+            }
+
+            _currentHealth = Mathf.Min(_maxHealth, _currentHealth + amount);
+            OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
+        }
+
         public void SetMaxHealth(float value, bool refill)
         {
             _maxHealth = value;

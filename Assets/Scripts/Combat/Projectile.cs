@@ -1,6 +1,5 @@
 using SurveHive.Core;
 using SurveHive.Health;
-using SurveHive.UI;
 using UnityEngine;
 
 namespace SurveHive.Combat
@@ -54,8 +53,7 @@ namespace SurveHive.Combat
 
             if (other.TryGetComponent(out IDamageable damageable))
             {
-                damageable.TakeDamage(_damage, gameObject);
-                SpawnDamageNumber(other.transform.position);
+                DamageService.DealDamage(damageable, other.transform.position, _damage, true, gameObject);
             }
 
             if (other.TryGetComponent(out Enemies.EnemyController enemy))
@@ -64,21 +62,6 @@ namespace SurveHive.Combat
             }
 
             ReleaseSelf();
-        }
-
-        private void SpawnDamageNumber(Vector3 hitPosition)
-        {
-            if (PoolManager.Instance == null)
-            {
-                return;
-            }
-
-            Vector3 popupPosition = hitPosition + (Vector3.up * 0.6f);
-            GameObject popupObj = PoolManager.Instance.Get(PoolIds.DamageNumber, popupPosition, Quaternion.identity);
-            if (popupObj.TryGetComponent(out DamageNumberPopup popup))
-            {
-                popup.Show(_damage);
-            }
         }
 
         private void ReleaseSelf()

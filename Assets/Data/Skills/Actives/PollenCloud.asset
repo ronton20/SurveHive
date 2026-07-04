@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ed31418381494d0792d1f0b8e30af78, type: 3}
+  m_Name: PollenCloud
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.ActiveSkillSO
+  _id: PollenCloud
+  _displayName: Pollen Cloud
+  _behavior: 3
+  _levels:
+  - Damage: 3
+    Cooldown: 0.8
+    Count: 1
+    Area: 2.2
+    StatusChancePercent: 35
+  - Damage: 4
+    Cooldown: 0.8
+    Count: 1
+    Area: 2.5
+    StatusChancePercent: 40
+  - Damage: 5
+    Cooldown: 0.8
+    Count: 1
+    Area: 2.8
+    StatusChancePercent: 45
+  - Damage: 6
+    Cooldown: 0.8
+    Count: 1
+    Area: 3.1
+    StatusChancePercent: 50
+  - Damage: 7
+    Cooldown: 0.8
+    Count: 1
+    Area: 3.4
+    StatusChancePercent: 60
+  _projectileSpeed: 0
+  _range: 4
+  _projectilePoolId: -1
+  _impactVfxPoolId: -1
+  _zonePoolId: -1
+  _zoneDuration: 0
+  _zoneTickInterval: 0.5
+  _appliesStatus: 1
+  _statusType: 1
+  _statusPotency: 2
+  _statusDuration: 3

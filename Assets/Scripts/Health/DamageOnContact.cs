@@ -1,3 +1,4 @@
+using SurveHive.Combat.Status;
 using UnityEngine;
 
 namespace SurveHive.Health
@@ -8,6 +9,8 @@ namespace SurveHive.Health
         [SerializeField] private float _damage = 10f;
         [SerializeField] private float _tickInterval = 1f;
         [SerializeField] private string _targetTag = "Player";
+        // Optional: stunned/frozen owners deal no contact damage.
+        [SerializeField] private StatusEffectReceiver _statusReceiver;
 
         private float _cooldownRemaining;
 
@@ -44,6 +47,11 @@ namespace SurveHive.Health
         private void TryDealDamage(Collider2D other)
         {
             if (_cooldownRemaining > 0f)
+            {
+                return;
+            }
+
+            if (_statusReceiver != null && _statusReceiver.IsAttackDisabled)
             {
                 return;
             }

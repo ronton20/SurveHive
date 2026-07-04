@@ -198,6 +198,38 @@ MonoBehaviour:
     prefab: {fileID: 8767054599908478997, guid: 244631cae39af4e1ba6407f3ceeea2cc, type: 3}
     prewarmCount: 12
     maxSize: 40
+  - poolId: 8
+    prefab: {fileID: 8799877734513306193, guid: 4f0ba77626b274ecc9b3ff4a7104e9fc, type: 3}
+    prewarmCount: 24
+    maxSize: 64
+  - poolId: 9
+    prefab: {fileID: 6101062646162096542, guid: aa90226b75ff9463d9a20468f9e1342a, type: 3}
+    prewarmCount: 6
+    maxSize: 16
+  - poolId: 10
+    prefab: {fileID: 1389756314572642574, guid: 8b51da4a7d60d4b1fb2d57c5384634b8, type: 3}
+    prewarmCount: 4
+    maxSize: 12
+  - poolId: 11
+    prefab: {fileID: 4824383136202555501, guid: 278357d9c27264276bc21212b0a9bf1f, type: 3}
+    prewarmCount: 6
+    maxSize: 16
+  - poolId: 12
+    prefab: {fileID: 1472149289211129631, guid: beb64d70519864cd08a72bf239be8d00, type: 3}
+    prewarmCount: 4
+    maxSize: 10
+  - poolId: 13
+    prefab: {fileID: 5062994110449650465, guid: 532f84865b6fd4c2ca537db4097831e3, type: 3}
+    prewarmCount: 16
+    maxSize: 40
+  - poolId: 14
+    prefab: {fileID: 5837476177222797735, guid: 74594f79445964f19b251a98bc3ed8a3, type: 3}
+    prewarmCount: 6
+    maxSize: 20
+  - poolId: 15
+    prefab: {fileID: 6105279994973950149, guid: 750b4047783b24a2588b378a3ed43b88, type: 3}
+    prewarmCount: 4
+    maxSize: 12
   _poolParent: {fileID: 12424195}
 --- !u!114 &12424192
 MonoBehaviour:
@@ -374,7 +406,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -554,6 +586,98 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!1 &181792379
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 181792381}
+  - component: {fileID: 181792380}
+  m_Layer: 0
+  m_Name: PollenAura
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!212 &181792380
+SpriteRenderer:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181792379}
+  m_Enabled: 0
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: -1
+  m_MaskInteraction: 0
+  m_Sprite: {fileID: 21300000, guid: aadb081dd413548d7bd5fe9e1cf69c85, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 2, y: 2}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
+--- !u!4 &181792381
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 181792379}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1089349801}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &234333576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -677,7 +801,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -2316,7 +2440,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -2369,6 +2493,7 @@ GameObject:
   - component: {fileID: 1089349814}
   - component: {fileID: 1089349813}
   - component: {fileID: 1089349812}
+  - component: {fileID: 1089349816}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -2410,6 +2535,12 @@ MonoBehaviour:
   _attackSpeed: 1
   _projectileCount: 1
   _maxProjectileCount: 5
+  _critChancePercent: 5
+  _critDamageMultiplier: 1.5
+  _lifestealPercent: 0
+  _activeCooldownMultiplier: 1
+  _minActiveCooldownMultiplier: 0.4
+  _magnetRadiusMultiplier: 1
 --- !u!114 &1089349800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2438,6 +2569,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2039597280}
+  - {fileID: 181792381}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1089349802
@@ -2761,6 +2893,21 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1089349816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1089349797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e115a41ff6b84a44a7d016b7be520e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Combat.Skills.ActiveSkillManager
+  _stats: {fileID: 1089349799}
+  _targeter: {fileID: 1089349804}
+  _auraVisual: {fileID: 181792380}
 --- !u!114 &1140097562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3227,6 +3374,7 @@ MonoBehaviour:
   _playerExperience: {fileID: 1089349800}
   _playerStats: {fileID: 1089349799}
   _playerHealth: {fileID: 1089349798}
+  _activeSkillManager: {fileID: 1089349816}
   _panelRoot: {fileID: 1309064551}
   _choiceButtons:
   - {fileID: 829415359}
@@ -3247,6 +3395,11 @@ MonoBehaviour:
   _bonusMaxHealthPerLevel: 5
   _bonusDamagePercentPerLevel: 3
   _bonusAttackSpeedPercentPerLevel: 3
+  _luckyChance: 0.08
+  _commonCardColor: {r: 0.91, g: 0.847, b: 0.627, a: 1}
+  _rareCardColor: {r: 1, g: 0.72, b: 0.28, a: 1}
+  _epicCardColor: {r: 0.82, g: 0.6, b: 0.98, a: 1}
+  _luckyCardColor: {r: 0.68, g: 0.92, b: 0.45, a: 1}
 --- !u!114 &1309064554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3584,7 +3737,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -3961,7 +4114,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}
@@ -4615,7 +4768,7 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 0
+  m_TextWrappingMode: 1
   m_wordWrappingRatios: 0.4
   m_overflowMode: 0
   m_linkedTextComponent: {fileID: 0}

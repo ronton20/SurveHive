@@ -1,6 +1,6 @@
 # SurveHive — Polish & Feature Implementation Plan
 
-> **Progress:** Phase 0 ✅ and Phase 1 ✅ done (2026-07-04). Phases 2–5 not started.
+> **Progress:** Phase 0 ✅, Phase 1 ✅, Phase 2 ✅ done (2026-07-04). Phases 3–5 not started.
 
 > Created 2026-07-04 with Ron. This is the agreed roadmap for the next development push.
 > Reference this file when starting implementation ("let's do Phase N from PLAN.md").
@@ -106,7 +106,7 @@ New top-level folder: **`Assets/ThirdParty/`** — all store packs live there, o
 
 ---
 
-## 4. Phase 2 — Combat Depth (status effects + skill arsenal + rarity)
+## 4. Phase 2 — Combat Depth (status effects + skill arsenal + rarity) — ✅ DONE (2026-07-04)
 
 ### 4.1 Status effect system (TODO #4, #5)
 
@@ -154,6 +154,8 @@ New: **Nectar Sense** (pickup/magnet radius), **Keen Eye** (crit chance — crit
 4. Rarity: over 20 level-ups, Epic skills appear noticeably less often than Common (weights logged/verifiable); lucky picks show the special card and grant +2.
 5. Zero-GC holds: no per-frame or per-proc allocations from skills/status effects (Profiler-verified during a skill-heavy run).
 6. EditMode tests cover: status-effect stacking/expiry math, rarity weighting distribution, skill level growth tables.
+
+> **Phase 2 completion notes (2026-07-04):** delivered via `SurveHive/Apply Phase 2 Combat Depth` (`Phase2CombatDepthBuilder`), verified headlessly: validator **192/192 PASSED**, EditMode tests **20/20**, PlayMode smoke test green (it now equips three actives and clicks through level-up offers mid-run). Architecture: pure-logic `StatusEffectBuffer` (fixed slots, zero-alloc) behind a `StatusEffectReceiver` per enemy (tint cue + colored DoT numbers; per-enemy looping status VFX skipped as unnecessary at PPU 16 — tint reads clearly); all player damage centralized in `DamageService` (crit roll, lifesteal, styled popups); `ActiveSkillSO` 5-level growth tables + one `ActiveSkillManager` with per-behavior executors; generic pooled `SkillProjectile` (pierce/homing/explode/lob), `AreaEffectZone` puddle, `ZapArcVfx` chain segments; 8 new pools (16 total). Deviations vs the written plan: the **baseline auto-attack stays its own `AutoAttack` component** rather than folding into the skill framework (it already reads all PlayerStats and gains crit/lifesteal via `DamageService` — folding it in bought nothing); status buffers exist on **enemies only** for now (no enemy applies statuses to the player yet — the buffer is entity-agnostic when that comes); rarity **replaces** the old flat `_weight` (field kept for serialization); "Chilling Nectar" (7th skill) not needed yet — roster feels full with 6. Criterion 5 (Profiler zero-GC during a skill-heavy run) needs an in-editor session to confirm, same caveat as Phase 1; code follows the zero-GC rules (fixed buffers, registry scans, no physics queries, config structs passed by `in`).
 
 ---
 
@@ -239,7 +241,7 @@ On death **or** victory: results screen — time survived, kills, level reached,
 |---|---|---|
 | 0 ✅ | Asset triage + pixel-perfect camera foundation — done 2026-07-04 | small |
 | 1 ✅ | Art swap, game feel, UI reskin — done 2026-07-04 | large |
-| 2 | Status effects, 6 actives, 10 passives, rarity | large |
+| 2 ✅ | Status effects, 6 actives, 10 passives, rarity — done 2026-07-04 | large |
 | 3 | Stage timeline, bosses, drops, results | large |
 | 4 | Save, meta shop, menus, pause | medium |
 | 5 | Audio, tuning, mobile sanity, localization seam | medium |

@@ -1326,6 +1326,9 @@ namespace SurveHive.BuildTools
             tmp.fontSize = size;
             tmp.color = color;
             tmp.alignment = alignment;
+            // The imported TMP settings default new components to NoWrap, which
+            // makes long text (e.g. skill card descriptions) overflow as one line.
+            tmp.textWrappingMode = TextWrappingModes.Normal;
             tmp.raycastTarget = false;
             if (!string.IsNullOrEmpty(existingText))
             {
@@ -1417,6 +1420,9 @@ namespace SurveHive.BuildTools
             tmp.fontSize = size;
             tmp.color = color;
             tmp.alignment = alignment;
+            // The imported TMP settings default new components to NoWrap, which
+            // makes long text (e.g. skill card descriptions) overflow as one line.
+            tmp.textWrappingMode = TextWrappingModes.Normal;
             tmp.raycastTarget = false;
 
             wire(go);

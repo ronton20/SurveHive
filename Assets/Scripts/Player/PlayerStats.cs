@@ -16,6 +16,19 @@ namespace SurveHive.Player
         [SerializeField] private int _projectileCount = 1;
         [SerializeField] private int _maxProjectileCount = 5;
 
+        [Header("Phase 2 Combat Stats")]
+        [SerializeField, Range(0f, 100f)] private float _critChancePercent = 5f;
+        // Damage multiplier applied on a critical hit (1.5 = +50%).
+        [SerializeField] private float _critDamageMultiplier = 1.5f;
+        // Percent of damage dealt returned as healing.
+        [SerializeField, Range(0f, 100f)] private float _lifestealPercent;
+        // Multiplier on active-skill cooldowns (lower = faster), floored so
+        // stacked cooldown reduction can't zero out cooldowns.
+        [SerializeField] private float _activeCooldownMultiplier = 1f;
+        [SerializeField] private float _minActiveCooldownMultiplier = 0.4f;
+        // Multiplier on pickup attract radius (Nectar Sense).
+        [SerializeField] private float _magnetRadiusMultiplier = 1f;
+
         public event Action OnStatsChanged;
 
         public float MoveSpeed => _moveSpeed;
@@ -42,6 +55,16 @@ namespace SurveHive.Player
         public int MaxProjectileCount => _maxProjectileCount;
 
         public bool IsProjectileCountMaxed => _projectileCount >= _maxProjectileCount;
+
+        public float CritChancePercent => _critChancePercent;
+
+        public float CritDamageMultiplier => _critDamageMultiplier;
+
+        public float LifestealPercent => _lifestealPercent;
+
+        public float ActiveCooldownMultiplier => _activeCooldownMultiplier;
+
+        public float MagnetRadiusMultiplier => _magnetRadiusMultiplier;
 
         public void IncreaseMoveSpeedPercent(float percent)
         {
@@ -82,6 +105,38 @@ namespace SurveHive.Player
         public void IncreaseProjectileCountFlat(int amount)
         {
             _projectileCount = Mathf.Min(_projectileCount + amount, _maxProjectileCount);
+            NotifyChanged();
+        }
+
+        public void IncreaseCritChanceFlat(float percentPoints)
+        {
+            _critChancePercent = Mathf.Min(100f, RoundToHundredths(_critChancePercent + percentPoints));
+            NotifyChanged();
+        }
+
+        public void IncreaseCritDamagePercent(float percent)
+        {
+            _critDamageMultiplier = RoundToHundredths(_critDamageMultiplier + (percent / 100f));
+            NotifyChanged();
+        }
+
+        public void IncreaseLifestealFlat(float percentPoints)
+        {
+            _lifestealPercent = Mathf.Min(100f, RoundToHundredths(_lifestealPercent + percentPoints));
+            NotifyChanged();
+        }
+
+        public void DecreaseActiveCooldownPercent(float percent)
+        {
+            _activeCooldownMultiplier = Mathf.Max(
+                _minActiveCooldownMultiplier,
+                RoundToHundredths(_activeCooldownMultiplier * (1f - percent / 100f)));
+            NotifyChanged();
+        }
+
+        public void IncreaseMagnetRadiusPercent(float percent)
+        {
+            _magnetRadiusMultiplier = RoundToHundredths(_magnetRadiusMultiplier * (1f + percent / 100f));
             NotifyChanged();
         }
 

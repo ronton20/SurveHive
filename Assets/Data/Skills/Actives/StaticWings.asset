@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ed31418381494d0792d1f0b8e30af78, type: 3}
+  m_Name: StaticWings
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.ActiveSkillSO
+  _id: StaticWings
+  _displayName: Static Wings
+  _behavior: 4
+  _levels:
+  - Damage: 10
+    Cooldown: 3.6
+    Count: 3
+    Area: 3.5
+    StatusChancePercent: 20
+  - Damage: 13
+    Cooldown: 3.3
+    Count: 4
+    Area: 3.5
+    StatusChancePercent: 25
+  - Damage: 16
+    Cooldown: 3
+    Count: 5
+    Area: 3.5
+    StatusChancePercent: 30
+  - Damage: 19
+    Cooldown: 2.8
+    Count: 6
+    Area: 3.5
+    StatusChancePercent: 35
+  - Damage: 22
+    Cooldown: 2.6
+    Count: 7
+    Area: 3.5
+    StatusChancePercent: 40
+  _projectileSpeed: 0
+  _range: 7
+  _projectilePoolId: -1
+  _impactVfxPoolId: 13
+  _zonePoolId: -1
+  _zoneDuration: 0
+  _zoneTickInterval: 0.5
+  _appliesStatus: 1
+  _statusType: 4
+  _statusPotency: 0
+  _statusDuration: 0.8
