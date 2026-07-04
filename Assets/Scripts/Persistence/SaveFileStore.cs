@@ -15,13 +15,26 @@ namespace SurveHive.Persistence
 
         private static string _pathOverride;
 
+        /// <summary>
+        /// Raised when the save path changes. Cached-state holders (the
+        /// persistent store SO) must drop their cache and re-read — otherwise a
+        /// test's redirected state would survive into the next consumer.
+        /// </summary>
+        public static event Action PathChanged;
+
         public static string SavePath =>
             _pathOverride ?? Path.Combine(Application.persistentDataPath, FileName);
 
         /// <summary>Redirects reads/writes (tests); null restores the default path.</summary>
         public static void SetPathOverride(string path)
         {
+            if (_pathOverride == path)
+            {
+                return;
+            }
+
             _pathOverride = path;
+            PathChanged?.Invoke();
         }
 
         public static SaveData Load()

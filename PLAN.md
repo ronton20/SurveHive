@@ -1,6 +1,6 @@
 # SurveHive — Polish & Feature Implementation Plan
 
-> **Progress:** Phases 0–3 ✅ done (2026-07-04). Phase 4 in progress: 4A ✅ (2026-07-04), 4B/4C not started. Phase 5 not started.
+> **Progress:** Phases 0–3 ✅ done (2026-07-04). Phase 4 in progress: 4A ✅ (2026-07-04), 4B ✅ (2026-07-05), 4C not started. Phase 5 not started.
 
 > Created 2026-07-04 with Ron. This is the agreed roadmap for the next development push.
 > Reference this file when starting implementation ("let's do Phase N from PLAN.md").
@@ -236,11 +236,16 @@ On death **or** victory: results screen — time survived, kills, level reached,
 >   stats); purchased ranks applied to the player at run start; EditMode tests
 >   (save round-trip, corrupt save, cost/effect math, spend transactions).
 >   Purchases are machine-testable through the store API — shop UI arrives in 4B.
-> - **4B — Menus & scene flow**: MainMenu bootstrap scene (Play / Hive Upgrades /
+> - **4B — Menus & scene flow** ✅ (2026-07-05, validator 437/437, EditMode 52/52, PlayMode
+>   3/3 incl. a menu-flow test: shop buy disabled at 0 honey → bank → purchase → start run →
+>   purchased max-HP rank verified on the player; layout verified via verify-driver
+>   screenshots in landscape): MainMenu bootstrap scene (Play / Hive Upgrades /
 >   Settings / Quit) in the pixel kit, world select (Beehive playable, Garden+
 >   locked, difficulty dropdown seam), Hive Upgrades shop UI over the 4A store,
->   results screen routes back to menu; builder generates the menu scene; PlayMode
->   test covers menu → run → results → menu.
+>   results screens gained RETRY / HIVE buttons routing back; builder generates the
+>   menu scene from scratch (idempotent-by-regeneration) and registers build-settings
+>   scenes (menu boots first). Tap-anywhere restart removed (it would race the new
+>   buttons) — R stays as the keyboard shortcut. Settings panel is a shell until 4C.
 > - **4C — Pause menu + settings**: in-run pause (resume / settings / abandon) with
 >   a full freeze (no spawns/damage while paused), settings panel (audio sliders
 >   stored for Phase 5, vibration + quality toggles) applying live and persisting
@@ -296,7 +301,7 @@ On death **or** victory: results screen — time survived, kills, level reached,
 | 1 ✅ | Art swap, game feel, UI reskin — done 2026-07-04 | large |
 | 2 ✅ | Status effects, 6 actives, 10 passives, rarity — done 2026-07-04 | large |
 | 3 ✅ | Stage timeline, bosses, drops, results — done 2026-07-04 | large |
-| 4 | Save, meta shop, menus, pause — 4A ✅ 2026-07-04; 4B/4C open | medium |
+| 4 | Save, meta shop, menus, pause — 4A ✅ 2026-07-04, 4B ✅ 2026-07-05; 4C open | medium |
 | 5 | Audio, tuning, mobile sanity, localization seam | medium |
 
 Phases are sequential by design (each builds on the previous), but 4 and 5 can swap if you want sound earlier.

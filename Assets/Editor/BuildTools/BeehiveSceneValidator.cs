@@ -252,6 +252,157 @@ namespace SurveHive.BuildTools
                 }
             }
 
+            // 4B: results screens route to retry / menu.
+            var canvas = GameObject.Find("Canvas");
+            ok &= ValidateResultsRouting(canvas, "GameOverPanel");
+            ok &= ValidateResultsRouting(canvas, "VictoryPanel");
+
+            // 4B: build settings boot the menu first, run scene second.
+            EditorBuildSettingsScene[] buildScenes = EditorBuildSettings.scenes;
+            ok &= Check(buildScenes.Length == 2, $"Build settings list 2 scenes (found {buildScenes.Length})");
+            if (buildScenes.Length == 2)
+            {
+                ok &= Check(buildScenes[0].path == "Assets/Scenes/MainMenu.unity" && buildScenes[0].enabled,
+                    "Build settings scene 0 is MainMenu (enabled)");
+                ok &= Check(buildScenes[1].path == "Assets/Scenes/Beehive.unity" && buildScenes[1].enabled,
+                    "Build settings scene 1 is Beehive (enabled)");
+            }
+
+            // 4B: the MainMenu scene itself. Opened last — this replaces the
+            // Beehive scene, so no Beehive checks may follow.
+            ok &= ValidateMainMenuScene();
+
+            return ok;
+        }
+
+        private static bool ValidateResultsRouting(GameObject canvasGo, string panelName)
+        {
+            bool ok = true;
+
+            GameObject panel = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, panelName) : null;
+            ok &= Check(panel != null, $"{panelName} exists for results routing");
+            if (panel == null)
+            {
+                return false;
+            }
+
+            ok &= ValidateSceneLoadButton(panel, "RetryButton", "Beehive");
+            ok &= ValidateSceneLoadButton(panel, "MenuButton", "MainMenu");
+            return ok;
+        }
+
+        private static bool ValidateSceneLoadButton(GameObject panel, string buttonName, string expectedScene)
+        {
+            bool ok = true;
+
+            GameObject buttonGo = FindChildIncludingInactive(panel.transform, buttonName);
+            ok &= Check(buttonGo != null, $"{panel.name}/{buttonName} exists");
+            if (buttonGo == null)
+            {
+                return false;
+            }
+
+            ok &= Check(buttonGo.GetComponent<UnityEngine.UI.Button>() != null, $"{panel.name}/{buttonName} has Button");
+            var loader = buttonGo.GetComponent<SceneLoadButton>();
+            ok &= Check(loader != null, $"{panel.name}/{buttonName} has SceneLoadButton");
+            if (loader != null)
+            {
+                var so = new SerializedObject(loader);
+                ok &= Check(so.FindProperty("_sceneName").stringValue == expectedScene,
+                    $"{panel.name}/{buttonName} loads '{expectedScene}'");
+            }
+
+            return ok;
+        }
+
+        private static bool ValidateMainMenuScene()
+        {
+            bool ok = true;
+
+            ok &= Check(System.IO.File.Exists("Assets/Scenes/MainMenu.unity"), "MainMenu scene file exists");
+            EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity", OpenSceneMode.Single);
+
+            ok &= Check(GameObject.Find("EventSystem") != null, "MainMenu has EventSystem");
+            ok &= Check(GameObject.FindWithTag("MainCamera") != null, "MainMenu has camera");
+
+            var controllerGo = GameObject.Find("MainMenuController");
+            var controller = controllerGo != null ? controllerGo.GetComponent<MainMenuController>() : null;
+            ok &= Check(controller != null, "MainMenuController present");
+            if (controller != null)
+            {
+                var so = new SerializedObject(controller);
+                string[] refs =
+                {
+                    "_mainPanel", "_worldSelectPanel", "_shopPanel", "_settingsPanel",
+                    "_playButton", "_shopButton", "_settingsButton", "_quitButton",
+                    "_worldSelectBackButton", "_shopBackButton", "_settingsBackButton", "_startBeehiveButton",
+                };
+                foreach (string field in refs)
+                {
+                    ok &= Check(so.FindProperty(field).objectReferenceValue != null, $"MainMenuController.{field} wired");
+                }
+
+                var mainPanel = (GameObject)so.FindProperty("_mainPanel").objectReferenceValue;
+                var shopPanel = (GameObject)so.FindProperty("_shopPanel").objectReferenceValue;
+                var worldPanel = (GameObject)so.FindProperty("_worldSelectPanel").objectReferenceValue;
+                var settingsPanel = (GameObject)so.FindProperty("_settingsPanel").objectReferenceValue;
+
+                ok &= Check(mainPanel != null && mainPanel.activeSelf, "MainPanel active at rest");
+                ok &= Check(worldPanel != null && !worldPanel.activeSelf, "WorldSelectPanel inactive at rest");
+                ok &= Check(shopPanel != null && !shopPanel.activeSelf, "ShopPanel inactive at rest");
+                ok &= Check(settingsPanel != null && !settingsPanel.activeSelf, "SettingsPanel inactive at rest");
+
+                // Locked worlds stay locked.
+                if (worldPanel != null)
+                {
+                    GameObject garden = FindChildIncludingInactive(worldPanel.transform, "GardenButton");
+                    ok &= Check(garden != null && !garden.GetComponent<UnityEngine.UI.Button>().interactable,
+                        "GardenButton locked");
+                    GameObject woods = FindChildIncludingInactive(worldPanel.transform, "WoodsButton");
+                    ok &= Check(woods != null && !woods.GetComponent<UnityEngine.UI.Button>().interactable,
+                        "WoodsButton locked");
+                    ok &= Check(FindChildIncludingInactive(worldPanel.transform, "DifficultyDropdown") != null,
+                        "DifficultyDropdown seam present");
+                }
+
+                // Shop wiring: persistent store + one row per upgrade, fully wired.
+                var shopUi = shopPanel != null ? shopPanel.GetComponent<MetaShopUI>() : null;
+                ok &= Check(shopUi != null, "ShopPanel has MetaShopUI");
+                if (shopUi != null)
+                {
+                    var shopSo = new SerializedObject(shopUi);
+                    ok &= Check(
+                        shopSo.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                        "MetaShopUI._store wired to the persistent store");
+                    ok &= Check(shopSo.FindProperty("_balanceText").objectReferenceValue != null,
+                        "MetaShopUI._balanceText wired");
+
+                    var rowsProp = shopSo.FindProperty("_rows");
+                    ok &= Check(rowsProp.arraySize == 6, $"MetaShopUI._rows has 6 entries (found {rowsProp.arraySize})");
+                    for (int i = 0; i < rowsProp.arraySize; i++)
+                    {
+                        var row = rowsProp.GetArrayElementAtIndex(i).objectReferenceValue as MetaShopRowUI;
+                        ok &= Check(row != null, $"MetaShopUI._rows[{i}] wired");
+                        if (row == null)
+                        {
+                            continue;
+                        }
+
+                        var rowSo = new SerializedObject(row);
+                        ok &= Check(rowSo.FindProperty("_upgrade").objectReferenceValue != null,
+                            $"Shop row {i} upgrade wired");
+                        ok &= Check(rowSo.FindProperty("_nameText").objectReferenceValue != null,
+                            $"Shop row {i} name text wired");
+                        ok &= Check(rowSo.FindProperty("_rankText").objectReferenceValue != null,
+                            $"Shop row {i} rank text wired");
+                        ok &= Check(rowSo.FindProperty("_costText").objectReferenceValue != null,
+                            $"Shop row {i} cost text wired");
+                        ok &= Check(rowSo.FindProperty("_buyButton").objectReferenceValue != null,
+                            $"Shop row {i} buy button wired");
+                    }
+                }
+            }
+
             return ok;
         }
 

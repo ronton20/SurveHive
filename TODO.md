@@ -30,8 +30,8 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 17. **General mobile layout audit** — boss bar/banner, stage progress markers, results screens, and shield/aura indicators checked on tall aspect ratios (19.5:9+) in both orientations.
 
 ## Meta & Content
-11. **Menus** — main menu, level/world selection, difficulty selection.
-12. **Meta progression** — the persistent between-run currency spend + upgrade system and its UI (the `IMetaProgressionStore` seam already exists for this). *(core done in Phase 4A: JSON save, six escalating-cost stat upgrades applied at run start, purchase transactions; the shop UI ships with the menus in 4B.)*
+11. ~~**Menus** — main menu, level/world selection, difficulty selection.~~ *(done in Phase 4B: MainMenu boot scene with home/world select/shop/settings-shell panels; Garden+Woods shown locked; difficulty dropdown seam fixed to Normal until a difficulty system exists.)*
+12. ~~**Meta progression** — the persistent between-run currency spend + upgrade system and its UI (the `IMetaProgressionStore` seam already exists for this).~~ *(done in Phases 4A+4B: JSON save, six escalating-cost stat upgrades applied at run start, purchase transactions, and the Hive Upgrades shop UI.)*
 13. **Art & polish** — ~~real sprites, animations, VFX, and proper UI elements to replace placeholders~~ *(done in Phase 1: PixelFantasy bee rig + animations, death VFX, pixel UI kit + BoldPixels TMP. Remaining: real audio, hive floor/tileset, custom Aseprite hero/boss art.)*
 
 ---

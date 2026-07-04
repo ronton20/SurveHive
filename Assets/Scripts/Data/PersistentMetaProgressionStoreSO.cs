@@ -15,6 +15,22 @@ namespace SurveHive.Data
         private MetaProgressionState _state;
         private SaveData _save;
 
+        private void OnEnable()
+        {
+            SaveFileStore.PathChanged += InvalidateCache;
+        }
+
+        private void OnDisable()
+        {
+            SaveFileStore.PathChanged -= InvalidateCache;
+        }
+
+        private void InvalidateCache()
+        {
+            _state = null;
+            _save = null;
+        }
+
         public override int BankedCurrency
         {
             get

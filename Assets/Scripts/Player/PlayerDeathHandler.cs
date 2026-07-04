@@ -1,7 +1,6 @@
 using SurveHive.Core;
 using SurveHive.Health;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace SurveHive.Player
@@ -57,33 +56,10 @@ namespace SurveHive.Player
                 return;
             }
 
-            if (WasRestartRequested())
+            if (RestartInput.WasRequested())
             {
                 Restart();
             }
-        }
-
-        private static bool WasRestartRequested()
-        {
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
-            {
-                return true;
-            }
-
-            Mouse mouse = Mouse.current;
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
-            {
-                return true;
-            }
-
-            Touchscreen touchscreen = Touchscreen.current;
-            if (touchscreen != null && touchscreen.primaryTouch.press.wasPressedThisFrame)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private void Restart()

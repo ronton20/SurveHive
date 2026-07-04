@@ -6,7 +6,6 @@ using SurveHive.Spawning;
 using SurveHive.UI;
 using SurveHive.View;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 namespace SurveHive.Stage
@@ -136,29 +135,11 @@ namespace SurveHive.Stage
                 return;
             }
 
-            if (WasRestartRequested())
+            if (RestartInput.WasRequested())
             {
                 GamePause.SetPaused(false);
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             }
-        }
-
-        private static bool WasRestartRequested()
-        {
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
-            {
-                return true;
-            }
-
-            Mouse mouse = Mouse.current;
-            if (mouse != null && mouse.leftButton.wasPressedThisFrame)
-            {
-                return true;
-            }
-
-            Touchscreen touchscreen = Touchscreen.current;
-            return touchscreen != null && touchscreen.primaryTouch.press.wasPressedThisFrame;
         }
     }
 }

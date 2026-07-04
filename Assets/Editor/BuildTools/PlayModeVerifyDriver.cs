@@ -11,9 +11,12 @@ using UnityEngine;
 namespace SurveHive.BuildTools
 {
     /// <summary>
-    /// Verification driver: launches the Beehive scene in Play mode, force-equips
-    /// the Phase 2 active skills, triggers a level-up offer, and captures game-view
-    /// screenshots along the way, then quits the editor. Run from the CLI:
+    /// Verification driver: plays through the current change under test and
+    /// captures game-view screenshots, then quits the editor. The staged
+    /// switch below is rewritten per verification target — currently the
+    /// Phase 4B menu flow: home → shop (with honey banked into a redirected
+    /// temp save) → world select → run start → death results with the new
+    /// RETRY/HIVE buttons. Run from the CLI:
     /// <c>Unity -projectPath . -executeMethod SurveHive.BuildTools.PlayModeVerifyDriver.Run</c>
     /// (no -batchmode: the game view must render). Screenshots land in
     /// <c>VerifyShots/</c> under the project root.
@@ -39,7 +42,7 @@ namespace SurveHive.BuildTools
         {
             System.IO.Directory.CreateDirectory(OutputDir);
             SessionState.SetBool(ActiveFlag, true);
-            EditorSceneManager.OpenScene("Assets/Scenes/Beehive.unity", OpenSceneMode.Single);
+            EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity", OpenSceneMode.Single);
             EditorApplication.update += OnEditorUpdate;
             EditorApplication.isPlaying = true;
         }
@@ -65,46 +68,131 @@ namespace SurveHive.BuildTools
 
             switch (_stage)
             {
-                // Give the run a moment, then equip all six actives.
-                case 0 when elapsed > 4.0:
-                    EquipAllActiveSkills(1);
+                // Redirect the save to a temp file BEFORE anything banks or
+                // buys — the driver must never touch the real save. Set after
+                // play starts so the domain reload can't wipe the override.
+                case 0 when elapsed > 1.0:
+                    Persistence.SaveFileStore.SetPathOverride(
+                        System.IO.Path.Combine(Application.temporaryCachePath, "verify_driver_save.json"));
                     _stage++;
                     break;
 
-                // Combat with every skill firing at L1.
-                case 1 when elapsed > 8.0:
-                    Capture("shot1_all_skills_firing.png");
+                case 1 when elapsed > 2.0:
+                    Capture("shot1_menu_home.png");
                     _stage++;
                     break;
 
-                // Level everything up for bigger numbers/areas.
-                case 2 when elapsed > 12.0:
-                    EquipAllActiveSkills(4);
+                // Bank honey so the shop shows enabled buy buttons, open it.
+                case 2 when elapsed > 3.0:
+                    BankHoneyAndOpenShop(300);
                     _stage++;
                     break;
 
-                case 3 when elapsed > 16.0:
-                    Capture("shot2_skills_leveled.png");
+                case 3 when elapsed > 4.5:
+                    Capture("shot2_menu_shop.png");
                     _stage++;
                     break;
 
-                // Force a level-up so the rarity/lucky card UI shows.
-                case 4 when elapsed > 18.0:
-                    ForceLevelUp();
+                case 4 when elapsed > 5.5:
+                    ShowWorldSelect();
                     _stage++;
                     break;
 
-                case 5 when elapsed > 19.5:
-                    Capture("shot3_levelup_cards.png");
-                    DumpLevelUpPanelText();
+                case 5 when elapsed > 7.0:
+                    Capture("shot3_menu_world_select.png");
                     _stage++;
                     break;
 
-                case 6 when elapsed > 21.0:
+                // Start the run through the real button path.
+                case 6 when elapsed > 8.0:
+                    ClickWorldSelectBeehive();
+                    _stage++;
+                    break;
+
+                case 7 when elapsed > 13.0:
+                    Capture("shot4_run_started_from_menu.png");
+                    _stage++;
+                    break;
+
+                // Kill the player: the death results screen must show the new
+                // RETRY / HIVE buttons.
+                case 8 when elapsed > 14.0:
+                    KillPlayer();
+                    _stage++;
+                    break;
+
+                case 9 when elapsed > 16.0:
+                    Capture("shot5_death_results_buttons.png");
+                    _stage++;
+                    break;
+
+                case 10 when elapsed > 17.5:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
+            }
+        }
+
+        private static UI.MainMenuController FindMenuController()
+        {
+            var controller = Object.FindAnyObjectByType<UI.MainMenuController>();
+            if (controller == null)
+            {
+                Debug.LogError("VerifyDriver: MainMenuController not found.");
+            }
+
+            return controller;
+        }
+
+        private static void BankHoneyAndOpenShop(int amount)
+        {
+            var store = AssetDatabase.LoadAssetAtPath<PersistentMetaProgressionStoreSO>(
+                "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
+            if (store != null)
+            {
+                store.BankRunCurrency(amount);
+            }
+
+            UI.MainMenuController controller = FindMenuController();
+            if (controller != null)
+            {
+                controller.ShowShop();
+            }
+
+            Debug.Log($"VerifyDriver: banked {amount} honey, shop open.");
+        }
+
+        private static void ShowWorldSelect()
+        {
+            UI.MainMenuController controller = FindMenuController();
+            if (controller != null)
+            {
+                controller.ShowMain();
+                controller.ShowWorldSelect();
+            }
+        }
+
+        private static void ClickWorldSelectBeehive()
+        {
+            UI.MainMenuController controller = FindMenuController();
+            if (controller != null)
+            {
+                controller.StartBeehiveRun();
+                Debug.Log("VerifyDriver: Beehive run started from menu.");
+            }
+        }
+
+        private static void KillPlayer()
+        {
+            if (Player.PlayerContext.Health != null)
+            {
+                Player.PlayerContext.Health.TakeDamage(999999f, null);
+                Debug.Log("VerifyDriver: player killed for results screen.");
+            }
+            else
+            {
+                Debug.LogError("VerifyDriver: no player health to kill.");
             }
         }
 

@@ -3,7 +3,7 @@
   <Project Path="SurveHive.Runtime.csproj" />
   <Project Path="SurveHive.Tests.EditMode.csproj" />
   <Project Path="PixelFantasy.Common.Editor.csproj" />
-  <Project Path="SurveHive.BuildTools.csproj" />
   <Project Path="SurveHive.Tests.PlayMode.csproj" />
+  <Project Path="SurveHive.BuildTools.csproj" />
   <Project Path="SurveHive.Editor.csproj" />
 </Solution>
