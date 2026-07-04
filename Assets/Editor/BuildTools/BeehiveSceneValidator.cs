@@ -238,7 +238,8 @@ namespace SurveHive.BuildTools
 
             // Real sprites on projectile/pickups (no placeholder circles).
             ok &= ValidatePrefabSprite("Assets/Prefabs/Projectiles/Stinger.prefab", "Stinger");
-            ok &= ValidatePrefabSprite("Assets/Prefabs/Pickups/ExpPickup.prefab", "ExpMote");
+            // Phase 3 feedback round: EXP orbs use the neutral tintable sprite.
+            ok &= ValidatePrefabSprite("Assets/Prefabs/Pickups/ExpPickup.prefab", "ExpOrb");
             ok &= ValidatePrefabSprite("Assets/Prefabs/Pickups/CurrencyPickup.prefab", "HoneyDrop");
 
             // Death VFX must be one-shot (the pack source loops).

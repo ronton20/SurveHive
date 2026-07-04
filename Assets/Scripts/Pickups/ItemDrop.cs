@@ -39,6 +39,15 @@ namespace SurveHive.Pickups
             if (_remainingLifetime <= 0f)
             {
                 ReleaseSelf();
+                return;
+            }
+
+            // Item drops share the exact pickup range (and Nectar Sense /
+            // vacuum scaling) of EXP/currency motes.
+            Transform player = Player.PlayerContext.Transform;
+            if (player != null)
+            {
+                PickupMotion.Step(transform, player);
             }
         }
 
@@ -66,7 +75,7 @@ namespace SurveHive.Pickups
                     break;
 
                 case ItemDropType.Magnet:
-                    PickupItem.ActivateVacuum(_magnetVacuumSeconds);
+                    PickupMotion.ActivateVacuum(_magnetVacuumSeconds);
                     break;
 
                 case ItemDropType.WaxShield:

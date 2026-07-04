@@ -15,6 +15,15 @@ namespace SurveHive.Combat
         /// <summary>Deals damage and returns the final amount actually applied.</summary>
         public static float DealDamage(IDamageable target, Vector3 hitPosition, float baseDamage, bool canCrit, GameObject instigator)
         {
+            return DealDamage(target, hitPosition, baseDamage, canCrit, instigator, true);
+        }
+
+        // showPopup=false for very fast tick sources (pollen aura at 4 ticks/s)
+        // where per-hit numbers would flood the screen and the popup pool.
+        public static float DealDamage(
+            IDamageable target, Vector3 hitPosition, float baseDamage, bool canCrit,
+            GameObject instigator, bool showPopup)
+        {
             PlayerStats stats = PlayerContext.Stats;
 
             bool isCrit = false;
@@ -34,13 +43,16 @@ namespace SurveHive.Combat
                 PlayerContext.Health.Heal(damage * (stats.LifestealPercent / 100f));
             }
 
-            if (isCrit)
+            if (showPopup)
             {
-                DamagePopupSpawner.Spawn(hitPosition, damage, DamagePopupSpawner.CritColor, DamagePopupSpawner.CritSizeMultiplier);
-            }
-            else
-            {
-                DamagePopupSpawner.Spawn(hitPosition, damage, DamagePopupSpawner.NormalColor, 1f);
+                if (isCrit)
+                {
+                    DamagePopupSpawner.Spawn(hitPosition, damage, DamagePopupSpawner.CritColor, DamagePopupSpawner.CritSizeMultiplier);
+                }
+                else
+                {
+                    DamagePopupSpawner.Spawn(hitPosition, damage, DamagePopupSpawner.NormalColor, 1f);
+                }
             }
 
             return damage;

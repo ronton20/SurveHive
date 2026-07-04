@@ -259,7 +259,20 @@ namespace SurveHive.UI
 
             _descriptionBuilder.Append('\n');
             _descriptionBuilder.Append('\n');
-            _descriptionBuilder.Append(skill.Description);
+
+            // New skills read their flavor text; upgrades show exactly which
+            // numbers change instead (e.g. "Basic Attack DMG 10 → 11").
+            if (currentLevel <= 0)
+            {
+                _descriptionBuilder.Append(skill.Description);
+            }
+            else
+            {
+                int applications = Mathf.Max(1, targetLevel - currentLevel);
+                SkillStatPreview.AppendUpgradeLines(
+                    _descriptionBuilder, skill, currentLevel, applications, _playerStats, skill.MaxLevel);
+            }
+
             return _descriptionBuilder.ToString();
         }
 

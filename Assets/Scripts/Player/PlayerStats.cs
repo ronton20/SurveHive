@@ -64,6 +64,8 @@ namespace SurveHive.Player
 
         public float ActiveCooldownMultiplier => _activeCooldownMultiplier;
 
+        public float MinActiveCooldownMultiplier => _minActiveCooldownMultiplier;
+
         public float MagnetRadiusMultiplier => _magnetRadiusMultiplier;
 
         public void IncreaseMoveSpeedPercent(float percent)

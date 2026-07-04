@@ -66,10 +66,16 @@ namespace SurveHive.Enemies
                 PoolManager.Instance.Get(PoolIds.DeathVfx, position, Quaternion.identity);
             }
 
-            GameObject expPickup = PoolManager.Instance.Get(PoolIds.ExpPickup, position, Quaternion.identity);
-            if (expPickup.TryGetComponent(out PickupItem expItem))
+            // EXP scales with rank (dominant) + effective max HP, and nearby
+            // orbs merge instead of piling up.
+            float expValue = ExpRewardCalculator.Calculate(stats.Rank, _health.MaxHealth);
+            if (!PickupItem.TryMergeExp(position, expValue))
             {
-                expItem.Initialize(PickupType.Exp, stats.ExpReward, _playerExperience, _currencyWallet, _playerTransform);
+                GameObject expPickup = PoolManager.Instance.Get(PoolIds.ExpPickup, position, Quaternion.identity);
+                if (expPickup.TryGetComponent(out PickupItem expItem))
+                {
+                    expItem.Initialize(PickupType.Exp, expValue, _playerExperience, _currencyWallet, _playerTransform);
+                }
             }
 
             if (Random.value <= stats.CurrencyDropChance)

@@ -59,6 +59,7 @@ namespace SurveHive.BuildTools
 
             // 3C: item drops + drop chances.
             EnsureItemDropAssets();
+            EnsureNeutralExpOrb();
             SetItemDropChance("Assets/Data/Enemies/WorkerBee.asset", 0.01f);
             SetItemDropChance("Assets/Data/Enemies/WarriorBee.asset", 0.03f);
             SetItemDropChance("Assets/Data/Enemies/QueensGuard.asset", 0.12f);
@@ -328,6 +329,39 @@ namespace SurveHive.BuildTools
                 serialized.ApplyModifiedPropertiesWithoutUndo();
 
                 PrefabUtility.SaveAsPrefabAsset(contents, path);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
+        }
+
+        // Neutral (white) EXP orb replaces the green ExpMote: orb value tiers
+        // tint it at runtime (green/cyan/orange/purple), which only reads
+        // cleanly on a colorless base sprite.
+        private static readonly string[] ExpOrbPixels =
+        {
+            "...k...",
+            "..kgk..",
+            ".kgwgk.",
+            "kgwwwgk",
+            ".kgwgk.",
+            "..kgk..",
+            "...k...",
+        };
+
+        private static void EnsureNeutralExpOrb()
+        {
+            Sprite orb = Phase2CombatDepthBuilder.CreatePixelSprite("ExpOrb", ExpOrbPixels,
+                new Color32(45, 42, 55, 255), new Color32(225, 225, 232, 255), new Color32(255, 255, 255, 255));
+
+            GameObject contents = PrefabUtility.LoadPrefabContents("Assets/Prefabs/Pickups/ExpPickup.prefab");
+            try
+            {
+                var renderer = contents.GetComponent<SpriteRenderer>();
+                renderer.sprite = orb;
+                renderer.color = Color.white;
+                PrefabUtility.SaveAsPrefabAsset(contents, "Assets/Prefabs/Pickups/ExpPickup.prefab");
             }
             finally
             {

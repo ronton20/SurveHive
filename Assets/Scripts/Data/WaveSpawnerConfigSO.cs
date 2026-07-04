@@ -28,14 +28,18 @@ namespace SurveHive.Data
 
         public WaveEntry[] Entries => _entries;
 
+        // Stepped per whole minute (not continuous): during minute 0 the
+        // multiplier is exactly 1, so early enemies die in the intended hit
+        // count (20 HP worker = two 10-damage stings) instead of surviving on
+        // a fractional sliver from a few seconds of drift.
         public float HealthMultiplierAt(float elapsedSeconds)
         {
-            return 1f + (elapsedSeconds / 60f) * _healthScalePerMinute;
+            return 1f + Mathf.Floor(elapsedSeconds / 60f) * _healthScalePerMinute;
         }
 
         public float DamageMultiplierAt(float elapsedSeconds)
         {
-            return 1f + (elapsedSeconds / 60f) * _damageScalePerMinute;
+            return 1f + Mathf.Floor(elapsedSeconds / 60f) * _damageScalePerMinute;
         }
 
         public float InitialSpawnInterval => _initialSpawnInterval;

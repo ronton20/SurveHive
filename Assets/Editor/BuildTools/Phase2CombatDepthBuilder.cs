@@ -259,13 +259,16 @@ namespace SurveHive.BuildTools
                 projectilePoolId: -1, impactVfxPoolId: -1,
                 zonePoolId: -1, zoneDuration: 0f, zoneTickInterval: 0.5f,
                 appliesStatus: true, statusType: StatusEffectType.Poison, statusPotency: 2f, statusDuration: 3f,
+                // Fast-tick aura (4 ticks/s): small hits, constant pressure.
+                // Poison chance is per-tick, so it's scaled down to keep
+                // procs-per-second in the same band as the old 0.8s tick.
                 new[]
                 {
-                    new LevelRow(3f, 0.8f, 1, 2.2f, 35f),
-                    new LevelRow(4f, 0.8f, 1, 2.5f, 40f),
-                    new LevelRow(5f, 0.8f, 1, 2.8f, 45f),
-                    new LevelRow(6f, 0.8f, 1, 3.1f, 50f),
-                    new LevelRow(7f, 0.8f, 1, 3.4f, 60f),
+                    new LevelRow(1f, 0.25f, 1, 2.2f, 12f),
+                    new LevelRow(1f, 0.25f, 1, 2.5f, 15f),
+                    new LevelRow(2f, 0.25f, 1, 2.8f, 18f),
+                    new LevelRow(2f, 0.25f, 1, 3.1f, 22f),
+                    new LevelRow(3f, 0.25f, 1, 3.4f, 25f),
                 });
         }
 

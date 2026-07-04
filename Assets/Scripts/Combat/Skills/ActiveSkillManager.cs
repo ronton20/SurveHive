@@ -224,7 +224,9 @@ namespace SurveHive.Combat.Skills
                     continue;
                 }
 
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, stats.Damage, false, gameObject);
+                // No popup: at 4 ticks/s the numbers would flood the screen —
+                // health bars + poison DoT numbers carry the feedback.
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, stats.Damage, false, gameObject, false);
 
                 if (skill.AppliesStatus && enemy.StatusReceiver != null &&
                     Random.value * 100f < stats.StatusChancePercent)

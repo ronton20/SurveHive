@@ -16,31 +16,31 @@ MonoBehaviour:
   _displayName: Pollen Cloud
   _behavior: 3
   _levels:
-  - Damage: 3
-    Cooldown: 0.8
+  - Damage: 1
+    Cooldown: 0.25
     Count: 1
     Area: 2.2
-    StatusChancePercent: 35
-  - Damage: 4
-    Cooldown: 0.8
+    StatusChancePercent: 12
+  - Damage: 1
+    Cooldown: 0.25
     Count: 1
     Area: 2.5
-    StatusChancePercent: 40
-  - Damage: 5
-    Cooldown: 0.8
+    StatusChancePercent: 15
+  - Damage: 2
+    Cooldown: 0.25
     Count: 1
     Area: 2.8
-    StatusChancePercent: 45
-  - Damage: 6
-    Cooldown: 0.8
+    StatusChancePercent: 18
+  - Damage: 2
+    Cooldown: 0.25
     Count: 1
     Area: 3.1
-    StatusChancePercent: 50
-  - Damage: 7
-    Cooldown: 0.8
+    StatusChancePercent: 22
+  - Damage: 3
+    Cooldown: 0.25
     Count: 1
     Area: 3.4
-    StatusChancePercent: 60
+    StatusChancePercent: 25
   _projectileSpeed: 0
   _range: 4
   _projectilePoolId: -1
