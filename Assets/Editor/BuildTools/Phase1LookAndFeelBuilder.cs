@@ -1179,6 +1179,17 @@ namespace SurveHive.BuildTools
 
             ReskinLevelUpPanel(canvas, font, uiKit);
             ReskinGameOverPanel(canvas, font, uiKit);
+
+            // Currency (icon + counter) renders above the game-over overlay so the
+            // run's earnings stay readable on the death screen. UGUI draws later
+            // siblings on top; neither element overlaps the centered panels in play.
+            Transform currencyIcon = canvas.Find("CurrencyIcon");
+            if (currencyIcon != null)
+            {
+                currencyIcon.SetAsLastSibling();
+            }
+
+            currencyTextGo.transform.SetAsLastSibling();
         }
 
         private static void ReskinLevelUpPanel(Transform canvas, TMP_FontAsset font, UiKitSprites uiKit)

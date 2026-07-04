@@ -177,14 +177,24 @@ namespace SurveHive.UI
 
             if (currentLevel <= 0)
             {
-                _descriptionBuilder.Append("New!  →  Lv. 1");
+                _descriptionBuilder.Append("New!");
             }
             else
             {
                 _descriptionBuilder.Append("Lv. ");
                 _descriptionBuilder.Append(currentLevel);
-                _descriptionBuilder.Append("  →  Lv. ");
-                _descriptionBuilder.Append(currentLevel + 1);
+                _descriptionBuilder.Append("  →  ");
+
+                // Taking this pick hits the cap: make that explicit.
+                if (skill.HasLevelCap && currentLevel + 1 >= skill.MaxLevel)
+                {
+                    _descriptionBuilder.Append("MAX");
+                }
+                else
+                {
+                    _descriptionBuilder.Append("Lv. ");
+                    _descriptionBuilder.Append(currentLevel + 1);
+                }
             }
 
             _descriptionBuilder.Append('\n');
