@@ -46,8 +46,8 @@ Currency earned during a run carries over between runs and is spent on **permane
 
 ### Controls
 
-- **Mobile**: on-screen simulated joystick for movement.
-- **PC**: choice of WASD or mouse-driven movement (left/right click).
+- **Mobile**: floating on-screen joystick — it appears where the finger first touches, tracks the drag from that origin, and vanishes on release. No joystick UI is shown otherwise.
+- **PC**: WASD / arrow keys. No joystick UI is shown on PC (click-to-move was removed — it added nothing over keyboard movement).
 - **Attacks**: fully automatic, always targeting the nearest enemy — the player's manual input is movement/positioning only.
 
 ## Development Status

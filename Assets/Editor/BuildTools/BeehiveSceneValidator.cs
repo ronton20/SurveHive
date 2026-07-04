@@ -50,7 +50,6 @@ namespace SurveHive.BuildTools
                     var so = new SerializedObject(pic);
                     ok &= Check(so.FindProperty("_actionsAsset").objectReferenceValue != null, "PlayerInputController._actionsAsset wired");
                     ok &= Check(so.FindProperty("_joystickUi").objectReferenceValue != null, "PlayerInputController._joystickUi wired");
-                    ok &= Check(so.FindProperty("_worldCamera").objectReferenceValue != null, "PlayerInputController._worldCamera wired");
                 }
 
                 var bootstrap = player.GetComponent<PlayerBootstrap>();
@@ -565,6 +564,36 @@ namespace SurveHive.BuildTools
             // Results blocks on both end-of-run panels.
             ok &= ValidateResultsBlock(canvasGo, "GameOverPanel");
             ok &= ValidateResultsBlock(canvasGo, "VictoryPanel");
+
+            // Floating joystick (movement rework): fullscreen touch zone, first
+            // sibling (so all other UI wins raycasts), invisible but raycastable,
+            // owning the background/handle visuals.
+            if (canvasGo != null)
+            {
+                Transform zone = canvasGo.transform.Find("JoystickTouchZone");
+                ok &= Check(zone != null, "JoystickTouchZone exists");
+                if (zone != null)
+                {
+                    ok &= Check(zone.GetSiblingIndex() == 0, "JoystickTouchZone is the first canvas sibling");
+
+                    var zoneImage = zone.GetComponent<UnityEngine.UI.Image>();
+                    ok &= Check(zoneImage != null && zoneImage.raycastTarget && zoneImage.color.a == 0f,
+                        "JoystickTouchZone is invisible but raycastable");
+
+                    var joystickUi = zone.GetComponent<Input.OnScreenJoystickUI>();
+                    ok &= Check(joystickUi != null, "JoystickTouchZone has OnScreenJoystickUI");
+                    if (joystickUi != null)
+                    {
+                        var so = new SerializedObject(joystickUi);
+                        ok &= Check(so.FindProperty("_background").objectReferenceValue != null &&
+                            so.FindProperty("_handle").objectReferenceValue != null,
+                            "OnScreenJoystickUI background/handle wired");
+                    }
+
+                    ok &= Check(zone.Find("JoystickBackground") != null,
+                        "Joystick visuals are children of the touch zone");
+                }
+            }
 
             return ok;
         }

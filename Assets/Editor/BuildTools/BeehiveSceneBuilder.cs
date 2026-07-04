@@ -860,7 +860,6 @@ namespace SurveHive.BuildTools
             var pic = new SerializedObject(playerInputController);
             pic.FindProperty("_actionsAsset").objectReferenceValue = inputActions;
             pic.FindProperty("_joystickUi").objectReferenceValue = joystickUi;
-            pic.FindProperty("_worldCamera").objectReferenceValue = camera;
             pic.ApplyModifiedPropertiesWithoutUndo();
 
             var pb = new SerializedObject(playerBootstrap);

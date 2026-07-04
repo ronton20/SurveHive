@@ -548,8 +548,95 @@ namespace SurveHive.BuildTools
             BuildPlayerShield();
             BuildResultsBlock("GameOverPanel", font);
             BuildResultsBlock("VictoryPanel", font);
+            RebuildFloatingJoystick();
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+        }
+
+        // Movement rework: fullscreen invisible touch zone owning the joystick
+        // visuals — the stick appears under the finger and hides on release.
+        // PlayerInputController disables the whole zone on non-touch platforms.
+        private static void RebuildFloatingJoystick()
+        {
+            Transform canvas = GameObject.Find("Canvas").transform;
+
+            Transform zoneTransform = canvas.Find("JoystickTouchZone");
+            GameObject zoneGo = zoneTransform != null ? zoneTransform.gameObject : null;
+            if (zoneGo == null)
+            {
+                zoneGo = new GameObject("JoystickTouchZone", typeof(RectTransform));
+                zoneGo.transform.SetParent(canvas, false);
+            }
+
+            // Behind every other UI element so buttons still win raycasts.
+            zoneGo.transform.SetAsFirstSibling();
+
+            var zoneRect = (RectTransform)zoneGo.transform;
+            zoneRect.anchorMin = Vector2.zero;
+            zoneRect.anchorMax = Vector2.one;
+            zoneRect.offsetMin = Vector2.zero;
+            zoneRect.offsetMax = Vector2.zero;
+            zoneRect.pivot = new Vector2(0.5f, 0.5f);
+
+            // Invisible but raycastable: catches touches on empty screen space.
+            if (!zoneGo.TryGetComponent(out Image zoneImage))
+            {
+                zoneImage = zoneGo.AddComponent<Image>();
+            }
+
+            zoneImage.color = Color.clear;
+            zoneImage.raycastTarget = true;
+
+            // Adopt the existing background/handle visuals.
+            Transform background = zoneGo.transform.Find("JoystickBackground");
+            if (background == null)
+            {
+                Transform legacy = canvas.Find("JoystickBackground");
+                if (legacy != null)
+                {
+                    legacy.SetParent(zoneGo.transform, false);
+                    background = legacy;
+                }
+            }
+
+            if (background == null)
+            {
+                Debug.LogError("Phase3: JoystickBackground not found for floating joystick.");
+                return;
+            }
+
+            // The old static component lived on the background; the floating one
+            // must live on the zone to receive pointer events anywhere.
+            if (background.TryGetComponent(out Input.OnScreenJoystickUI legacyUi))
+            {
+                Object.DestroyImmediate(legacyUi);
+            }
+
+            var backgroundRect = (RectTransform)background;
+            backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
+            backgroundRect.anchorMax = new Vector2(0.5f, 0.5f);
+            backgroundRect.pivot = new Vector2(0.5f, 0.5f);
+            background.gameObject.SetActive(true);
+
+            Transform handle = background.Find("JoystickHandle");
+
+            if (!zoneGo.TryGetComponent(out Input.OnScreenJoystickUI joystickUi))
+            {
+                joystickUi = zoneGo.AddComponent<Input.OnScreenJoystickUI>();
+            }
+
+            var joystickSerialized = new SerializedObject(joystickUi);
+            joystickSerialized.FindProperty("_background").objectReferenceValue = backgroundRect;
+            joystickSerialized.FindProperty("_handle").objectReferenceValue =
+                handle != null ? (RectTransform)handle : null;
+            joystickSerialized.FindProperty("_handleRange").floatValue = backgroundRect.sizeDelta.x * 0.5f;
+            joystickSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            // Rewire the input controller to the relocated component.
+            GameObject playerGo = GameObject.Find("Player");
+            var controllerSerialized = new SerializedObject(playerGo.GetComponent<Input.PlayerInputController>());
+            controllerSerialized.FindProperty("_joystickUi").objectReferenceValue = joystickUi;
+            controllerSerialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static GameObject LoadDropPrefab(string name)
