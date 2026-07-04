@@ -1,6 +1,6 @@
 # SurveHive — Polish & Feature Implementation Plan
 
-> **Progress:** Phase 0 ✅, Phase 1 ✅, Phase 2 ✅ done (2026-07-04). Phases 3–5 not started.
+> **Progress:** Phases 0–3 ✅ done (2026-07-04). Phase 4 in progress: 4A ✅ (2026-07-04), 4B/4C not started. Phase 5 not started.
 
 > Created 2026-07-04 with Ron. This is the agreed roadmap for the next development push.
 > Reference this file when starting implementation ("let's do Phase N from PLAN.md").
@@ -223,6 +223,31 @@ On death **or** victory: results screen — time survived, kills, level reached,
 
 ## 6. Phase 4 — Meta & Menus (TODO #11, #12 + save/load + pause)
 
+> **Execution split (2026-07-04):** like Phase 3, Phase 4 ships as three independently
+> verified + committed sub-phases so a session/token budget running out never strands
+> half-done work — resume from whichever sub-phase is unchecked:
+> - **4A — Save/load + meta shop core (no UI)** ✅ (2026-07-04, validator 353/353, EditMode
+>   52/52, PlayMode 2/2; PlayMode tests redirect the save to a temp file so they never touch
+>   the real one): versioned JSON `SaveData` schema with
+>   safe-write (temp file + swap) and corrupt→fresh-start handling; `MetaUpgradeSO`
+>   assets for the 6 flat stats (Max Health / Damage / Move Speed / Attack Speed /
+>   Magnet / Currency Gain) with escalating cost math; persistent store implementing
+>   the extended `IMetaProgressionStore` (bank, spend, ranks, settings, best-run
+>   stats); purchased ranks applied to the player at run start; EditMode tests
+>   (save round-trip, corrupt save, cost/effect math, spend transactions).
+>   Purchases are machine-testable through the store API — shop UI arrives in 4B.
+> - **4B — Menus & scene flow**: MainMenu bootstrap scene (Play / Hive Upgrades /
+>   Settings / Quit) in the pixel kit, world select (Beehive playable, Garden+
+>   locked, difficulty dropdown seam), Hive Upgrades shop UI over the 4A store,
+>   results screen routes back to menu; builder generates the menu scene; PlayMode
+>   test covers menu → run → results → menu.
+> - **4C — Pause menu + settings**: in-run pause (resume / settings / abandon) with
+>   a full freeze (no spawns/damage while paused), settings panel (audio sliders
+>   stored for Phase 5, vibration + quality toggles) applying live and persisting
+>   via the 4A save system.
+> All three extend one `Phase4MetaAndMenusBuilder` pass + the validator; each ends
+> with headless validator/tests green and a commit.
+
 - **Save/load foundation**: JSON via `JsonUtility` at `Application.persistentDataPath` (versioned schema, safe-write). Persists: meta currency, purchased upgrades, settings, best-run stats.
 - **Meta progression — flat stat shop** implementing the existing `IMetaProgressionStore` seam: permanent ranks of Max Health / Damage / Move Speed / Attack Speed / Magnet / Currency Gain, escalating costs. *Designed for expansion*: upgrades are data assets (`MetaUpgradeSO` list), store interface stays abstract, so a future hive-tree redesign only replaces UI + data, not consumers.
 - **Menus**: Main Menu (Play / Hive Upgrades / Settings / Quit) → world select screen (Beehive playable, Garden+ locked, difficulty dropdown seam) → run. All in the pixel UI kit.
@@ -271,7 +296,7 @@ On death **or** victory: results screen — time survived, kills, level reached,
 | 1 ✅ | Art swap, game feel, UI reskin — done 2026-07-04 | large |
 | 2 ✅ | Status effects, 6 actives, 10 passives, rarity — done 2026-07-04 | large |
 | 3 ✅ | Stage timeline, bosses, drops, results — done 2026-07-04 | large |
-| 4 | Save, meta shop, menus, pause | medium |
+| 4 | Save, meta shop, menus, pause — 4A ✅ 2026-07-04; 4B/4C open | medium |
 | 5 | Audio, tuning, mobile sanity, localization seam | medium |
 
 Phases are sequential by design (each builds on the previous), but 4 and 5 can swap if you want sound earlier.

@@ -19,6 +19,21 @@ namespace SurveHive.Tests
     /// </summary>
     public sealed class BeehiveSmokeTest
     {
+        // Phase 4: run end banks to the persistent save — redirect it to a temp
+        // file so tests never touch the developer's real save.
+        [SetUp]
+        public void RedirectSaveFile()
+        {
+            Persistence.SaveFileStore.SetPathOverride(
+                System.IO.Path.Combine(Application.temporaryCachePath, "smoke_test_save.json"));
+        }
+
+        [TearDown]
+        public void RestoreSaveFile()
+        {
+            Persistence.SaveFileStore.SetPathOverride(null);
+        }
+
         [UnityTest]
         public IEnumerator BeehiveScene_RunsWithoutErrors_AndSpawnsEnemies()
         {

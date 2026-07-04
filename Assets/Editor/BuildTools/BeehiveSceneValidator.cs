@@ -171,8 +171,88 @@ namespace SurveHive.BuildTools
             ok &= ValidatePhase1LookAndFeel(player, canvasGo);
             ok &= ValidatePhase2CombatDepth(player, canvasGo);
             ok &= ValidatePhase3RunStructure(canvasGo);
+            ok &= ValidatePhase4MetaAndMenus(player);
 
             Debug.Log(ok ? "SurveHive Beehive scene validation PASSED." : "SurveHive Beehive scene validation FAILED - see errors above.");
+        }
+
+        // --- Phase 4 (PLAN.md): save/load, meta shop, menus, pause ---
+        private static bool ValidatePhase4MetaAndMenus(GameObject player)
+        {
+            bool ok = true;
+
+            // 4A: persistent store asset.
+            var store = AssetDatabase.LoadAssetAtPath<Data.PersistentMetaProgressionStoreSO>(
+                "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
+            ok &= Check(store != null, "PersistentMetaProgressionStore asset exists");
+
+            // 4A: the six flat-stat shop upgrades, unique ids/stats, escalating costs.
+            string[] upgradePaths =
+            {
+                "Assets/Data/Meta/MaxHealth.asset",
+                "Assets/Data/Meta/Damage.asset",
+                "Assets/Data/Meta/MoveSpeed.asset",
+                "Assets/Data/Meta/AttackSpeed.asset",
+                "Assets/Data/Meta/Magnet.asset",
+                "Assets/Data/Meta/CurrencyGain.asset",
+            };
+
+            var upgradeIds = new System.Collections.Generic.HashSet<string>();
+            var upgradeStats = new System.Collections.Generic.HashSet<Data.MetaStatType>();
+            foreach (string path in upgradePaths)
+            {
+                var upgrade = AssetDatabase.LoadAssetAtPath<Data.MetaUpgradeSO>(path);
+                ok &= Check(upgrade != null, $"{path} exists");
+                if (upgrade == null)
+                {
+                    continue;
+                }
+
+                ok &= Check(!string.IsNullOrEmpty(upgrade.UpgradeId), $"{path} has an upgrade id");
+                ok &= Check(upgradeIds.Add(upgrade.UpgradeId), $"{path} id '{upgrade.UpgradeId}' unique");
+                ok &= Check(upgradeStats.Add(upgrade.StatType), $"{path} stat '{upgrade.StatType}' unique");
+                ok &= Check(upgrade.MaxRank > 0, $"{path} max rank > 0");
+                ok &= Check(upgrade.BaseCost > 0, $"{path} base cost > 0");
+                ok &= Check(upgrade.CostGrowth > 1f, $"{path} cost growth > 1 (escalating)");
+                ok &= Check(upgrade.EffectPerRank > 0f, $"{path} effect per rank > 0");
+            }
+
+            // 4A: RunSession banks into the persistent store and knows the level source.
+            var sessionGo = GameObject.Find("GameBootstrap");
+            var session = sessionGo != null ? sessionGo.GetComponent<RunSession>() : null;
+            ok &= Check(session != null, "RunSession present on GameBootstrap");
+            if (session != null)
+            {
+                var so = new SerializedObject(session);
+                ok &= Check(
+                    so.FindProperty("_metaProgressionStore").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                    "RunSession._metaProgressionStore wired to the persistent store");
+                ok &= Check(so.FindProperty("_playerExperience").objectReferenceValue != null,
+                    "RunSession._playerExperience wired");
+            }
+
+            // 4A: player applies purchased ranks at run start.
+            var applier = player != null ? player.GetComponent<MetaUpgradeApplier>() : null;
+            ok &= Check(applier != null, "Player has MetaUpgradeApplier");
+            if (applier != null)
+            {
+                var so = new SerializedObject(applier);
+                ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                    "MetaUpgradeApplier._store wired to the persistent store");
+                ok &= Check(so.FindProperty("_stats").objectReferenceValue != null, "MetaUpgradeApplier._stats wired");
+                ok &= Check(so.FindProperty("_health").objectReferenceValue != null, "MetaUpgradeApplier._health wired");
+                ok &= Check(so.FindProperty("_wallet").objectReferenceValue != null, "MetaUpgradeApplier._wallet wired");
+                var upgradesProp = so.FindProperty("_upgrades");
+                ok &= Check(upgradesProp.arraySize == upgradePaths.Length,
+                    $"MetaUpgradeApplier._upgrades has {upgradePaths.Length} entries (found {upgradesProp.arraySize})");
+                for (int i = 0; i < upgradesProp.arraySize; i++)
+                {
+                    ok &= Check(upgradesProp.GetArrayElementAtIndex(i).objectReferenceValue != null,
+                        $"MetaUpgradeApplier._upgrades[{i}] wired");
+                }
+            }
+
+            return ok;
         }
 
         // --- Phase 1 (PLAN.md): art swap, game feel, UI reskin ---

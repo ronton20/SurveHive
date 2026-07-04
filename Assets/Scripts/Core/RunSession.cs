@@ -1,6 +1,7 @@
 using System;
 using SurveHive.Currency;
 using SurveHive.Data;
+using SurveHive.Progression;
 using UnityEngine;
 
 namespace SurveHive.Core
@@ -10,10 +11,12 @@ namespace SurveHive.Core
         public static RunSession Instance { get; private set; }
 
         [SerializeField] private RunCurrencyWallet _currencyWallet;
-        [SerializeField] private RuntimeMetaProgressionStoreSO _metaProgressionStore;
+        [SerializeField] private MetaProgressionStoreSO _metaProgressionStore;
+        [SerializeField] private PlayerExperience _playerExperience;
 
         private int _killCount;
         private float _elapsedSeconds;
+        private bool _runEnded;
 
         public event Action<int> OnKillCountChanged;
 
@@ -48,12 +51,26 @@ namespace SurveHive.Core
             OnKillCountChanged?.Invoke(_killCount);
         }
 
-        public void EndRun()
+        public void EndRun(bool victory)
         {
-            if (_metaProgressionStore != null)
+            // Guard against double-ending (e.g. the player dying to a stray hit
+            // in the same frame the Queen dies) — only the first outcome banks.
+            if (_runEnded)
             {
-                _metaProgressionStore.BankRunCurrency(_currencyWallet.TotalCurrency);
+                return;
             }
+
+            _runEnded = true;
+
+            if (_metaProgressionStore == null)
+            {
+                return;
+            }
+
+            _metaProgressionStore.BankRunCurrency(_currencyWallet.TotalCurrency);
+            int level = _playerExperience != null ? _playerExperience.CurrentLevel : 0;
+            _metaProgressionStore.RecordRunResult(
+                Mathf.FloorToInt(_elapsedSeconds), _killCount, level, victory);
         }
     }
 }

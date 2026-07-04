@@ -276,7 +276,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Core.RunSession
   _currencyWallet: {fileID: 12424190}
-  _metaProgressionStore: {fileID: 11400000, guid: 808c522738321428da94164957df907b, type: 2}
+  _metaProgressionStore: {fileID: 11400000, guid: ff90004b21c2941359817a27e27df045, type: 2}
+  _playerExperience: {fileID: 1089349800}
 --- !u!114 &12424193
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3695,6 +3696,7 @@ GameObject:
   - component: {fileID: 1089349812}
   - component: {fileID: 1089349816}
   - component: {fileID: 1089349817}
+  - component: {fileID: 1089349818}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -4123,6 +4125,29 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Player.PlayerShield
   _health: {fileID: 1089349798}
   _shieldVisual: {fileID: 226720504}
+--- !u!114 &1089349818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1089349797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe0024c255af8481cb8691d6ce2543a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Player.MetaUpgradeApplier
+  _store: {fileID: 11400000, guid: ff90004b21c2941359817a27e27df045, type: 2}
+  _upgrades:
+  - {fileID: 11400000, guid: 38742bbc3d0f9400e8c01778e5518426, type: 2}
+  - {fileID: 11400000, guid: 82e1c446fbdd4487d954b2ec9acba7ba, type: 2}
+  - {fileID: 11400000, guid: b32152ee143b442dcb08aa8ff82ed924, type: 2}
+  - {fileID: 11400000, guid: 787189113240147c992943efff521f25, type: 2}
+  - {fileID: 11400000, guid: ea6d5e4a940c844979297569e517b750, type: 2}
+  - {fileID: 11400000, guid: f79b66aba17ce48daa8f634bdfb945ee, type: 2}
+  _stats: {fileID: 1089349799}
+  _health: {fileID: 1089349798}
+  _wallet: {fileID: 12424190}
 --- !u!114 &1140097562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7041,8 +7066,8 @@ Camera:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 0.9989806
-    height: 0.99793816
+    width: 1
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60

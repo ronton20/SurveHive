@@ -21,6 +21,21 @@ namespace SurveHive.Tests
         private static readonly FieldInfo ElapsedField = typeof(StageDirector)
             .GetField("_elapsedSeconds", BindingFlags.NonPublic | BindingFlags.Instance);
 
+        // Phase 4: run end banks to the persistent save — redirect it to a temp
+        // file so tests never touch the developer's real save.
+        [SetUp]
+        public void RedirectSaveFile()
+        {
+            Persistence.SaveFileStore.SetPathOverride(
+                System.IO.Path.Combine(Application.temporaryCachePath, "bossfight_test_save.json"));
+        }
+
+        [TearDown]
+        public void RestoreSaveFile()
+        {
+            Persistence.SaveFileStore.SetPathOverride(null);
+        }
+
         [UnityTest]
         public IEnumerator StageTimeline_SpawnsBosses_AndQueenDeathWinsTheRun()
         {

@@ -39,7 +39,7 @@ namespace SurveHive.Player
             // Bank the run's currency on death too (victory banks via BossSpawner).
             if (RunSession.Instance != null)
             {
-                RunSession.Instance.EndRun();
+                RunSession.Instance.EndRun(victory: false);
             }
 
             if (_gameOverPanel != null)

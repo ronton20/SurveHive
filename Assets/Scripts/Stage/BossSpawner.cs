@@ -109,7 +109,7 @@ namespace SurveHive.Stage
 
             if (RunSession.Instance != null)
             {
-                RunSession.Instance.EndRun();
+                RunSession.Instance.EndRun(victory: true);
             }
 
             if (_victoryPanel != null)
