@@ -88,7 +88,7 @@ namespace SurveHive.BuildTools
                 {
                     var so = new SerializedObject(gb);
                     var pools = so.FindProperty("_pools");
-                    ok &= Check(pools.arraySize == 16, $"GameBootstrap._pools has 16 entries (found {pools.arraySize})");
+                    ok &= Check(pools.arraySize == 19, $"GameBootstrap._pools has 19 entries (found {pools.arraySize})");
                     bool hasDamageNumberPool = false;
                     bool hasQueensGuardPool = false;
                     bool hasDeathVfxPool = false;
@@ -440,15 +440,17 @@ namespace SurveHive.BuildTools
                         events[0].EnemyStats != null && events[0].Count > 0,
                         "25% strong wave (ring) configured");
                     ok &= Check(Mathf.Approximately(events[1].NormalizedTime, 0.5f) &&
-                        events[1].Type == Data.StageEventType.Miniboss,
-                        "50% miniboss event configured");
+                        events[1].Type == Data.StageEventType.Miniboss &&
+                        events[1].EnemyStats != null && events[1].EnemyStats.Rank >= 3,
+                        "50% miniboss event configured with a boss-rank enemy");
                     ok &= Check(Mathf.Approximately(events[2].NormalizedTime, 0.75f) &&
                         events[2].Type == Data.StageEventType.StrongWaveFlood &&
                         events[2].EnemyStats != null && events[2].Count > 0,
                         "75% strong wave (flood) configured");
                     ok &= Check(Mathf.Approximately(events[3].NormalizedTime, 1f) &&
-                        events[3].Type == Data.StageEventType.FinalBoss,
-                        "100% final boss event configured");
+                        events[3].Type == Data.StageEventType.FinalBoss &&
+                        events[3].EnemyStats != null && events[3].EnemyStats.Rank >= 4,
+                        "100% final boss event configured with the Queen");
                 }
 
                 ok &= Check(stageConfig.GetSpawnRateMultiplier(1f) > stageConfig.GetSpawnRateMultiplier(0f),
@@ -492,6 +494,115 @@ namespace SurveHive.BuildTools
                 }
 
                 ok &= Check(markers == 4, $"StageProgressBar has 4 event markers (found {markers})");
+            }
+
+            ok &= ValidatePhase3Bosses(canvasGo);
+
+            return ok;
+        }
+
+        // --- Phase 3B: bosses ---
+        private static bool ValidatePhase3Bosses(GameObject canvasGo)
+        {
+            bool ok = true;
+
+            // Boss stats + prefabs.
+            var royalGuard = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/QueensRoyalGuard.asset");
+            ok &= Check(royalGuard != null && royalGuard.Rank == 3 && royalGuard.Prefab != null,
+                "QueensRoyalGuard stats asset exists (rank 3, prefab wired)");
+            var queen = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/QueenBee.asset");
+            ok &= Check(queen != null && queen.Rank == 4 && queen.Prefab != null,
+                "QueenBee stats asset exists (rank 4, prefab wired)");
+
+            ok &= ValidateEnemyRigPrefab("Assets/Prefabs/Enemies/QueensRoyalGuard.prefab");
+            ok &= ValidateEnemyRigPrefab("Assets/Prefabs/Enemies/QueenBee.prefab");
+            ok &= ValidateEnemyStatusReceiver("Assets/Prefabs/Enemies/QueensRoyalGuard.prefab");
+            ok &= ValidateEnemyStatusReceiver("Assets/Prefabs/Enemies/QueenBee.prefab");
+
+            var guardPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/QueensRoyalGuard.prefab");
+            if (guardPrefab != null)
+            {
+                var charge = guardPrefab.GetComponent<Enemies.ChargeAttack>();
+                ok &= Check(charge != null, "Royal Guard has ChargeAttack");
+                if (charge != null)
+                {
+                    var so = new SerializedObject(charge);
+                    ok &= Check(so.FindProperty("_enemyController").objectReferenceValue != null &&
+                        so.FindProperty("_health").objectReferenceValue != null &&
+                        so.FindProperty("_renderer").objectReferenceValue != null &&
+                        so.FindProperty("_autoRun").boolValue,
+                        "Royal Guard ChargeAttack wired (auto-run)");
+                }
+            }
+
+            var queenPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/QueenBee.prefab");
+            if (queenPrefab != null)
+            {
+                var queenController = queenPrefab.GetComponent<Enemies.QueenBossController>();
+                ok &= Check(queenController != null, "Queen has QueenBossController");
+                if (queenController != null)
+                {
+                    var so = new SerializedObject(queenController);
+                    ok &= Check(so.FindProperty("_enemyController").objectReferenceValue != null &&
+                        so.FindProperty("_health").objectReferenceValue != null &&
+                        so.FindProperty("_chargeAttack").objectReferenceValue != null &&
+                        so.FindProperty("_renderer").objectReferenceValue != null,
+                        "QueenBossController fully wired");
+                }
+
+                var queenCharge = queenPrefab.GetComponent<Enemies.ChargeAttack>();
+                if (queenCharge != null)
+                {
+                    var so = new SerializedObject(queenCharge);
+                    ok &= Check(!so.FindProperty("_autoRun").boolValue, "Queen ChargeAttack is pattern-driven (no auto-run)");
+                }
+            }
+
+            // Enemy stinger projectile.
+            var stinger = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Projectiles/EnemyStinger.prefab");
+            ok &= Check(stinger != null && stinger.GetComponent<Enemies.EnemyProjectile>() != null,
+                "EnemyStinger prefab exists with EnemyProjectile");
+
+            // Pools.
+            var bootstrapGo = GameObject.Find("GameBootstrap");
+            if (bootstrapGo != null && bootstrapGo.TryGetComponent(out GameBootstrap gb))
+            {
+                var so = new SerializedObject(gb);
+                var pools = so.FindProperty("_pools");
+                ok &= Check(HasPoolEntry(pools, PoolIds.QueensRoyalGuard), "Pool: QueensRoyalGuard registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.QueenBee), "Pool: QueenBee registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.EnemyStinger), "Pool: EnemyStinger registered");
+            }
+
+            // Boss spawner + HUD pieces.
+            GameObject directorGo = GameObject.Find("StageDirector");
+            var bossSpawner = directorGo != null ? directorGo.GetComponent<Stage.BossSpawner>() : null;
+            ok &= Check(bossSpawner != null, "StageDirector has BossSpawner");
+            if (bossSpawner != null)
+            {
+                var so = new SerializedObject(bossSpawner);
+                ok &= Check(so.FindProperty("_director").objectReferenceValue != null &&
+                    so.FindProperty("_spawner").objectReferenceValue != null &&
+                    so.FindProperty("_bossHealthBar").objectReferenceValue != null &&
+                    so.FindProperty("_banner").objectReferenceValue != null &&
+                    so.FindProperty("_shaker").objectReferenceValue != null &&
+                    so.FindProperty("_summonStats").objectReferenceValue != null &&
+                    so.FindProperty("_victoryPanel").objectReferenceValue != null,
+                    "BossSpawner fully wired");
+            }
+
+            if (canvasGo != null)
+            {
+                GameObject bossBar = FindChildIncludingInactive(canvasGo.transform, "BossHealthBar");
+                ok &= Check(bossBar != null && bossBar.GetComponent<UI.BossHealthBarUI>() != null,
+                    "BossHealthBar exists with BossHealthBarUI");
+
+                GameObject banner = FindChildIncludingInactive(canvasGo.transform, "BossBanner");
+                ok &= Check(banner != null && banner.GetComponent<UI.BossBannerUI>() != null,
+                    "BossBanner exists with BossBannerUI");
+
+                GameObject victory = FindChildIncludingInactive(canvasGo.transform, "VictoryPanel");
+                ok &= Check(victory != null && !victory.activeSelf, "VictoryPanel exists and starts inactive");
             }
 
             return ok;

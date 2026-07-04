@@ -214,7 +214,7 @@ namespace SurveHive.BuildTools
             }
         }
 
-        private static Material EnsureFlashMaterial()
+        internal static Material EnsureFlashMaterial()
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(FlashMaterialPath);
             if (material != null)
@@ -630,9 +630,10 @@ namespace SurveHive.BuildTools
         // "Body" child carrying SpriteRenderer + SpriteLibrary + SpriteResolver,
         // matching the paths the shared animation clips expect.
         // ------------------------------------------------------------------
-        private static void BuildBeeRig(GameObject root, Material flashMaterial, int sortingOrder)
+        // libraryPath defaults to the bee; boss builders pass other pack bodies.
+        internal static void BuildBeeRig(GameObject root, Material flashMaterial, int sortingOrder, string libraryPath = BeeLibraryPath)
         {
-            var libraryAsset = AssetDatabase.LoadAssetAtPath<SpriteLibraryAsset>(BeeLibraryPath);
+            var libraryAsset = AssetDatabase.LoadAssetAtPath<SpriteLibraryAsset>(libraryPath);
             var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(MonsterControllerPath);
 
             // Placeholder circle renderer on the root gets replaced by the rig.
@@ -704,12 +705,12 @@ namespace SurveHive.BuildTools
             flashSerialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void RebuildEnemyPrefabVisuals(string prefabPath, Material flashMaterial)
+        internal static void RebuildEnemyPrefabVisuals(string prefabPath, Material flashMaterial, string libraryPath = BeeLibraryPath)
         {
             GameObject root = PrefabUtility.LoadPrefabContents(prefabPath);
             try
             {
-                BuildBeeRig(root, flashMaterial, 0);
+                BuildBeeRig(root, flashMaterial, 0, libraryPath);
 
                 if (root.TryGetComponent(out EnemyController enemyController))
                 {
@@ -783,7 +784,7 @@ namespace SurveHive.BuildTools
         }
 
         // Mirrors BeehiveSceneBuilder.BuildEnemyHealthBar (kept private there).
-        private static void BuildQueensGuardHealthBar(Transform parent, HealthComponent health)
+        internal static void BuildQueensGuardHealthBar(Transform parent, HealthComponent health)
         {
             var canvasGo = new GameObject("HealthBarCanvas", typeof(RectTransform));
             canvasGo.transform.SetParent(parent, false);

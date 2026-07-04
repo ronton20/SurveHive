@@ -44,7 +44,7 @@ MonoBehaviour:
     Count: 24
   - Type: 2
     NormalizedTime: 0.5
-    EnemyStats: {fileID: 11400000, guid: 987bb9496325544a39792450d4f7b32f, type: 2}
+    EnemyStats: {fileID: 11400000, guid: 68d1891f2ee4346619ffae39a71a2377, type: 2}
     Count: 1
   - Type: 1
     NormalizedTime: 0.75
@@ -52,5 +52,5 @@ MonoBehaviour:
     Count: 20
   - Type: 3
     NormalizedTime: 1
-    EnemyStats: {fileID: 11400000, guid: 987bb9496325544a39792450d4f7b32f, type: 2}
+    EnemyStats: {fileID: 11400000, guid: bcbc91c3b5bed4c80949d0bf53708dd4, type: 2}
     Count: 1

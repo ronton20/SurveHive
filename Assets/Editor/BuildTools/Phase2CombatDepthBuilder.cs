@@ -630,7 +630,7 @@ namespace SurveHive.BuildTools
         // ------------------------------------------------------------------
         // Enemy prefab: StatusEffectReceiver wiring.
         // ------------------------------------------------------------------
-        private static void EnsureEnemyStatusReceiver(string prefabPath)
+        internal static void EnsureEnemyStatusReceiver(string prefabPath)
         {
             GameObject contents = PrefabUtility.LoadPrefabContents(prefabPath);
             try

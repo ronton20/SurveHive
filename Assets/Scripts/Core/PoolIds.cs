@@ -20,5 +20,10 @@ namespace SurveHive.Core
         public const int ZapArcVfx = 13;
         public const int EmberExplosionVfx = 14;
         public const int HoneySplashVfx = 15;
+
+        // Phase 3 — bosses.
+        public const int QueensRoyalGuard = 16;
+        public const int QueenBee = 17;
+        public const int EnemyStinger = 18;
     }
 }

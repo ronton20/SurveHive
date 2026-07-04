@@ -169,7 +169,7 @@ New: **Nectar Sense** (pickup/magnet radius), **Keen Eye** (crit chance — crit
 >   waves at 25%/75% (surround-ring + directional-flood formations via `EnemySpawner.SpawnAt`),
 >   HUD stage progress bar with siren/skull/crown event markers. Miniboss/boss events fire but
 >   only raise notifications until 3B.
-> - **3B — Bosses** ⬜: Queen's Royal Guard miniboss (telegraphed charge), Queen Bee (summon
+> - **3B — Bosses** ✅ (2026-07-04, validator 263/263, EditMode 25/25, PlayMode 2/2 incl. a boss-flow test that fast-forwards the timeline, kills the Queen, and asserts victory; Queen body = royal-tinted BossPack1 BlueDragon until custom art): Queen's Royal Guard miniboss (telegraphed charge), Queen Bee (summon
 >   workers / radial stinger burst / charge sweep, enemy projectile pool), boss HP bar, spawn
 >   banner + shake, Queen death = victory path.
 > - **3C — Drops + results** ⬜: pooled item drops (Honey Jar / Magnet / Wax Shield / Royal

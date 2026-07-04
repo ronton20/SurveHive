@@ -22,12 +22,17 @@ namespace SurveHive.Enemies
         private EnemyStatsSO _stats;
         private Transform _playerTransform;
         private Vector2 _knockbackVelocity;
+        // Boss behaviors (telegraphs, charges) can take over steering.
+        private Vector2 _movementOverride;
+        private bool _hasMovementOverride;
 
         public EnemyStatsSO Stats => _stats;
 
         public HealthComponent Health => _health;
 
         public StatusEffectReceiver StatusReceiver => _statusReceiver;
+
+        public Transform Target => _playerTransform;
 
         private void Awake()
         {
@@ -37,9 +42,21 @@ namespace SurveHive.Enemies
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         }
 
+        public void SetMovementOverride(Vector2 velocity)
+        {
+            _hasMovementOverride = true;
+            _movementOverride = velocity;
+        }
+
+        public void ClearMovementOverride()
+        {
+            _hasMovementOverride = false;
+        }
+
         private void OnEnable()
         {
             _knockbackVelocity = Vector2.zero;
+            _hasMovementOverride = false;
             _health.OnDamaged += HandleDamaged;
             _health.OnDied += HandleDied;
 
@@ -121,9 +138,18 @@ namespace SurveHive.Enemies
                 return;
             }
 
-            Vector2 direction = ((Vector2)(_playerTransform.position - transform.position)).normalized;
             float statusSpeedMultiplier = _statusReceiver != null ? _statusReceiver.MoveSpeedMultiplier : 1f;
-            _rigidbody.linearVelocity = (direction * (_stats.MoveSpeed * statusSpeedMultiplier)) + _knockbackVelocity;
+
+            if (_hasMovementOverride)
+            {
+                // Freezes/stuns still gate boss charges.
+                _rigidbody.linearVelocity = (_movementOverride * statusSpeedMultiplier) + _knockbackVelocity;
+            }
+            else
+            {
+                Vector2 direction = ((Vector2)(_playerTransform.position - transform.position)).normalized;
+                _rigidbody.linearVelocity = (direction * (_stats.MoveSpeed * statusSpeedMultiplier)) + _knockbackVelocity;
+            }
 
             _knockbackVelocity = Vector2.MoveTowards(
                 _knockbackVelocity, Vector2.zero, _knockbackDecayPerSecond * Time.fixedDeltaTime);
