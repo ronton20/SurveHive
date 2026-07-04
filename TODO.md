@@ -37,9 +37,9 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 ---
 
 ## Suggestions / additions to consider
-- **Pause & settings menu** — in-run pause (audio/vibration/quality toggles); useful early for testing and expected on mobile.
+- ~~**Pause & settings menu** — in-run pause (audio/vibration/quality toggles); useful early for testing and expected on mobile.~~ *(done in Phase 4C: ESC/HUD-button pause with resume/settings/abandon; settings shared with the main menu, applied live and saved.)*
 - ~~**Run stats / results screen** — on death or stage clear, show time survived, kills, level, currency earned (feeds naturally into meta progression).~~ *(done in Phase 3: results block on both death and victory screens; currency banks on both paths.)*
-- **Save/load** — persist meta-progression and settings (goes hand-in-hand with #12; decide on a serialization approach, e.g. JSON in `Application.persistentDataPath`).
+- ~~**Save/load** — persist meta-progression and settings (goes hand-in-hand with #12; decide on a serialization approach, e.g. JSON in `Application.persistentDataPath`).~~ *(done in Phase 4A: versioned JSON at `persistentDataPath`, safe-write, corrupt→fresh-start.)*
 - **Object-pool coverage for new spawners** — keep bosses / strong-wave hordes / drops pooled to hold the zero-GC guarantee as counts grow.
 - **Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, and drop rates.
 - **Audio pass** — SFX for hits/level-up/death/pickups and background music per world (currently only a placeholder shoot blip).

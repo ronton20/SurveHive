@@ -114,23 +114,82 @@ namespace SurveHive.BuildTools
                     _stage++;
                     break;
 
+                // 4C: pause menu + its settings panel.
+                case 8 when elapsed > 14.0:
+                    OpenPauseMenu();
+                    _stage++;
+                    break;
+
+                case 9 when elapsed > 15.5:
+                    Capture("shot5_pause_menu.png");
+                    _stage++;
+                    break;
+
+                case 10 when elapsed > 16.5:
+                    OpenPauseSettings();
+                    _stage++;
+                    break;
+
+                case 11 when elapsed > 18.0:
+                    Capture("shot6_pause_settings.png");
+                    _stage++;
+                    break;
+
+                case 12 when elapsed > 19.0:
+                    ClosePauseMenu();
+                    _stage++;
+                    break;
+
                 // Kill the player: the death results screen must show the new
                 // RETRY / HIVE buttons.
-                case 8 when elapsed > 14.0:
+                case 13 when elapsed > 20.0:
                     KillPlayer();
                     _stage++;
                     break;
 
-                case 9 when elapsed > 16.0:
-                    Capture("shot5_death_results_buttons.png");
+                case 14 when elapsed > 22.0:
+                    Capture("shot7_death_results_buttons.png");
                     _stage++;
                     break;
 
-                case 10 when elapsed > 17.5:
+                case 15 when elapsed > 23.5:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
+            }
+        }
+
+        private static void OpenPauseMenu()
+        {
+            var pause = Object.FindAnyObjectByType<UI.PauseMenuController>();
+            if (pause != null)
+            {
+                pause.Open();
+                Debug.Log("VerifyDriver: pause menu opened.");
+            }
+            else
+            {
+                Debug.LogError("VerifyDriver: PauseMenuController not found.");
+            }
+        }
+
+        private static void OpenPauseSettings()
+        {
+            var pause = Object.FindAnyObjectByType<UI.PauseMenuController>();
+            if (pause != null)
+            {
+                pause.ShowSettings();
+                Debug.Log("VerifyDriver: pause settings opened.");
+            }
+        }
+
+        private static void ClosePauseMenu()
+        {
+            var pause = Object.FindAnyObjectByType<UI.PauseMenuController>();
+            if (pause != null)
+            {
+                pause.Close();
             }
         }
 

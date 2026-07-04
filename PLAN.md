@@ -1,6 +1,6 @@
 # SurveHive — Polish & Feature Implementation Plan
 
-> **Progress:** Phases 0–3 ✅ done (2026-07-04). Phase 4 in progress: 4A ✅ (2026-07-04), 4B ✅ (2026-07-05), 4C not started. Phase 5 not started.
+> **Progress:** Phases 0–4 ✅ done (Phase 4 finished 2026-07-05). Phase 5 not started.
 
 > Created 2026-07-04 with Ron. This is the agreed roadmap for the next development push.
 > Reference this file when starting implementation ("let's do Phase N from PLAN.md").
@@ -221,7 +221,7 @@ On death **or** victory: results screen — time survived, kills, level reached,
 
 ---
 
-## 6. Phase 4 — Meta & Menus (TODO #11, #12 + save/load + pause)
+## 6. Phase 4 — Meta & Menus (TODO #11, #12 + save/load + pause) — ✅ DONE (2026-07-05)
 
 > **Execution split (2026-07-04):** like Phase 3, Phase 4 ships as three independently
 > verified + committed sub-phases so a session/token budget running out never strands
@@ -246,10 +246,16 @@ On death **or** victory: results screen — time survived, kills, level reached,
 >   menu scene from scratch (idempotent-by-regeneration) and registers build-settings
 >   scenes (menu boots first). Tap-anywhere restart removed (it would race the new
 >   buttons) — R stays as the keyboard shortcut. Settings panel is a shell until 4C.
-> - **4C — Pause menu + settings**: in-run pause (resume / settings / abandon) with
->   a full freeze (no spawns/damage while paused), settings panel (audio sliders
->   stored for Phase 5, vibration + quality toggles) applying live and persisting
->   via the 4A save system.
+> - **4C — Pause menu + settings** ✅ (2026-07-05, validator 466/466, EditMode 52/52,
+>   PlayMode 4/4 incl. a pause test: freeze verified on the run clock, settings change
+>   persisted to the save file, resume restores, and the menu refuses to open over
+>   another pause owner): in-run pause via ESC or a HUD button (resume / settings /
+>   abandon-to-menu, abandoning banks the honey) with a full freeze — all
+>   spawners/cooldowns run on scaled time, so `timeScale = 0` stops everything;
+>   shared `SettingsPanelUI` block (music + SFX sliders, vibration and quality
+>   cycle-buttons) built into both the main-menu settings panel and the pause menu,
+>   applying live (SFX drives `AudioListener.volume`; music stored for the Phase 5
+>   audio service) and persisting through the 4A save.
 > All three extend one `Phase4MetaAndMenusBuilder` pass + the validator; each ends
 > with headless validator/tests green and a commit.
 
@@ -265,6 +271,19 @@ On death **or** victory: results screen — time survived, kills, level reached,
 3. Pause freezes the run completely (no spawns/damage during pause) and settings changes apply live.
 4. Corrupt/missing save handled gracefully (fresh start, no exceptions).
 5. EditMode tests: save round-trip, upgrade cost/effect math, wallet transactions.
+
+> **Phase 4 completion notes (2026-07-05):** delivered in three verified commits (4A/4B/4C, see
+> the execution-split checklist above) via `SurveHive/Apply Phase 4 Meta & Menus`. Final state:
+> validator **466/466**, EditMode **52/52**, PlayMode **4/4**; menu/shop/pause layouts verified
+> visually through verify-driver screenshots (`VerifyShots/`). Success criteria: 1 is covered
+> end-to-end by the menu-flow PlayMode test (buy +Max HP → run starts with higher HP); 2's
+> mechanism (file-backed JSON, lazy reload) is machine-verified — a literal quit-and-relaunch
+> check is a 10-second human confirmation; 3–5 are machine-verified. Deviations/decisions:
+> settings use **cycle-buttons** for vibration/quality instead of toggles/dropdown (simpler
+> code-built UI, same seam); the difficulty dropdown is present but locked to Normal (no
+> difficulty system yet — Phase 5 tuning decides); **tap-anywhere restart removed** in favor of
+> RETRY/HIVE buttons (R key stays); abandoning a run banks its honey; the persistent store
+> invalidates its cache on save-path changes so tests can never leak state into a real session.
 
 ---
 
@@ -301,7 +320,7 @@ On death **or** victory: results screen — time survived, kills, level reached,
 | 1 ✅ | Art swap, game feel, UI reskin — done 2026-07-04 | large |
 | 2 ✅ | Status effects, 6 actives, 10 passives, rarity — done 2026-07-04 | large |
 | 3 ✅ | Stage timeline, bosses, drops, results — done 2026-07-04 | large |
-| 4 | Save, meta shop, menus, pause — 4A ✅ 2026-07-04, 4B ✅ 2026-07-05; 4C open | medium |
+| 4 ✅ | Save, meta shop, menus, pause — 4A ✅ 2026-07-04, 4B+4C ✅ 2026-07-05 | medium |
 | 5 | Audio, tuning, mobile sanity, localization seam | medium |
 
 Phases are sequential by design (each builds on the previous), but 4 and 5 can swap if you want sound earlier.

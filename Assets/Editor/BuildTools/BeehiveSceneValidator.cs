@@ -257,6 +257,9 @@ namespace SurveHive.BuildTools
             ok &= ValidateResultsRouting(canvas, "GameOverPanel");
             ok &= ValidateResultsRouting(canvas, "VictoryPanel");
 
+            // 4C: in-run pause menu.
+            ok &= ValidatePauseMenu(canvas);
+
             // 4B: build settings boot the menu first, run scene second.
             EditorBuildSettingsScene[] buildScenes = EditorBuildSettings.scenes;
             ok &= Check(buildScenes.Length == 2, $"Build settings list 2 scenes (found {buildScenes.Length})");
@@ -271,6 +274,81 @@ namespace SurveHive.BuildTools
             // 4B: the MainMenu scene itself. Opened last — this replaces the
             // Beehive scene, so no Beehive checks may follow.
             ok &= ValidateMainMenuScene();
+
+            return ok;
+        }
+
+        private static bool ValidatePauseMenu(GameObject canvasGo)
+        {
+            bool ok = true;
+
+            GameObject root = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, "PauseRoot") : null;
+            ok &= Check(root != null, "PauseRoot exists");
+            if (root == null)
+            {
+                return false;
+            }
+
+            ok &= Check(root.activeSelf, "PauseRoot active (hosts the controller + HUD button)");
+
+            var controller = root.GetComponent<PauseMenuController>();
+            ok &= Check(controller != null, "PauseRoot has PauseMenuController");
+            if (controller != null)
+            {
+                var so = new SerializedObject(controller);
+                string[] refs =
+                {
+                    "_pausePanel", "_settingsPanel", "_pauseButton",
+                    "_resumeButton", "_settingsButton", "_settingsBackButton", "_abandonButton",
+                };
+                foreach (string field in refs)
+                {
+                    ok &= Check(so.FindProperty(field).objectReferenceValue != null,
+                        $"PauseMenuController.{field} wired");
+                }
+
+                var pausePanel = (GameObject)so.FindProperty("_pausePanel").objectReferenceValue;
+                var settingsPanel = (GameObject)so.FindProperty("_settingsPanel").objectReferenceValue;
+                ok &= Check(pausePanel != null && !pausePanel.activeSelf, "PausePanel inactive at rest");
+                ok &= Check(settingsPanel != null && !settingsPanel.activeSelf, "PauseSettingsPanel inactive at rest");
+
+                var pauseButtonGo = (Object)so.FindProperty("_pauseButton").objectReferenceValue;
+                var pauseButton = pauseButtonGo as UnityEngine.UI.Button;
+                ok &= Check(pauseButton != null && pauseButton.gameObject.activeSelf, "HUD PauseButton active");
+
+                if (settingsPanel != null)
+                {
+                    ok &= ValidateSettingsPanelUI(settingsPanel, "Beehive pause");
+                }
+            }
+
+            return ok;
+        }
+
+        private static bool ValidateSettingsPanelUI(GameObject holder, string label)
+        {
+            bool ok = true;
+
+            var settingsUi = holder.GetComponent<SettingsPanelUI>();
+            ok &= Check(settingsUi != null, $"{label} settings panel has SettingsPanelUI");
+            if (settingsUi == null)
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(settingsUi);
+            ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                $"{label} SettingsPanelUI._store wired to the persistent store");
+            string[] refs =
+            {
+                "_musicSlider", "_sfxSlider",
+                "_vibrationButton", "_vibrationLabel", "_qualityButton", "_qualityLabel",
+            };
+            foreach (string field in refs)
+            {
+                ok &= Check(so.FindProperty(field).objectReferenceValue != null,
+                    $"{label} SettingsPanelUI.{field} wired");
+            }
 
             return ok;
         }
@@ -351,6 +429,12 @@ namespace SurveHive.BuildTools
                 ok &= Check(worldPanel != null && !worldPanel.activeSelf, "WorldSelectPanel inactive at rest");
                 ok &= Check(shopPanel != null && !shopPanel.activeSelf, "ShopPanel inactive at rest");
                 ok &= Check(settingsPanel != null && !settingsPanel.activeSelf, "SettingsPanel inactive at rest");
+
+                // 4C: real settings controls in the menu's settings panel.
+                if (settingsPanel != null)
+                {
+                    ok &= ValidateSettingsPanelUI(settingsPanel, "MainMenu");
+                }
 
                 // Locked worlds stay locked.
                 if (worldPanel != null)

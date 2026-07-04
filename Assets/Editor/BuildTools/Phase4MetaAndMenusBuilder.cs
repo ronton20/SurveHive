@@ -237,15 +237,14 @@ namespace SurveHive.BuildTools
 
             shopSerialized.ApplyModifiedPropertiesWithoutUndo();
 
-            // --- Settings panel (shell; 4C fills in the real settings) ---
+            // --- Settings panel (4C: real controls, shared with the pause menu) ---
             GameObject settingsPanel = CreatePanel(canvasGo.transform, "SettingsPanel", panelSprite, new Vector2(900f, 1100f));
 
             CreateMenuText(settingsPanel.transform, "Title", "SETTINGS", font, 70f, HoneyGold,
                 anchorY: 1f, offsetY: -100f, new Vector2(860f, 100f));
-            CreateMenuText(settingsPanel.transform, "ComingSoon", "Audio & options arrive\nwith the next update.", font, 36f, Wax,
-                anchorY: 0.5f, offsetY: 60f, new Vector2(800f, 200f));
+            BuildSettingsControls(settingsPanel, store, font, panelSprite, buttonSprite);
             Button settingsBackButton = CreateMenuButton(settingsPanel.transform, "BackButton", "BACK",
-                font, buttonSprite, new Vector2(0f, -330f));
+                font, buttonSprite, new Vector2(0f, -430f));
 
             // --- Controller ---
             var controllerGo = new GameObject("MainMenuController");
@@ -504,6 +503,186 @@ namespace SurveHive.BuildTools
             return tmp;
         }
 
+        // ------------------------------------------------------------------
+        // 4C: settings controls (shared by menu + pause) and the pause menu.
+        // ------------------------------------------------------------------
+        private static void BuildSettingsControls(
+            GameObject parent, PersistentMetaProgressionStoreSO store, TMP_FontAsset font,
+            Sprite panelSprite, Sprite buttonSprite)
+        {
+            CreateMenuText(parent.transform, "MusicLabel", "MUSIC", font, 34f, Wax,
+                anchorY: 0.5f, offsetY: 280f, new Vector2(620f, 44f));
+            Slider musicSlider = CreateSlider(parent.transform, "MusicSlider", panelSprite, buttonSprite,
+                new Vector2(0f, 195f));
+
+            CreateMenuText(parent.transform, "SfxLabel", "SFX", font, 34f, Wax,
+                anchorY: 0.5f, offsetY: 110f, new Vector2(620f, 44f));
+            Slider sfxSlider = CreateSlider(parent.transform, "SfxSlider", panelSprite, buttonSprite,
+                new Vector2(0f, 25f));
+
+            Button vibrationButton = CreateMenuButton(parent.transform, "VibrationButton", "VIBRATION: ON",
+                font, buttonSprite, new Vector2(0f, -90f));
+            Button qualityButton = CreateMenuButton(parent.transform, "QualityButton", "QUALITY: DEFAULT",
+                font, buttonSprite, new Vector2(0f, -230f));
+
+            var settingsUi = parent.AddComponent<SettingsPanelUI>();
+            var serialized = new SerializedObject(settingsUi);
+            serialized.FindProperty("_store").objectReferenceValue = store;
+            serialized.FindProperty("_musicSlider").objectReferenceValue = musicSlider;
+            serialized.FindProperty("_sfxSlider").objectReferenceValue = sfxSlider;
+            serialized.FindProperty("_vibrationButton").objectReferenceValue = vibrationButton;
+            serialized.FindProperty("_vibrationLabel").objectReferenceValue =
+                vibrationButton.GetComponentInChildren<TMP_Text>(true);
+            serialized.FindProperty("_qualityButton").objectReferenceValue = qualityButton;
+            serialized.FindProperty("_qualityLabel").objectReferenceValue =
+                qualityButton.GetComponentInChildren<TMP_Text>(true);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static Slider CreateSlider(
+            Transform parent, string name, Sprite trackSprite, Sprite handleSprite, Vector2 centerOffset)
+        {
+            var sliderGo = new GameObject(name, typeof(RectTransform));
+            sliderGo.transform.SetParent(parent, false);
+
+            var rect = (RectTransform)sliderGo.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = centerOffset;
+            rect.sizeDelta = new Vector2(620f, 50f);
+
+            var backgroundGo = new GameObject("Background", typeof(RectTransform));
+            backgroundGo.transform.SetParent(sliderGo.transform, false);
+            var backgroundRect = (RectTransform)backgroundGo.transform;
+            backgroundRect.anchorMin = Vector2.zero;
+            backgroundRect.anchorMax = Vector2.one;
+            backgroundRect.offsetMin = Vector2.zero;
+            backgroundRect.offsetMax = Vector2.zero;
+            Image backgroundImage = backgroundGo.AddComponent<Image>();
+            backgroundImage.sprite = trackSprite;
+            backgroundImage.type = Image.Type.Sliced;
+            backgroundImage.pixelsPerUnitMultiplier = 2f;
+            backgroundImage.color = new Color(DeepBrown.r * 0.6f, DeepBrown.g * 0.6f, DeepBrown.b * 0.6f);
+
+            var fillAreaGo = new GameObject("FillArea", typeof(RectTransform));
+            fillAreaGo.transform.SetParent(sliderGo.transform, false);
+            var fillAreaRect = (RectTransform)fillAreaGo.transform;
+            fillAreaRect.anchorMin = Vector2.zero;
+            fillAreaRect.anchorMax = Vector2.one;
+            fillAreaRect.offsetMin = new Vector2(10f, 10f);
+            fillAreaRect.offsetMax = new Vector2(-10f, -10f);
+
+            var fillGo = new GameObject("Fill", typeof(RectTransform));
+            fillGo.transform.SetParent(fillAreaGo.transform, false);
+            var fillRect = (RectTransform)fillGo.transform;
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+            Image fillImage = fillGo.AddComponent<Image>();
+            fillImage.sprite = trackSprite;
+            fillImage.type = Image.Type.Sliced;
+            fillImage.pixelsPerUnitMultiplier = 2f;
+            fillImage.color = HoneyGold;
+
+            var handleAreaGo = new GameObject("HandleSlideArea", typeof(RectTransform));
+            handleAreaGo.transform.SetParent(sliderGo.transform, false);
+            var handleAreaRect = (RectTransform)handleAreaGo.transform;
+            handleAreaRect.anchorMin = Vector2.zero;
+            handleAreaRect.anchorMax = Vector2.one;
+            handleAreaRect.offsetMin = new Vector2(20f, 0f);
+            handleAreaRect.offsetMax = new Vector2(-20f, 0f);
+
+            var handleGo = new GameObject("Handle", typeof(RectTransform));
+            handleGo.transform.SetParent(handleAreaGo.transform, false);
+            var handleRect = (RectTransform)handleGo.transform;
+            handleRect.sizeDelta = new Vector2(44f, 70f);
+            Image handleImage = handleGo.AddComponent<Image>();
+            handleImage.sprite = handleSprite;
+            handleImage.type = Image.Type.Sliced;
+            handleImage.pixelsPerUnitMultiplier = 2f;
+            handleImage.color = Amber;
+
+            Slider slider = sliderGo.AddComponent<Slider>();
+            slider.fillRect = fillRect;
+            slider.handleRect = handleRect;
+            slider.targetGraphic = handleImage;
+            slider.direction = Slider.Direction.LeftToRight;
+            slider.minValue = 0f;
+            slider.maxValue = 1f;
+            slider.value = 1f;
+
+            return slider;
+        }
+
+        // Pause menu in the run scene: HUD pause button + frozen-run panel with
+        // resume / settings / abandon. Fully regenerated each run (destroy +
+        // rebuild) — regeneration IS the idempotency.
+        private static void BuildPauseMenu(PersistentMetaProgressionStoreSO store)
+        {
+            Transform canvas = GameObject.Find("Canvas").transform;
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
+            Sprite panelSprite = LoadUiKitSprite("PixelPanel");
+            Sprite buttonSprite = LoadUiKitSprite("PixelButton");
+
+            Transform existing = canvas.Find("PauseRoot");
+            if (existing != null)
+            {
+                Object.DestroyImmediate(existing.gameObject);
+            }
+
+            var rootGo = new GameObject("PauseRoot", typeof(RectTransform));
+            rootGo.transform.SetParent(canvas, false);
+            var rootRect = (RectTransform)rootGo.transform;
+            rootRect.anchorMin = Vector2.zero;
+            rootRect.anchorMax = Vector2.one;
+            rootRect.offsetMin = Vector2.zero;
+            rootRect.offsetMax = Vector2.zero;
+
+            // HUD pause button, top-right below the counters.
+            Button pauseButton = CreateButton(rootGo.transform, "PauseButton", "II", font, buttonSprite,
+                Vector2.zero, new Vector2(90f, 90f), 36f);
+            var pauseButtonRect = (RectTransform)pauseButton.transform;
+            pauseButtonRect.anchorMin = new Vector2(1f, 1f);
+            pauseButtonRect.anchorMax = new Vector2(1f, 1f);
+            pauseButtonRect.pivot = new Vector2(1f, 1f);
+            pauseButtonRect.anchoredPosition = new Vector2(-25f, -140f);
+
+            // Frozen-run panel.
+            GameObject pausePanel = CreatePanel(rootGo.transform, "PausePanel", panelSprite, new Vector2(760f, 900f));
+            CreateMenuText(pausePanel.transform, "Title", "PAUSED", font, 80f, HoneyGold,
+                anchorY: 1f, offsetY: -60f, new Vector2(700f, 110f));
+            Button resumeButton = CreateMenuButton(pausePanel.transform, "ResumeButton", "RESUME",
+                font, buttonSprite, new Vector2(0f, 120f));
+            Button settingsButton = CreateMenuButton(pausePanel.transform, "SettingsButton", "SETTINGS",
+                font, buttonSprite, new Vector2(0f, -30f));
+            Button abandonButton = CreateMenuButton(pausePanel.transform, "AbandonButton", "ABANDON RUN",
+                font, buttonSprite, new Vector2(0f, -180f));
+
+            // Settings sub-panel over the pause panel.
+            GameObject settingsPanel = CreatePanel(rootGo.transform, "PauseSettingsPanel", panelSprite, new Vector2(820f, 1000f));
+            CreateMenuText(settingsPanel.transform, "Title", "SETTINGS", font, 64f, HoneyGold,
+                anchorY: 1f, offsetY: -50f, new Vector2(760f, 90f));
+            BuildSettingsControls(settingsPanel, store, font, panelSprite, buttonSprite);
+            Button settingsBackButton = CreateMenuButton(settingsPanel.transform, "BackButton", "BACK",
+                font, buttonSprite, new Vector2(0f, -380f));
+
+            var controller = rootGo.AddComponent<PauseMenuController>();
+            var serialized = new SerializedObject(controller);
+            serialized.FindProperty("_pausePanel").objectReferenceValue = pausePanel;
+            serialized.FindProperty("_settingsPanel").objectReferenceValue = settingsPanel;
+            serialized.FindProperty("_pauseButton").objectReferenceValue = pauseButton;
+            serialized.FindProperty("_resumeButton").objectReferenceValue = resumeButton;
+            serialized.FindProperty("_settingsButton").objectReferenceValue = settingsButton;
+            serialized.FindProperty("_settingsBackButton").objectReferenceValue = settingsBackButton;
+            serialized.FindProperty("_abandonButton").objectReferenceValue = abandonButton;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            pausePanel.SetActive(false);
+            settingsPanel.SetActive(false);
+        }
+
         private static Sprite LoadUiKitSprite(string spriteName)
         {
             Object[] subAssets = AssetDatabase.LoadAllAssetsAtPath(UiKitTexturePath);
@@ -576,6 +755,9 @@ namespace SurveHive.BuildTools
             AddResultsRouting("GameOverPanel", "GameOverHint", "Press R to retry", font, buttonSprite);
             AddResultsRouting("VictoryPanel", "VictoryHint",
                 "The Queen has fallen.\nPress R to fly again", font, buttonSprite);
+
+            // 4C: in-run pause menu with the shared settings block.
+            BuildPauseMenu(store);
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
         }
