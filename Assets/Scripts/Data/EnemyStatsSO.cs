@@ -15,6 +15,9 @@ namespace SurveHive.Data
         [SerializeField, Range(0f, 1f)] private float _currencyDropChance = 0.2f;
         [SerializeField] private int _currencyDropMin = 1;
         [SerializeField] private int _currencyDropMax = 3;
+        // Chance to drop a world item (honey jar / magnet / shield / bomb);
+        // elites+ carry the meaningful values.
+        [SerializeField, Range(0f, 1f)] private float _itemDropChance;
         [SerializeField] private Color _spriteTint = Color.white;
         // Uniform world-scale of the whole enemy — ranks share one rig and read
         // bigger/smaller through this rather than separate art.
@@ -45,6 +48,8 @@ namespace SurveHive.Data
         public int CurrencyDropMin => _currencyDropMin;
 
         public int CurrencyDropMax => _currencyDropMax;
+
+        public float ItemDropChance => _itemDropChance;
 
         public Color SpriteTint => _spriteTint;
 

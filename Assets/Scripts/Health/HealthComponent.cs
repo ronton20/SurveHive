@@ -30,9 +30,22 @@ namespace SurveHive.Health
             _currentHealth = _maxHealth;
         }
 
+        private IDamageAbsorber _damageAbsorber;
+
+        /// <summary>Optional interceptor (e.g. Wax Shield); null to clear.</summary>
+        public void SetDamageAbsorber(IDamageAbsorber absorber)
+        {
+            _damageAbsorber = absorber;
+        }
+
         public void TakeDamage(float amount, GameObject instigator)
         {
             if (_isDead || amount <= 0f)
+            {
+                return;
+            }
+
+            if (_damageAbsorber != null && _damageAbsorber.TryAbsorb(amount))
             {
                 return;
             }

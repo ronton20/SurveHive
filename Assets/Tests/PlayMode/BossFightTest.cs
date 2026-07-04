@@ -79,6 +79,14 @@ namespace SurveHive.Tests
             Assert.IsTrue(GamePause.IsPaused, "Run paused on victory");
             Assert.Less(barGroup.alpha, 0.5f, "Boss health bar hidden after Queen death");
 
+            // Results block populated (time/kills/level/currency).
+            Transform statsTransform = victoryPanel.transform.Find("ResultsStats");
+            Assert.IsNotNull(statsTransform, "VictoryPanel has ResultsStats");
+            var statsText = statsTransform.GetComponent<TMPro.TMP_Text>();
+            Assert.IsNotNull(statsText);
+            StringAssert.Contains("Kills", statsText.text, "Results show kill count");
+            StringAssert.Contains("Honey banked", statsText.text, "Results show banked currency");
+
             // Leave global state clean for any test that follows.
             GamePause.SetPaused(false);
         }

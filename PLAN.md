@@ -159,7 +159,7 @@ New: **Nectar Sense** (pickup/magnet radius), **Keen Eye** (crit chance — crit
 
 ---
 
-## 5. Phase 3 — Run Structure (waves, bosses, drops, results)
+## 5. Phase 3 — Run Structure (waves, bosses, drops, results) — ✅ DONE (2026-07-04)
 
 > **Execution split (2026-07-04, agreed with Ron):** Phase 3 ships as three independently
 > verified + committed sub-phases so a session/token budget running out never strands
@@ -172,7 +172,7 @@ New: **Nectar Sense** (pickup/magnet radius), **Keen Eye** (crit chance — crit
 > - **3B — Bosses** ✅ (2026-07-04, validator 263/263, EditMode 25/25, PlayMode 2/2 incl. a boss-flow test that fast-forwards the timeline, kills the Queen, and asserts victory; Queen body = royal-tinted BossPack1 BlueDragon until custom art): Queen's Royal Guard miniboss (telegraphed charge), Queen Bee (summon
 >   workers / radial stinger burst / charge sweep, enemy projectile pool), boss HP bar, spawn
 >   banner + shake, Queen death = victory path.
-> - **3C — Drops + results** ⬜: pooled item drops (Honey Jar / Magnet / Wax Shield / Royal
+> - **3C — Drops + results** ✅ (2026-07-04, validator 284/284, EditMode 29/29, PlayMode 2/2): pooled item drops (Honey Jar / Magnet / Wax Shield / Royal
 >   Bomb) with drop tables, results screen on death & victory (time, kills, level, currency
 >   banked), restart flow, README/TODO refresh.
 > All three extend one `Phase3RunStructureBuilder` pass + the validator; each ends with
@@ -207,6 +207,17 @@ On death **or** victory: results screen — time survived, kills, level reached,
 4. All 4 drop types spawn, do their effect, and return to pools.
 5. Results screen shows correct stats for both death and victory paths; currency banks correctly.
 6. Validator extended to cover stage config + boss prefabs; scene builder can regenerate everything.
+
+> **Phase 3 completion notes (2026-07-04):** delivered in three verified commits (3A/3B/3C, see the
+> execution-split checklist above) via `SurveHive/Apply Phase 3 Run Structure`. Final state:
+> validator **284/284**, EditMode **29/29**, PlayMode **2/2** — including a boss-flow test that
+> fast-forwards the live stage clock, asserts the Royal Guard at 50% and Queen at 100%, kills her,
+> and checks the victory results screen. Deviations/decisions: stage duration is **10 min** (not
+> 15) pending the Phase 5 tuning pass; the Queen's body is the **BossPack1 dragon** with a royal
+> tint (per the plan's "best-fit body until custom art"); success criterion 2 ("beatable by a
+> decently-built run") and criterion 3 (frame rate at peak load) still want a real human playthrough
+> — everything else is machine-verified. Drop rates: trash 1–3%, Queen's Guard 12%, bosses 100%.
+> The Wax Shield registers as a damage absorber on HealthComponent (new `IDamageAbsorber` seam).
 
 ---
 
@@ -259,7 +270,7 @@ On death **or** victory: results screen — time survived, kills, level reached,
 | 0 ✅ | Asset triage + pixel-perfect camera foundation — done 2026-07-04 | small |
 | 1 ✅ | Art swap, game feel, UI reskin — done 2026-07-04 | large |
 | 2 ✅ | Status effects, 6 actives, 10 passives, rarity — done 2026-07-04 | large |
-| 3 | Stage timeline, bosses, drops, results | large |
+| 3 ✅ | Stage timeline, bosses, drops, results — done 2026-07-04 | large |
 | 4 | Save, meta shop, menus, pause | medium |
 | 5 | Audio, tuning, mobile sanity, localization seam | medium |
 

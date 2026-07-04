@@ -22,6 +22,7 @@ MonoBehaviour:
   _currencyDropChance: 1
   _currencyDropMin: 8
   _currencyDropMax: 15
+  _itemDropChance: 1
   _spriteTint: {r: 1, g: 0.45, b: 0.85, a: 1}
   _scale: 1.7
   _knockbackResistance: 8

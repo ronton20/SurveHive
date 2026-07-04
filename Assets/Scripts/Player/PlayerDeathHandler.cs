@@ -36,6 +36,12 @@ namespace SurveHive.Player
 
             _isDead = true;
 
+            // Bank the run's currency on death too (victory banks via BossSpawner).
+            if (RunSession.Instance != null)
+            {
+                RunSession.Instance.EndRun();
+            }
+
             if (_gameOverPanel != null)
             {
                 _gameOverPanel.SetActive(true);

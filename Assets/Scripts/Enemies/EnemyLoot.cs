@@ -82,6 +82,19 @@ namespace SurveHive.Enemies
                 }
             }
 
+            // World item drops (elites/bosses; PLAN §5.3). Uniform type roll,
+            // offset slightly so the item doesn't hide under the EXP mote.
+            if (Random.value <= stats.ItemDropChance)
+            {
+                ItemDropType dropType = ItemDrops.RollType(Random.value);
+                int dropPoolId = ItemDrops.GetPoolId(dropType);
+                if (PoolManager.Instance.HasPool(dropPoolId))
+                {
+                    Vector3 dropPosition = position + (Vector3)(Random.insideUnitCircle.normalized * 0.6f);
+                    PoolManager.Instance.Get(dropPoolId, dropPosition, Quaternion.identity);
+                }
+            }
+
             // With a death animation, the corpse plays out and releases itself;
             // otherwise return to the pool immediately.
             if (TryGetComponent(out View.DeathAnimation deathAnimation))

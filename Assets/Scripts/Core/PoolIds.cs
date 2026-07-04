@@ -25,5 +25,12 @@ namespace SurveHive.Core
         public const int QueensRoyalGuard = 16;
         public const int QueenBee = 17;
         public const int EnemyStinger = 18;
+
+        // Phase 3 — item drops.
+        public const int HoneyJarDrop = 19;
+        public const int MagnetDrop = 20;
+        public const int WaxShieldDrop = 21;
+        public const int RoyalBombDrop = 22;
+        public const int NukeVfx = 23;
     }
 }

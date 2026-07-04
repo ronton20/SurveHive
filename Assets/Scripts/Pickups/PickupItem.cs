@@ -13,11 +13,19 @@ namespace SurveHive.Pickups
         [SerializeField] private float _attractRadius = 3f;
         [SerializeField] private float _attractSpeed = 8f;
 
+        // Magnet drop: while active, every pickup homes in regardless of radius.
+        private static float _vacuumUntilTime;
+
         private PickupType _type;
         private float _value;
         private PlayerExperience _playerExperience;
         private RunCurrencyWallet _currencyWallet;
         private Transform _playerTransform;
+
+        public static void ActivateVacuum(float durationSeconds)
+        {
+            _vacuumUntilTime = Time.time + durationSeconds;
+        }
 
         public void Initialize(PickupType type, float value, PlayerExperience playerExperience, RunCurrencyWallet currencyWallet, Transform playerTransform)
         {
@@ -42,13 +50,14 @@ namespace SurveHive.Pickups
                 radius *= Player.PlayerContext.Stats.MagnetRadiusMultiplier;
             }
 
+            bool vacuumActive = Time.time < _vacuumUntilTime;
             Vector3 toPlayer = _playerTransform.position - transform.position;
-            if (toPlayer.sqrMagnitude > radius * radius)
+            if (!vacuumActive && toPlayer.sqrMagnitude > radius * radius)
             {
                 return;
             }
 
-            float step = _attractSpeed * Time.deltaTime;
+            float step = (vacuumActive ? _attractSpeed * 2.5f : _attractSpeed) * Time.deltaTime;
             transform.position += toPlayer.normalized * Mathf.Min(step, toPlayer.magnitude);
         }
 

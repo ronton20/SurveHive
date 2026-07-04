@@ -557,7 +557,7 @@ namespace SurveHive.BuildTools
 
         // Wraps a sprite-effects pack particle prefab in a pooled one-shot,
         // mirroring the Phase 1 DeathPoof approach.
-        private static GameObject EnsurePackVfxWrapper(
+        internal static GameObject EnsurePackVfxWrapper(
             string name, string sourcePrefabName, int poolId, float scale, bool tintParticles, Color tint)
         {
             string path = $"{VfxPrefabFolder}/{name}.prefab";
@@ -778,7 +778,7 @@ namespace SurveHive.BuildTools
         // ------------------------------------------------------------------
         // Sprite generation (same conventions as the Phase 1 builder).
         // ------------------------------------------------------------------
-        private static Sprite CreatePixelSprite(
+        internal static Sprite CreatePixelSprite(
             string assetName, string[] rows, Color32 outline, Color32 body, Color32 highlight)
         {
             int height = rows.Length;

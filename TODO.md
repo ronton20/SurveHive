@@ -14,13 +14,13 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 5. ~~**Elemental abilities** — attacks/skills that apply status effects with a chance (e.g. fire → burn, ice → slow/freeze).~~ *(done in Phase 2: 6 active skills, four of which proc statuses — honey→slow, pollen→poison, static→stun, ember→burn. A frost "Chilling Nectar" freeze applier is designed as skill #7 if the roster needs it.)*
 
 ## Waves & Enemies
-6. **Escalating spawns** — increase enemy spawn rate/count as the run progresses (distinct from the current per-minute stat scaling).
-7. **Strong / Dangerous waves** — periodic waves with significantly higher enemy counts and possibly special spawn patterns/formations.
-8. **Bosses** — mini-bosses and a per-world final boss (e.g. Beehive: Queen's Royal Guard minibosses → Queen Bee).
+6. ~~**Escalating spawns** — increase enemy spawn rate/count as the run progresses (distinct from the current per-minute stat scaling).~~ *(done in Phase 3: stage spawn-rate curve 1×→3.5×.)*
+7. ~~**Strong / Dangerous waves** — periodic waves with significantly higher enemy counts and possibly special spawn patterns/formations.~~ *(done in Phase 3: surround ring at 25%, directional flood at 75%.)*
+8. ~~**Bosses** — mini-bosses and a per-world final boss (e.g. Beehive: Queen's Royal Guard minibosses → Queen Bee).~~ *(done in Phase 3: Royal Guard charge miniboss + 3-pattern Queen Bee; killing her wins the run.)*
 
 ## Run Structure
-9. **Stage progress bar** — a per-stage timeline: Strong Waves at 25% and 75%, mini-boss at 50%, final boss at 100%.
-10. **Item drops** — potion / honey jar (heal), magnet (pull all pickups), shield, screen-nuke, etc.
+9. ~~**Stage progress bar** — a per-stage timeline: Strong Waves at 25% and 75%, mini-boss at 50%, final boss at 100%.~~ *(done in Phase 3: HUD bar with siren/skull/crown markers.)*
+10. ~~**Item drops** — potion / honey jar (heal), magnet (pull all pickups), shield, screen-nuke, etc.~~ *(done in Phase 3: Honey Jar / Magnet / Wax Shield / Royal Bomb, drop tables on enemy stats.)*
 
 ## Meta & Content
 11. **Menus** — main menu, level/world selection, difficulty selection.
@@ -31,7 +31,7 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 
 ## Suggestions / additions to consider
 - **Pause & settings menu** — in-run pause (audio/vibration/quality toggles); useful early for testing and expected on mobile.
-- **Run stats / results screen** — on death or stage clear, show time survived, kills, level, currency earned (feeds naturally into meta progression).
+- ~~**Run stats / results screen** — on death or stage clear, show time survived, kills, level, currency earned (feeds naturally into meta progression).~~ *(done in Phase 3: results block on both death and victory screens; currency banks on both paths.)*
 - **Save/load** — persist meta-progression and settings (goes hand-in-hand with #12; decide on a serialization approach, e.g. JSON in `Application.persistentDataPath`).
 - **Object-pool coverage for new spawners** — keep bosses / strong-wave hordes / drops pooled to hold the zero-GC guarantee as counts grow.
 - **Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, and drop rates.

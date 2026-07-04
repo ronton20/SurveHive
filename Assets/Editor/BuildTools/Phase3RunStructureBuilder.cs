@@ -57,6 +57,14 @@ namespace SurveHive.BuildTools
             // 3A: stage timeline (boss events now point at the real boss ranks).
             StageConfigSO stageConfig = EnsureStageConfig(royalGuardStats, queenStats);
 
+            // 3C: item drops + drop chances.
+            EnsureItemDropAssets();
+            SetItemDropChance("Assets/Data/Enemies/WorkerBee.asset", 0.01f);
+            SetItemDropChance("Assets/Data/Enemies/WarriorBee.asset", 0.03f);
+            SetItemDropChance("Assets/Data/Enemies/QueensGuard.asset", 0.12f);
+            SetItemDropChance(RoyalGuardStatsPath, 1f);
+            SetItemDropChance(QueenStatsPath, 1f);
+
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
@@ -205,6 +213,141 @@ namespace SurveHive.BuildTools
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(stats);
             return stats;
+        }
+
+        // ------------------------------------------------------------------
+        // 3C: item drops (sprites, prefabs, nuke VFX).
+        // ------------------------------------------------------------------
+        private static readonly string[] HoneyJarPixels =
+        {
+            "..kkkkk..",
+            ".kwwwwwk.",
+            ".kkkkkkk.",
+            ".kgggggk.",
+            "kggwggggk",
+            "kgggggggk",
+            "kggggwggk",
+            "kgggggggk",
+            ".kgggggk.",
+            "..kkkkk..",
+        };
+
+        private static readonly string[] MagnetPixels =
+        {
+            ".kk...kk.",
+            "kwwk.kwwk",
+            "kwwk.kwwk",
+            "kggk.kggk",
+            "kggk.kggk",
+            "kggkkkggk",
+            "kgggggggk",
+            ".kgggggk.",
+            "..kkkkk..",
+        };
+
+        private static readonly string[] WaxShieldPixels =
+        {
+            "kkkkkkkkk",
+            "kwwwwwwwk",
+            "kwgggggwk",
+            "kwgggggwk",
+            "kwgggggwk",
+            ".kwgggwk.",
+            ".kwgggwk.",
+            "..kwgwk..",
+            "...kwk...",
+            "....k....",
+        };
+
+        private static readonly string[] RoyalBombPixels =
+        {
+            "....kw....",
+            "....kk....",
+            "...kkkk...",
+            ".kkggggkk.",
+            "kggwwggggk",
+            "kgwwgggggk",
+            "kggggggggk",
+            "kggggggggk",
+            ".kkggggkk.",
+            "...kkkk...",
+        };
+
+        private static void EnsureItemDropAssets()
+        {
+            EnsureFolder("Assets/Prefabs/Drops");
+            Color32 outline = new Color32(58, 36, 22, 255);
+
+            Sprite jar = Phase2CombatDepthBuilder.CreatePixelSprite("HoneyJar", HoneyJarPixels,
+                outline, new Color32(255, 195, 11, 255), new Color32(255, 240, 180, 255));
+            Sprite magnet = Phase2CombatDepthBuilder.CreatePixelSprite("MagnetItem", MagnetPixels,
+                outline, new Color32(217, 72, 59, 255), new Color32(240, 240, 255, 255));
+            Sprite shield = Phase2CombatDepthBuilder.CreatePixelSprite("WaxShield", WaxShieldPixels,
+                outline, new Color32(232, 216, 160, 255), new Color32(255, 255, 255, 255));
+            Sprite bomb = Phase2CombatDepthBuilder.CreatePixelSprite("RoyalBomb", RoyalBombPixels,
+                new Color32(20, 16, 26, 255), new Color32(64, 56, 78, 255), new Color32(160, 90, 200, 255));
+
+            EnsureItemDropPrefab("HoneyJarDrop", jar, Pickups.ItemDropType.HoneyJar, PoolIds.HoneyJarDrop);
+            EnsureItemDropPrefab("MagnetDrop", magnet, Pickups.ItemDropType.Magnet, PoolIds.MagnetDrop);
+            EnsureItemDropPrefab("WaxShieldDrop", shield, Pickups.ItemDropType.WaxShield, PoolIds.WaxShieldDrop);
+            EnsureItemDropPrefab("RoyalBombDrop", bomb, Pickups.ItemDropType.RoyalBomb, PoolIds.RoyalBombDrop);
+
+            Phase2CombatDepthBuilder.EnsurePackVfxWrapper(
+                "RoyalNuke", "Explosion_purple", PoolIds.NukeVfx, 1.8f, false, Color.clear);
+        }
+
+        private static void EnsureItemDropPrefab(string name, Sprite sprite, Pickups.ItemDropType type, int poolId)
+        {
+            string path = $"Assets/Prefabs/Drops/{name}.prefab";
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(path) == null)
+            {
+                var go = new GameObject(name);
+                go.AddComponent<SpriteRenderer>();
+                var col = go.AddComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                go.AddComponent<Pickups.ItemDrop>();
+                PrefabUtility.SaveAsPrefabAsset(go, path);
+                Object.DestroyImmediate(go);
+            }
+
+            GameObject contents = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var renderer = contents.GetComponent<SpriteRenderer>();
+                renderer.sprite = sprite;
+                renderer.color = Color.white;
+                renderer.sortingOrder = 1;
+
+                var col = contents.GetComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.35f;
+
+                var serialized = new SerializedObject(contents.GetComponent<Pickups.ItemDrop>());
+                serialized.FindProperty("_poolId").intValue = poolId;
+                serialized.FindProperty("_type").intValue = (int)type;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                PrefabUtility.SaveAsPrefabAsset(contents, path);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
+        }
+
+        private static void SetItemDropChance(string statsPath, float chance)
+        {
+            var stats = AssetDatabase.LoadAssetAtPath<EnemyStatsSO>(statsPath);
+            if (stats == null)
+            {
+                Debug.LogError($"Phase3: enemy stats missing at {statsPath}");
+                return;
+            }
+
+            var serialized = new SerializedObject(stats);
+            serialized.FindProperty("_itemDropChance").floatValue = chance;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(stats);
         }
 
         private static void EnsureEnemyStingerPrefab()
@@ -357,7 +500,116 @@ namespace SurveHive.BuildTools
             bossSpawnerSerialized.FindProperty("_victoryPanel").objectReferenceValue = victoryPanel;
             bossSpawnerSerialized.ApplyModifiedPropertiesWithoutUndo();
 
+            // --- 3C: drop pools, player shield, results blocks ---
+            var dropPoolsSerialized = new SerializedObject(bootstrapGo.GetComponent<GameBootstrap>());
+            SerializedProperty dropPools = dropPoolsSerialized.FindProperty("_pools");
+            EnsurePoolEntry(dropPools, PoolIds.HoneyJarDrop, LoadDropPrefab("HoneyJarDrop"), 2, 8);
+            EnsurePoolEntry(dropPools, PoolIds.MagnetDrop, LoadDropPrefab("MagnetDrop"), 2, 8);
+            EnsurePoolEntry(dropPools, PoolIds.WaxShieldDrop, LoadDropPrefab("WaxShieldDrop"), 2, 8);
+            EnsurePoolEntry(dropPools, PoolIds.RoyalBombDrop, LoadDropPrefab("RoyalBombDrop"), 2, 8);
+            EnsurePoolEntry(dropPools, PoolIds.NukeVfx,
+                AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/RoyalNuke.prefab"), 1, 4);
+            dropPoolsSerialized.ApplyModifiedPropertiesWithoutUndo();
+
+            BuildPlayerShield();
+            BuildResultsBlock("GameOverPanel", font);
+            BuildResultsBlock("VictoryPanel", font);
+
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+        }
+
+        private static GameObject LoadDropPrefab(string name)
+        {
+            return AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Prefabs/Drops/{name}.prefab");
+        }
+
+        private static void BuildPlayerShield()
+        {
+            GameObject playerGo = GameObject.Find("Player");
+
+            Transform ringTransform = playerGo.transform.Find("ShieldRing");
+            GameObject ringGo;
+            if (ringTransform == null)
+            {
+                ringGo = new GameObject("ShieldRing");
+                ringGo.transform.SetParent(playerGo.transform, false);
+            }
+            else
+            {
+                ringGo = ringTransform.gameObject;
+            }
+
+            ringGo.transform.localScale = new Vector3(1.2f, 1.2f, 1f);
+
+            if (!ringGo.TryGetComponent(out SpriteRenderer ringRenderer))
+            {
+                ringRenderer = ringGo.AddComponent<SpriteRenderer>();
+            }
+
+            ringRenderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/PollenAuraZone.png");
+            ringRenderer.color = new Color(0.6f, 0.85f, 1f, 0.9f);
+            ringRenderer.sortingOrder = 1;
+            ringRenderer.enabled = false;
+
+            if (!playerGo.TryGetComponent(out Player.PlayerShield shield))
+            {
+                shield = playerGo.AddComponent<Player.PlayerShield>();
+            }
+
+            var serialized = new SerializedObject(shield);
+            serialized.FindProperty("_health").objectReferenceValue = playerGo.GetComponent<HealthComponent>();
+            serialized.FindProperty("_shieldVisual").objectReferenceValue = ringRenderer;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Adds the run-results stats block + RunResultsUI to an end-of-run panel
+        // (works on the inactive GameOverPanel too).
+        private static void BuildResultsBlock(string panelName, TMP_FontAsset font)
+        {
+            Transform canvas = GameObject.Find("Canvas").transform;
+            Transform panel = FindChildIncludingInactive(canvas, panelName);
+            if (panel == null)
+            {
+                Debug.LogError($"Phase3: panel '{panelName}' not found for results block.");
+                return;
+            }
+
+            GameObject statsGo = EnsureUiChild(panel, "ResultsStats");
+            var rect = (RectTransform)statsGo.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0f, -10f);
+            rect.sizeDelta = new Vector2(620f, 220f);
+
+            if (!statsGo.TryGetComponent(out TextMeshProUGUI tmp))
+            {
+                tmp = statsGo.AddComponent<TextMeshProUGUI>();
+            }
+
+            tmp.font = font;
+            tmp.fontSize = 32f;
+            tmp.color = Wax;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.textWrappingMode = TextWrappingModes.Normal;
+            tmp.raycastTarget = false;
+
+            GameObject bootstrapGo = GameObject.Find("GameBootstrap");
+            GameObject playerGo = GameObject.Find("Player");
+
+            if (!panel.TryGetComponent(out RunResultsUI results))
+            {
+                results = panel.gameObject.AddComponent<RunResultsUI>();
+            }
+
+            var serialized = new SerializedObject(results);
+            serialized.FindProperty("_session").objectReferenceValue = bootstrapGo.GetComponent<RunSession>();
+            serialized.FindProperty("_playerExperience").objectReferenceValue =
+                playerGo.GetComponent<Progression.PlayerExperience>();
+            serialized.FindProperty("_wallet").objectReferenceValue =
+                bootstrapGo.GetComponent<Currency.RunCurrencyWallet>();
+            serialized.FindProperty("_statsText").objectReferenceValue = tmp;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static BossHealthBarUI BuildBossHealthBar(TMP_FontAsset font)

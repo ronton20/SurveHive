@@ -88,7 +88,7 @@ namespace SurveHive.BuildTools
                 {
                     var so = new SerializedObject(gb);
                     var pools = so.FindProperty("_pools");
-                    ok &= Check(pools.arraySize == 19, $"GameBootstrap._pools has 19 entries (found {pools.arraySize})");
+                    ok &= Check(pools.arraySize == 24, $"GameBootstrap._pools has 24 entries (found {pools.arraySize})");
                     bool hasDamageNumberPool = false;
                     bool hasQueensGuardPool = false;
                     bool hasDeathVfxPool = false;
@@ -497,6 +497,97 @@ namespace SurveHive.BuildTools
             }
 
             ok &= ValidatePhase3Bosses(canvasGo);
+            ok &= ValidatePhase3DropsAndResults(canvasGo);
+
+            return ok;
+        }
+
+        // --- Phase 3C: item drops + run results ---
+        private static bool ValidatePhase3DropsAndResults(GameObject canvasGo)
+        {
+            bool ok = true;
+
+            // Drop prefabs.
+            string[] dropNames = { "HoneyJarDrop", "MagnetDrop", "WaxShieldDrop", "RoyalBombDrop" };
+            foreach (string dropName in dropNames)
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"Assets/Prefabs/Drops/{dropName}.prefab");
+                bool valid = prefab != null && prefab.GetComponent<Pickups.ItemDrop>() != null;
+                var renderer = prefab != null ? prefab.GetComponent<SpriteRenderer>() : null;
+                valid &= renderer != null && renderer.sprite != null;
+                ok &= Check(valid, $"{dropName} prefab exists with ItemDrop + sprite");
+            }
+
+            var nuke = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/RoyalNuke.prefab");
+            ok &= Check(nuke != null && nuke.GetComponent<View.PooledVfx>() != null,
+                "RoyalNuke VFX prefab exists with PooledVfx");
+
+            // Drop pools.
+            var bootstrapGo = GameObject.Find("GameBootstrap");
+            if (bootstrapGo != null && bootstrapGo.TryGetComponent(out GameBootstrap gb))
+            {
+                var so = new SerializedObject(gb);
+                var pools = so.FindProperty("_pools");
+                ok &= Check(HasPoolEntry(pools, PoolIds.HoneyJarDrop) && HasPoolEntry(pools, PoolIds.MagnetDrop) &&
+                    HasPoolEntry(pools, PoolIds.WaxShieldDrop) && HasPoolEntry(pools, PoolIds.RoyalBombDrop) &&
+                    HasPoolEntry(pools, PoolIds.NukeVfx),
+                    "All item drop pools registered");
+            }
+
+            // Elites and bosses actually drop items.
+            var queensGuard = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/QueensGuard.asset");
+            ok &= Check(queensGuard != null && queensGuard.ItemDropChance > 0f, "QueensGuard has item drop chance");
+            var royalGuard = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/QueensRoyalGuard.asset");
+            ok &= Check(royalGuard != null && royalGuard.ItemDropChance >= 1f, "Royal Guard always drops an item");
+            var queen = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/QueenBee.asset");
+            ok &= Check(queen != null && queen.ItemDropChance >= 1f, "Queen always drops an item");
+
+            // Player shield.
+            var player = GameObject.Find("Player");
+            if (player != null)
+            {
+                var shield = player.GetComponent<Player.PlayerShield>();
+                ok &= Check(shield != null, "Player has PlayerShield");
+                if (shield != null)
+                {
+                    var so = new SerializedObject(shield);
+                    ok &= Check(so.FindProperty("_health").objectReferenceValue != null &&
+                        so.FindProperty("_shieldVisual").objectReferenceValue != null,
+                        "PlayerShield fully wired");
+                }
+
+                Transform ring = player.transform.Find("ShieldRing");
+                ok &= Check(ring != null && ring.TryGetComponent(out SpriteRenderer ringRenderer) && !ringRenderer.enabled,
+                    "ShieldRing visual exists and starts disabled");
+            }
+
+            // Results blocks on both end-of-run panels.
+            ok &= ValidateResultsBlock(canvasGo, "GameOverPanel");
+            ok &= ValidateResultsBlock(canvasGo, "VictoryPanel");
+
+            return ok;
+        }
+
+        private static bool ValidateResultsBlock(GameObject canvasGo, string panelName)
+        {
+            GameObject panel = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, panelName) : null;
+            if (panel == null)
+            {
+                return Check(false, $"{panelName} exists for results block");
+            }
+
+            bool ok = true;
+            var results = panel.GetComponent<UI.RunResultsUI>();
+            ok &= Check(results != null, $"{panelName} has RunResultsUI");
+            if (results != null)
+            {
+                var so = new SerializedObject(results);
+                ok &= Check(so.FindProperty("_session").objectReferenceValue != null &&
+                    so.FindProperty("_playerExperience").objectReferenceValue != null &&
+                    so.FindProperty("_wallet").objectReferenceValue != null &&
+                    so.FindProperty("_statsText").objectReferenceValue != null,
+                    $"{panelName} RunResultsUI fully wired");
+            }
 
             return ok;
         }
