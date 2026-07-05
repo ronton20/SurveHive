@@ -18,6 +18,9 @@ namespace SurveHive.Tests
             "Assets/Data/Skills/Actives/PollenCloud.asset",
             "Assets/Data/Skills/Actives/StaticWings.asset",
             "Assets/Data/Skills/Actives/EmberSting.asset",
+            "Assets/Data/Skills/Actives/FrostNova.asset",
+            "Assets/Data/Skills/Actives/BallLightning.asset",
+            "Assets/Data/Skills/Actives/HoneyBomb.asset",
         };
 
         [Test]

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 825c26930808b4c1baad73be13240591, type: 3}
+  m_Name: BallLightningCard
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SkillDefinitionSO
+  _id: BallLightningCard
+  _displayName: Ball Lightning
+  _description: Hurls a ring of crackling orbs that can stun enemies.
+  _effectType: 12
+  _lane: 2
+  _element: 3
+  _magnitude: 0
+  _weight: 1
+  _maxLevel: 5
+  _icon: {fileID: 21300000, guid: 50cdebba41d1e4db0a1aee543e935812, type: 3}
+  _rarity: 1
+  _activeSkill: {fileID: 11400000, guid: 52a8aafce4eb04c25bbc0dff5675cde0, type: 2}

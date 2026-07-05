@@ -1,3 +1,4 @@
+using SurveHive.Combat.Status;
 using SurveHive.Data;
 using SurveHive.Progression;
 using SurveHive.UI;
@@ -21,8 +22,19 @@ namespace SurveHive.BuildTools
         private const string BeehiveScenePath = "Assets/Scenes/Beehive.unity";
         private const string FontAssetPath = "Assets/ThirdParty/Fonts/BoldPixels/Assets/font/BoldPixels SDF.asset";
         private const string SkillsFolder = "Assets/Data/Skills";
+        private const string ActivesFolder = SkillsFolder + "/Actives";
         private const string DatabasePath = SkillsFolder + "/SkillDatabase.asset";
         private const int ChoiceCount = 3;
+
+        // One row of an active skill's per-level growth table.
+        private struct LevelRow
+        {
+            public float Damage;
+            public float Cooldown;
+            public int Count;
+            public float Area;
+            public float StatusChance;
+        }
 
         [MenuItem("SurveHive/Combat 2.0/1A - Power-Up Card Banners")]
         public static void ApplyCardBanners()
@@ -194,7 +206,8 @@ namespace SurveHive.BuildTools
         private static SkillDefinitionSO EnsureSkill(
             string assetPath, string id, string displayName, string description,
             SkillEffectType effect, PowerUpLane lane, SkillElement element,
-            float magnitude, int maxLevel, SkillRarity rarity, string iconName)
+            float magnitude, int maxLevel, SkillRarity rarity, string iconName,
+            ActiveSkillSO activeSkill = null)
         {
             var skill = AssetDatabase.LoadAssetAtPath<SkillDefinitionSO>(assetPath);
             if (skill == null)
@@ -215,6 +228,7 @@ namespace SurveHive.BuildTools
             so.FindProperty("_maxLevel").intValue = maxLevel;
             so.FindProperty("_rarity").enumValueIndex = (int)rarity;
             so.FindProperty("_icon").objectReferenceValue = FindIcon(iconName);
+            so.FindProperty("_activeSkill").objectReferenceValue = activeSkill;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(skill);
             return skill;
@@ -303,6 +317,123 @@ namespace SurveHive.BuildTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("Combat 2.0 1D: Piercing Shot + Ignite added; Piercing Lance retired.");
+        }
+
+        // ------------------------------------------------------------------
+        // 1E: Ability-lane expansion. The radial stinger burst now pierces (code,
+        // ActiveSkillManager). Adds three abilities that reuse existing pools:
+        // Frost Nova (radial freeze), Ball Lightning (radial stun), Honey Bomb
+        // (homing explosion + slow). Idempotent.
+        // ------------------------------------------------------------------
+        [MenuItem("SurveHive/Combat 2.0/1E - Add Abilities (Frost Nova, Ball Lightning, Honey Bomb)")]
+        public static void AddAbilities()
+        {
+            if (!AssetDatabase.IsValidFolder(ActivesFolder))
+            {
+                AssetDatabase.CreateFolder(SkillsFolder, "Actives");
+            }
+
+            // Reused pools: 8 = stinger (radial), 11 = ember bolt, 14 = ember blast VFX.
+            ActiveSkillSO frostNova = EnsureActiveSkill(
+                ActivesFolder + "/FrostNova.asset", "FrostNova", "Frost Nova",
+                ActiveSkillBehavior.RadialVolley, new[]
+                {
+                    new LevelRow { Damage = 6, Cooldown = 4.5f, Count = 6, StatusChance = 20 },
+                    new LevelRow { Damage = 8, Cooldown = 4.2f, Count = 7, StatusChance = 25 },
+                    new LevelRow { Damage = 10, Cooldown = 3.9f, Count = 8, StatusChance = 30 },
+                    new LevelRow { Damage = 12, Cooldown = 3.6f, Count = 10, StatusChance = 35 },
+                    new LevelRow { Damage = 15, Cooldown = 3.3f, Count = 12, StatusChance = 40 },
+                }, 9f, 7f, 8, -1, -1, StatusEffectType.Freeze, 12f, 1.2f);
+
+            ActiveSkillSO ballLightning = EnsureActiveSkill(
+                ActivesFolder + "/BallLightning.asset", "BallLightning", "Ball Lightning",
+                ActiveSkillBehavior.RadialVolley, new[]
+                {
+                    new LevelRow { Damage = 7, Cooldown = 4f, Count = 5, StatusChance = 15 },
+                    new LevelRow { Damage = 9, Cooldown = 3.7f, Count = 6, StatusChance = 18 },
+                    new LevelRow { Damage = 11, Cooldown = 3.4f, Count = 7, StatusChance = 22 },
+                    new LevelRow { Damage = 14, Cooldown = 3.1f, Count = 8, StatusChance = 26 },
+                    new LevelRow { Damage = 17, Cooldown = 2.8f, Count = 10, StatusChance = 30 },
+                }, 9f, 7f, 8, -1, -1, StatusEffectType.Stun, 0f, 1f);
+
+            ActiveSkillSO honeyBomb = EnsureActiveSkill(
+                ActivesFolder + "/HoneyBomb.asset", "HoneyBomb", "Honey Bomb",
+                ActiveSkillBehavior.HomingBolt, new[]
+                {
+                    new LevelRow { Damage = 12, Cooldown = 3.5f, Count = 1, Area = 2f, StatusChance = 60 },
+                    new LevelRow { Damage = 16, Cooldown = 3.2f, Count = 1, Area = 2.3f, StatusChance = 65 },
+                    new LevelRow { Damage = 20, Cooldown = 2.9f, Count = 1, Area = 2.6f, StatusChance = 70 },
+                    new LevelRow { Damage = 25, Cooldown = 2.6f, Count = 1, Area = 2.9f, StatusChance = 80 },
+                    new LevelRow { Damage = 31, Cooldown = 2.3f, Count = 1, Area = 3.2f, StatusChance = 90 },
+                }, 7f, 11f, 11, 14, -1, StatusEffectType.Slow, 0.4f, 2.5f);
+
+            SkillDefinitionSO frostCard = EnsureSkill(
+                SkillsFolder + "/FrostNovaCard.asset", "FrostNovaCard", "Frost Nova",
+                "Blasts a ring of frost shards that can freeze enemies solid.",
+                SkillEffectType.ActiveSkill, PowerUpLane.Ability, SkillElement.Frost,
+                0f, 5, SkillRarity.Rare, "Icon_PictoIcon_Star", frostNova);
+
+            SkillDefinitionSO ballCard = EnsureSkill(
+                SkillsFolder + "/BallLightningCard.asset", "BallLightningCard", "Ball Lightning",
+                "Hurls a ring of crackling orbs that can stun enemies.",
+                SkillEffectType.ActiveSkill, PowerUpLane.Ability, SkillElement.Electric,
+                0f, 5, SkillRarity.Rare, "Icon_PictoIcon_Energy", ballLightning);
+
+            SkillDefinitionSO honeyCard = EnsureSkill(
+                SkillsFolder + "/HoneyBombCard.asset", "HoneyBombCard", "Honey Bomb",
+                "Lobs a homing honey bomb that explodes and slows everything caught in it.",
+                SkillEffectType.ActiveSkill, PowerUpLane.Ability, SkillElement.Honey,
+                0f, 5, SkillRarity.Rare, "Icon_PictoIcon_Heart", honeyBomb);
+
+            RegisterInDatabase(frostCard, ballCard, honeyCard);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("Combat 2.0 1E: Frost Nova + Ball Lightning + Honey Bomb added; radial burst pierces.");
+        }
+
+        private static ActiveSkillSO EnsureActiveSkill(
+            string assetPath, string id, string displayName, ActiveSkillBehavior behavior,
+            LevelRow[] levels, float projectileSpeed, float range,
+            int projectilePoolId, int impactVfxPoolId, int zonePoolId,
+            StatusEffectType statusType, float statusPotency, float statusDuration)
+        {
+            var skill = AssetDatabase.LoadAssetAtPath<ActiveSkillSO>(assetPath);
+            if (skill == null)
+            {
+                skill = ScriptableObject.CreateInstance<ActiveSkillSO>();
+                AssetDatabase.CreateAsset(skill, assetPath);
+            }
+
+            var so = new SerializedObject(skill);
+            so.FindProperty("_id").stringValue = id;
+            so.FindProperty("_displayName").stringValue = displayName;
+            so.FindProperty("_behavior").enumValueIndex = (int)behavior;
+            so.FindProperty("_projectileSpeed").floatValue = projectileSpeed;
+            so.FindProperty("_range").floatValue = range;
+            so.FindProperty("_projectilePoolId").intValue = projectilePoolId;
+            so.FindProperty("_impactVfxPoolId").intValue = impactVfxPoolId;
+            so.FindProperty("_zonePoolId").intValue = zonePoolId;
+            so.FindProperty("_appliesStatus").boolValue = true;
+            so.FindProperty("_statusType").enumValueIndex = (int)statusType;
+            so.FindProperty("_statusPotency").floatValue = statusPotency;
+            so.FindProperty("_statusDuration").floatValue = statusDuration;
+
+            SerializedProperty levelsProp = so.FindProperty("_levels");
+            levelsProp.arraySize = levels.Length;
+            for (int i = 0; i < levels.Length; i++)
+            {
+                SerializedProperty row = levelsProp.GetArrayElementAtIndex(i);
+                row.FindPropertyRelative("Damage").floatValue = levels[i].Damage;
+                row.FindPropertyRelative("Cooldown").floatValue = levels[i].Cooldown;
+                row.FindPropertyRelative("Count").intValue = levels[i].Count;
+                row.FindPropertyRelative("Area").floatValue = levels[i].Area;
+                row.FindPropertyRelative("StatusChancePercent").floatValue = levels[i].StatusChance;
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(skill);
+            return skill;
         }
 
         private static void RemoveFromDatabase(SkillDefinitionSO skill)

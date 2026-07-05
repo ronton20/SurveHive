@@ -179,7 +179,8 @@ namespace SurveHive.Combat.Skills
             for (int i = 0; i < count; i++)
             {
                 Vector2 direction = Quaternion.Euler(0f, 0f, startAngle + (step * i)) * Vector2.right;
-                LaunchProjectile(skill, in stats, direction, null, 0, 1.5f);
+                // Radial bursts pierce through everything in each ray (Combat 2.0 1E).
+                LaunchProjectile(skill, in stats, direction, null, 999, 1.5f);
             }
 
             return true;
