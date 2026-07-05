@@ -47,6 +47,13 @@ namespace SurveHive.UI
         [SerializeField] private Color _epicCardColor = new Color(0.82f, 0.6f, 0.98f);
         [SerializeField] private Color _luckyCardColor = new Color(0.68f, 0.92f, 0.45f);
 
+        // Combat 2.0 (PLAN 1B): distinct-pick caps per lane. Once a lane is full,
+        // no new pick from it is offered; owned picks keep leveling.
+        [Header("Lane Selection Caps")]
+        [SerializeField] private int _passiveCap = 5;
+        [SerializeField] private int _enhancementCap = 3;
+        [SerializeField] private int _abilityCap = 5;
+
         // Times each skill (by database index) has been taken this run.
         private int[] _skillLevels;
         // Reused each open: eligible (not-maxed) database indices + their weights.
@@ -54,6 +61,12 @@ namespace SurveHive.UI
         private float[] _weightBuffer;
         private float[] _weightScratch;
         private int[] _selectedBuffer;
+        // Combat 2.0 (PLAN 1B): per-skill lane + cap tables, cached once (static
+        // for the run) so lane gating stays zero-GC per level-up.
+        private int[] _skillLanes;
+        private int[] _skillMaxLevels;
+        private readonly int[] _laneCaps = new int[3];
+        private readonly int[] _ownedPerLane = new int[3];
         private SkillDefinitionSO[] _currentChoices;
         private int[] _currentChoiceDbIndices;
         private bool[] _currentChoiceLucky;
@@ -69,6 +82,16 @@ namespace SurveHive.UI
             _indexBuffer = new int[skillCount];
             _weightBuffer = new float[skillCount];
             _weightScratch = new float[skillCount];
+
+            _skillLanes = new int[skillCount];
+            _skillMaxLevels = new int[skillCount];
+            for (int i = 0; i < skillCount; i++)
+            {
+                SkillDefinitionSO skill = _database.Skills[i];
+                _skillLanes[i] = (int)skill.Lane;
+                // 0 = uncapped, matching LaneEligibility's convention.
+                _skillMaxLevels[i] = skill.HasLevelCap ? skill.MaxLevel : 0;
+            }
             _selectedBuffer = new int[_choiceButtons.Length];
             _currentChoices = new SkillDefinitionSO[_choiceButtons.Length];
             _currentChoiceDbIndices = new int[_choiceButtons.Length];
@@ -276,19 +299,19 @@ namespace SurveHive.UI
 
         private int BuildEligibleBuffer()
         {
-            int count = 0;
-            SkillDefinitionSO[] skills = _database.Skills;
-            for (int i = 0; i < skills.Length; i++)
-            {
-                SkillDefinitionSO skill = skills[i];
-                if (skill.HasLevelCap && _skillLevels[i] >= skill.MaxLevel)
-                {
-                    continue;
-                }
+            _laneCaps[(int)PowerUpLane.Passive] = _passiveCap;
+            _laneCaps[(int)PowerUpLane.Enhancement] = _enhancementCap;
+            _laneCaps[(int)PowerUpLane.Ability] = _abilityCap;
 
-                _indexBuffer[count] = i;
-                _weightBuffer[count] = SkillRarityWeights.GetWeight(skill.Rarity);
-                count++;
+            SkillDefinitionSO[] skills = _database.Skills;
+            int count = LaneEligibility.BuildEligible(
+                _skillLanes, _skillLevels, _skillMaxLevels, skills.Length,
+                _laneCaps, _laneCaps.Length, _ownedPerLane, _indexBuffer);
+
+            // Weights align to the eligible indices just written to _indexBuffer.
+            for (int k = 0; k < count; k++)
+            {
+                _weightBuffer[k] = SkillRarityWeights.GetWeight(skills[_indexBuffer[k]].Rarity);
             }
 
             return count;
