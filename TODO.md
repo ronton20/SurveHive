@@ -41,6 +41,16 @@ Every offer card gets a **category banner/label** (Passive / Enhancement / Abili
 element cue from #18. Placeholder status/element icons now live in
 `Assets/ThirdParty/FantasyStatusIcons/` (slice + wire until custom art replaces them).
 
+**Power-up readability (follow-on UX — help players strategize around the lane caps):**
+- **Lane counter on the offer card** — under each card's lane banner, show a `owned/cap`
+  counter (e.g. `1/5` passives, `2/3` enhancements, `4/5` abilities) so the player can see at a
+  glance how much room a lane still has before committing a pick. The controller already tracks
+  owned-per-lane counts for gating (`LaneEligibility`); surface them on the banner.
+- **Owned power-ups list in the pause menu** — a panel listing every power-up the player
+  currently owns this run, grouped by lane, each with its current level (and ideally its
+  element cue), so mid-run they can review their build. Reads the same per-run level state the
+  level-up controller holds; the pause menu already exists (Phase 4C).
+
 ## Boss & Wave Drama (PLAN Phase 2)
 
 - **Pre-spawn warnings** — 5 seconds before a strong wave or a boss/miniboss spawns, show a

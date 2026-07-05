@@ -39,7 +39,7 @@ on the taxonomy the earlier ones establish.
 Once a lane is at its cap, **no new** pick from that lane is offered — but already-owned picks
 keep being offered to level up. Every offer card shows a **lane banner** and an **element** cue.
 
-### 1A — Taxonomy: lane + element enums, card banners ☐
+### 1A — Taxonomy: lane + element enums, card banners ✅
 Foundation. Add the classification data and surface it on the card; no cap logic yet.
 - Add `PowerUpLane { Passive, Enhancement, Ability }` and `SkillElement { Physical, Fire, Poison, Electric, Frost, Honey }` enums (append-only; enum indices are serialized in assets).
 - Add `[SerializeField] _lane` and `_element` to `SkillDefinitionSO` (and expose read-only props). Ability cards infer/echo lane = Ability.
@@ -48,7 +48,7 @@ Foundation. Add the classification data and surface it on the card; no cap logic
 - **Touch:** `Assets/Scripts/Progression/` (new enums), `Data/SkillDefinitionSO.cs`, `UI/LevelUpUIController.cs`, the level-up card prefab, `Data/Skills/*.asset`.
 - **Done when:** every offered card visibly shows its lane banner + element tint; existing offers still work.
 
-### 1B — Per-lane selection caps ☐
+### 1B — Per-lane selection caps ✅
 Gate the offer pool so each lane caps at its distinct count.
 - Track owned-distinct count per lane (a skill is "owned" once its run-level ≥ 1). Config the caps (5 / 3 / 5) somewhere data-driven (constants or a small config SO).
 - In `LevelUpUIController.BuildEligibleBuffer()`: an owned, non-maxed skill is always eligible (leveling); a **not-owned** skill is eligible only if its lane's owned count < that lane's cap.
@@ -57,7 +57,7 @@ Gate the offer pool so each lane caps at its distinct count.
 - **Tests:** EditMode — after 5 distinct passives owned, no 6th distinct passive is ever offered; owned passives still appear; same for 3 enhancements / 5 abilities.
 - **Done when:** caps hold across a full run; tests green.
 
-### 1C — Passive lane cleanup + new passives ☐
+### 1C — Passive lane cleanup + new passives ✅
 Reshape the Passive lane to the intended roster and add the two new stats.
 - **Add `armor`** to `PlayerStats` — damage-taken reduction. Model as flat + %-mitigation applied at the player's damage intake (in `HealthComponent`/`PlayerHitFeedback` receive path). Add a `PassiveArmor` skill.
 - **Add `ability power/damage`** to `PlayerStats` — a multiplier read by `ActiveSkillManager` when it computes ability damage (multiply `stats.Damage` at fire time). Add an `AbilityPower` skill.
@@ -83,6 +83,19 @@ Grow and polish the active-skill roster; wire ability-power scaling (from 1C).
 - Ensure `ActiveSkillManager` multiplies damage by ability power (1C) and respects the 5-cap via the lane gating (1B). `MaxEquipped` is already 8 — fine.
 - **Touch:** `Combat/Skills/ActiveSkillManager.cs`, `Data/ActiveSkillSO.cs` (if new behavior), new `Data/Skills/*` ability assets + pool IDs, `Data/SkillDatabaseSO`.
 - **Done when:** stinger burst pierces; ≥3 new abilities are offerable and scale with ability power; 5-cap holds.
+
+### 1F — Power-up readability UX ☐
+Help players strategize around the lane caps now that the lanes exist. Pure surfacing of state
+the controller already tracks — no new mechanics. Cheap; slot after the functional lanes land.
+- **Lane counter on the offer card** — under each card's lane banner, show an `owned/cap`
+  counter (e.g. `1/5`, `2/3`, `4/5`) so the player sees at a glance how much room a lane still
+  has before committing. `LaneEligibility` already computes owned-per-lane; expose those counts
+  and render a small counter under the banner label (extend the `Combat 2.0/1A` banner pass).
+- **Owned power-ups list in the pause menu** — a panel listing every power-up owned this run,
+  grouped by lane, each with current level (and element cue). Reads the same per-run level
+  state `LevelUpUIController` holds (`_skillLevels`); the pause menu already exists (Phase 4C).
+- **Touch:** `UI/LevelUpUIController.cs`, `Editor/BuildTools/CombatOverhaulBuilder.cs` (counter UI), `UI/PauseMenuController.cs` + new owned-list panel, a run-scoped read of owned skills/levels.
+- **Done when:** each offer card shows its lane's `owned/cap`; pausing shows the current build grouped by lane.
 
 > **After Phase 1:** update `README.md` (lane system, new stats, retired/added skills) and
 > `CHANGELOG.md`. Consider a "Phase 6A Combat 2.0" additive builder pass rather than editing
