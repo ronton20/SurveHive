@@ -122,7 +122,7 @@ interleaved with late Phase 1 if desired.
 - **Touch:** `Stage/BossSpawner.cs`, `Progression/PlayerExperience.cs`, `UI/LevelUpUIController.cs`.
 - **Done when:** killing the Royal Guard reliably yields a +2 lucky pick and an EXP pop.
 
-### 2C — Boss/miniboss death sequence: slow-mo + invuln + shockwave ☐
+### 2C — Boss/miniboss death sequence: slow-mo + invuln + shockwave ✅
 - On any boss/miniboss death: enter **slow-motion** (scaled `Time.timeScale`, e.g. 0.25×) for the death animation duration, make the **player invulnerable** for that window, fire a **shockwave VFX + screen shake**, and **hold** all downstream events (miniboss reward 2B, timeline resume, victory) until the animation completes.
 - Slow-mo must cooperate with `GamePause` (which owns `Time.timeScale`) and `HitStop` — add a `SlowMotion`/`BossDeathSequence` coordinator that yields to a real pause and restores `timeScale` cleanly. Because gameplay uses scaled time, a coroutine on unscaled time drives the sequence.
 - Player invuln: a temporary flag on the player's damage intake (`HealthComponent`/`PlayerHitFeedback`) — reuse or extend `PlayerShield`'s ignore path.
