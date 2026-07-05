@@ -36,5 +36,33 @@ namespace SurveHive.Stage
 
             return count;
         }
+
+        /// <summary>
+        /// Like <see cref="CollectNewlyFired"/> but for warnings: writes the
+        /// indices of events whose (time − lead) lies in (previous, current], i.e.
+        /// events about to fire <paramref name="leadNormalized"/> ahead. Fires once
+        /// per event as its warning window is crossed.
+        /// </summary>
+        public static int CollectNewlyWarned(
+            StageTimelineEvent[] events, float previous, float current, float leadNormalized, int[] results)
+        {
+            if (events == null || current <= previous)
+            {
+                return 0;
+            }
+
+            int count = 0;
+            for (int i = 0; i < events.Length && count < results.Length; i++)
+            {
+                float warnTime = events[i].NormalizedTime - leadNormalized;
+                if (warnTime > previous && warnTime <= current)
+                {
+                    results[count] = i;
+                    count++;
+                }
+            }
+
+            return count;
+        }
     }
 }

@@ -3,6 +3,7 @@ using SurveHive.Combat.Status;
 using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Progression;
+using SurveHive.Stage;
 using SurveHive.UI;
 using TMPro;
 using UnityEditor;
@@ -723,6 +724,7 @@ namespace SurveHive.BuildTools
         private static readonly Color DeepBrownC = new Color(0.227f, 0.141f, 0.086f);
         private static readonly Color HoneyGoldC = new Color(1f, 0.765f, 0.043f);
         private static readonly Color WaxC = new Color(0.91f, 0.847f, 0.627f);
+        private static readonly Color DangerRedC = new Color(0.851f, 0.282f, 0.231f);
 
         [MenuItem("SurveHive/Combat 2.0/1F - Owned Power-ups Pause Panel")]
         public static void ApplyPowerUpsPanel()
@@ -895,6 +897,70 @@ namespace SurveHive.BuildTools
             TMP_Text tmp = EnsureTmp(go, font, 28f, WaxC, TextAlignmentOptions.TopLeft);
             tmp.text = string.Empty;
             return tmp;
+        }
+
+        // ------------------------------------------------------------------
+        // Phase 2A: pre-spawn warning banner. Adds an upper-centre banner driven
+        // by StageDirector.OnStageWarning (~5s before each strong wave / boss).
+        // Idempotent.
+        // ------------------------------------------------------------------
+        [MenuItem("SurveHive/Combat 2.0/2A - Pre-spawn Warning Banner")]
+        public static void ApplyWarningBanner()
+        {
+            EditorSceneManager.OpenScene(BeehiveScenePath, OpenSceneMode.Single);
+
+            GameObject canvasGo = GameObject.Find("Canvas");
+            if (canvasGo == null)
+            {
+                Debug.LogError("Phase 2A: Canvas not found in Beehive.unity.");
+                return;
+            }
+
+            GameObject directorGo = GameObject.Find("StageDirector");
+            var director = directorGo != null ? directorGo.GetComponent<StageDirector>() : null;
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
+
+            // Centre-anchored (upper) so it stays visible in both orientations.
+            GameObject bannerGo = FindOrCreateChild(canvasGo.transform, "WaveWarningBanner");
+            var rect = (RectTransform)bannerGo.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = new Vector2(0f, 300f);
+            rect.sizeDelta = new Vector2(960f, 170f);
+
+            if (!bannerGo.TryGetComponent(out CanvasGroup canvasGroup))
+            {
+                canvasGroup = bannerGo.AddComponent<CanvasGroup>();
+            }
+
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.alpha = 0f;
+
+            GameObject textGo = FindOrCreateChild(bannerGo.transform, "Text");
+            var textRect = (RectTransform)textGo.transform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+            TMP_Text text = EnsureTmp(textGo, font, 54f, DangerRedC, TextAlignmentOptions.Center);
+            text.text = string.Empty;
+
+            if (!bannerGo.TryGetComponent(out WaveWarningBanner banner))
+            {
+                banner = bannerGo.AddComponent<WaveWarningBanner>();
+            }
+
+            var so = new SerializedObject(banner);
+            so.FindProperty("_director").objectReferenceValue = director;
+            so.FindProperty("_text").objectReferenceValue = text;
+            so.FindProperty("_canvasGroup").objectReferenceValue = canvasGroup;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(banner);
+
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+            Debug.Log("Phase 2A: pre-spawn warning banner built + wired.");
         }
     }
 }

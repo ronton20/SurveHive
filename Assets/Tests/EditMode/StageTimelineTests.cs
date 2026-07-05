@@ -76,5 +76,31 @@ namespace SurveHive.Tests
 
             Assert.AreEqual(2, StageTimeline.CollectNewlyFired(events, 0f, 1f, results));
         }
+
+        [Test]
+        public void Warning_FiresLeadAheadOfEventOnce()
+        {
+            // Event at 0.5, lead 0.1 → warning window crosses at 0.4.
+            StageTimelineEvent[] events = BuildEvents(0.5f);
+            int[] results = new int[8];
+
+            Assert.AreEqual(0, StageTimeline.CollectNewlyWarned(events, 0.3f, 0.39f, 0.1f, results));
+            Assert.AreEqual(1, StageTimeline.CollectNewlyWarned(events, 0.39f, 0.41f, 0.1f, results));
+            Assert.AreEqual(0, results[0]);
+            // The actual event has not fired yet at the warning point.
+            Assert.AreEqual(0, StageTimeline.CollectNewlyFired(events, 0.39f, 0.41f, results));
+            // Warning does not refire later.
+            Assert.AreEqual(0, StageTimeline.CollectNewlyWarned(events, 0.41f, 0.5f, 0.1f, results));
+        }
+
+        [Test]
+        public void Warning_ZeroLead_MatchesEventFiring()
+        {
+            StageTimelineEvent[] events = BuildEvents(0.25f, 0.75f);
+            int[] results = new int[8];
+
+            Assert.AreEqual(1, StageTimeline.CollectNewlyWarned(events, 0.2f, 0.3f, 0f, results));
+            Assert.AreEqual(0, results[0]);
+        }
     }
 }

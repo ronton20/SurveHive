@@ -23,8 +23,11 @@ namespace SurveHive.Stage
         // Flood waves spawn just past the visible half-width (PPU 16 ≈ 20u wide).
         [SerializeField] private float _waveSpawnRadius = 13f;
         [SerializeField] private float _floodSpreadDegrees = 50f;
+        // Lead time for the "incoming" warning banner before each timeline event.
+        [SerializeField] private float _warningLeadSeconds = 5f;
 
         private readonly int[] _firedBuffer = new int[MaxSimultaneousEvents];
+        private readonly int[] _warnBuffer = new int[MaxSimultaneousEvents];
         private float _elapsedSeconds;
         private float _previousNormalized = -1f;
 
@@ -33,6 +36,12 @@ namespace SurveHive.Stage
 
         /// <summary>Miniboss / final boss requested — handled by the boss systems.</summary>
         public event Action<StageTimelineEvent> OnBossEvent;
+
+        /// <summary>
+        /// A timeline event is about to fire in ~<c>leadSeconds</c> — feeds the
+        /// pre-spawn warning banner. The float is the lead time (countdown length).
+        /// </summary>
+        public event Action<StageTimelineEvent, float> OnStageWarning;
 
         public StageConfigSO Config => _config;
 
@@ -79,6 +88,17 @@ namespace SurveHive.Stage
 
             _elapsedSeconds += Time.deltaTime;
             float current = Progress;
+
+            // Pre-spawn warnings (~5s ahead) — raised before the events fire.
+            float leadNormalized = _config.TotalDurationSeconds > 0f
+                ? _warningLeadSeconds / _config.TotalDurationSeconds
+                : 0f;
+            int warned = StageTimeline.CollectNewlyWarned(
+                _config.Events, _previousNormalized, current, leadNormalized, _warnBuffer);
+            for (int i = 0; i < warned; i++)
+            {
+                OnStageWarning?.Invoke(_config.Events[_warnBuffer[i]], _warningLeadSeconds);
+            }
 
             int fired = StageTimeline.CollectNewlyFired(_config.Events, _previousNormalized, current, _firedBuffer);
             for (int i = 0; i < fired; i++)
