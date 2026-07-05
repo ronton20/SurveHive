@@ -50,7 +50,9 @@ namespace SurveHive.Player
                     _health.IncreaseMaxHealth(totalEffect);
                     break;
                 case MetaStatType.AttackDamage:
-                    _stats.IncreaseAttackDamagePercent(totalEffect);
+                    // Flat (+N base damage) so early ranks are felt, not a % of
+                    // a small base. Must stay in sync with MetaUpgradeSO.IsPercent.
+                    _stats.IncreaseAttackDamageFlat(totalEffect);
                     break;
                 case MetaStatType.MoveSpeed:
                     _stats.IncreaseMoveSpeedPercent(totalEffect);

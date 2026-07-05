@@ -15,6 +15,8 @@ namespace SurveHive.UI
         [SerializeField] private MetaUpgradeSO _upgrade;
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private TMP_Text _descriptionText;
+        // The concrete value change: "+25 → +50 Max HP".
+        [SerializeField] private TMP_Text _effectText;
         [SerializeField] private TMP_Text _rankText;
         [SerializeField] private TMP_Text _costText;
         [SerializeField] private Button _buyButton;
@@ -32,6 +34,11 @@ namespace SurveHive.UI
             if (_descriptionText != null)
             {
                 _descriptionText.text = _upgrade.Description;
+            }
+
+            if (_effectText != null)
+            {
+                _effectText.text = _upgrade.FormatEffectTransition(rank);
             }
 
             _rankText.text = $"Rank {rank}/{_upgrade.MaxRank}";

@@ -13,8 +13,9 @@ namespace SurveHive.Tests
     /// <summary>
     /// End-to-end boss flow: fast-forwards the real stage timeline (private
     /// elapsed clock via reflection — the same path a full run takes) and
-    /// asserts the miniboss spawns at 50%, the Queen at 100%, and that killing
-    /// the Queen triggers the victory panel and run pause.
+    /// asserts the miniboss spawns at 50% and freezes the timeline, that killing
+    /// it resumes progress, the Queen spawns at 100%, and killing her triggers
+    /// the victory panel and run pause.
     /// </summary>
     public sealed class BossFightTest
     {
@@ -61,8 +62,28 @@ namespace SurveHive.Tests
             Assert.IsNotNull(miniboss, "Royal Guard (rank 3) spawned at 50%");
             Assert.IsNotNull(miniboss.GetComponent<ChargeAttack>(), "Miniboss has ChargeAttack");
 
-            // Jump to 100%: flood wave + Queen.
+            // The timeline freezes while the miniboss lives (progress + drip).
+            Assert.IsTrue(director.IsBossActive, "timeline frozen while miniboss lives");
+            float frozenProgress = director.Progress;
+            for (int i = 0; i < 5; i++)
+            {
+                yield return null;
+            }
+
+            Assert.AreEqual(frozenProgress, director.Progress, 0.0001f, "progress meter frozen during miniboss");
+
+            // Forcing time forward can't advance past the boss gate...
             ElapsedField.SetValue(director, duration + 1f);
+            yield return null;
+            yield return null;
+            Assert.IsNull(FindEnemyWithRank(4), "Queen does not spawn while the miniboss gate holds");
+
+            // ...but killing the miniboss clears the gate synchronously (checked
+            // before the next Update spawns and re-gates on the Queen)...
+            miniboss.Health.TakeDamage(1_000_000f, null);
+            Assert.IsFalse(director.IsBossActive, "miniboss death resumes the timeline");
+
+            // ...and the pending 100% crossing now fires the flood wave + Queen.
             yield return null;
             yield return null;
 

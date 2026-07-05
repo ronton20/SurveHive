@@ -15,8 +15,9 @@ MonoBehaviour:
   _upgradeId: meta_move_speed
   _displayName: Stronger Wings
   _description: Permanently raises move speed.
+  _effectLabel: Move Speed
   _statType: 2
-  _maxRank: 5
-  _baseCost: 40
-  _costGrowth: 1.5
-  _effectPerRank: 2
+  _maxRank: 6
+  _baseCost: 50
+  _costGrowth: 1.4
+  _effectPerRank: 5

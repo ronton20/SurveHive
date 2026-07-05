@@ -85,7 +85,7 @@ namespace SurveHive.Tests
                 }
             }
 
-            // Expected proportions: 1 / 0.4 / 0.15 of 1.55 total.
+            // Expected proportions follow the weight constants (Common/Rare/Epic).
             float total = SkillRarityWeights.CommonWeight + SkillRarityWeights.RareWeight + SkillRarityWeights.EpicWeight;
             AssertWithinTolerance(commonCount / (float)draws, SkillRarityWeights.CommonWeight / total, 0.02f, "common share");
             AssertWithinTolerance(rareCount / (float)draws, SkillRarityWeights.RareWeight / total, 0.02f, "rare share");

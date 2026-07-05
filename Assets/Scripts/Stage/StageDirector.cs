@@ -36,6 +36,14 @@ namespace SurveHive.Stage
 
         public StageConfigSO Config => _config;
 
+        /// <summary>
+        /// While a miniboss/final boss is alive the timeline freezes: no progress,
+        /// no new timeline events, and the regular enemy drip pauses (the spawner
+        /// reads this). Cleared when the boss dies (BossSpawner). Focuses the
+        /// fight and stops the meter from ticking past the boss marker.
+        /// </summary>
+        public bool IsBossActive { get; private set; }
+
         public float Progress => _config != null && _config.TotalDurationSeconds > 0f
             ? Mathf.Clamp01(_elapsedSeconds / _config.TotalDurationSeconds)
             : 0f;
@@ -57,9 +65,14 @@ namespace SurveHive.Stage
             }
         }
 
+        public void SetBossActive(bool active)
+        {
+            IsBossActive = active;
+        }
+
         private void Update()
         {
-            if (_config == null)
+            if (_config == null || IsBossActive)
             {
                 return;
             }

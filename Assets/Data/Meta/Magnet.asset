@@ -15,8 +15,9 @@ MonoBehaviour:
   _upgradeId: meta_magnet
   _displayName: Nectar Scent
   _description: Permanently widens pickup range.
+  _effectLabel: Pickup Range
   _statType: 4
   _maxRank: 5
-  _baseCost: 30
-  _costGrowth: 1.5
-  _effectPerRank: 8
+  _baseCost: 35
+  _costGrowth: 1.45
+  _effectPerRank: 15

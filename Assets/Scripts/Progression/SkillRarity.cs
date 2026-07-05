@@ -15,8 +15,10 @@ namespace SurveHive.Progression
     public static class SkillRarityWeights
     {
         public const float CommonWeight = 1f;
-        public const float RareWeight = 0.4f;
-        public const float EpicWeight = 0.15f;
+        // Rare bumped 0.4 -> 0.65 and Epic 0.15 -> 0.22 (2026-07-05): rares were
+        // barely showing across a full run. Still Common > Rare > Epic.
+        public const float RareWeight = 0.65f;
+        public const float EpicWeight = 0.22f;
 
         public static float GetWeight(SkillRarity rarity)
         {

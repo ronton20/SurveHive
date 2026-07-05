@@ -15,8 +15,9 @@ MonoBehaviour:
   _upgradeId: meta_attack_speed
   _displayName: Rapid Reflexes
   _description: Permanently raises attack speed.
+  _effectLabel: Attack Speed
   _statType: 3
   _maxRank: 8
   _baseCost: 60
-  _costGrowth: 1.45
-  _effectPerRank: 3
+  _costGrowth: 1.4
+  _effectPerRank: 6

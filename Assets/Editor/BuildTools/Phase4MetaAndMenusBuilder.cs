@@ -84,28 +84,31 @@ namespace SurveHive.BuildTools
         {
             EnsureFolder(MetaFolder);
 
-            EnsureUpgrade("MaxHealth", "meta_max_health", "Thick Comb Walls",
+            // Values tuned 2026-07-05 to feel meaningful: flat +HP and flat +damage
+            // (base damage is 10, so +1/rank is felt immediately), and beefier
+            // percent bumps on the rest.
+            EnsureUpgrade("MaxHealth", "meta_max_health", "Thick Comb Walls", "Max HP",
                 "Permanently raises max health.", MetaStatType.MaxHealth,
-                maxRank: 10, baseCost: 50, costGrowth: 1.35f, effectPerRank: 10f);
-            EnsureUpgrade("Damage", "meta_damage", "Royal Jelly Diet",
-                "Permanently raises all damage.", MetaStatType.AttackDamage,
-                maxRank: 10, baseCost: 60, costGrowth: 1.4f, effectPerRank: 4f);
-            EnsureUpgrade("MoveSpeed", "meta_move_speed", "Stronger Wings",
+                maxRank: 10, baseCost: 40, costGrowth: 1.3f, effectPerRank: 25f);
+            EnsureUpgrade("Damage", "meta_damage", "Royal Jelly Diet", "Damage",
+                "Permanently raises base attack damage.", MetaStatType.AttackDamage,
+                maxRank: 10, baseCost: 60, costGrowth: 1.35f, effectPerRank: 1f);
+            EnsureUpgrade("MoveSpeed", "meta_move_speed", "Stronger Wings", "Move Speed",
                 "Permanently raises move speed.", MetaStatType.MoveSpeed,
-                maxRank: 5, baseCost: 40, costGrowth: 1.5f, effectPerRank: 2f);
-            EnsureUpgrade("AttackSpeed", "meta_attack_speed", "Rapid Reflexes",
+                maxRank: 6, baseCost: 50, costGrowth: 1.4f, effectPerRank: 5f);
+            EnsureUpgrade("AttackSpeed", "meta_attack_speed", "Rapid Reflexes", "Attack Speed",
                 "Permanently raises attack speed.", MetaStatType.AttackSpeed,
-                maxRank: 8, baseCost: 60, costGrowth: 1.45f, effectPerRank: 3f);
-            EnsureUpgrade("Magnet", "meta_magnet", "Nectar Scent",
+                maxRank: 8, baseCost: 60, costGrowth: 1.4f, effectPerRank: 6f);
+            EnsureUpgrade("Magnet", "meta_magnet", "Nectar Scent", "Pickup Range",
                 "Permanently widens pickup range.", MetaStatType.MagnetRadius,
-                maxRank: 5, baseCost: 30, costGrowth: 1.5f, effectPerRank: 8f);
-            EnsureUpgrade("CurrencyGain", "meta_currency_gain", "Honey Hoarder",
+                maxRank: 5, baseCost: 35, costGrowth: 1.45f, effectPerRank: 15f);
+            EnsureUpgrade("CurrencyGain", "meta_currency_gain", "Honey Hoarder", "Honey Gain",
                 "Permanently raises honey gained in runs.", MetaStatType.CurrencyGain,
-                maxRank: 10, baseCost: 80, costGrowth: 1.5f, effectPerRank: 5f);
+                maxRank: 8, baseCost: 70, costGrowth: 1.45f, effectPerRank: 10f);
         }
 
         private static void EnsureUpgrade(
-            string assetName, string id, string displayName, string description,
+            string assetName, string id, string displayName, string effectLabel, string description,
             MetaStatType statType, int maxRank, int baseCost, float costGrowth, float effectPerRank)
         {
             string path = $"{MetaFolder}/{assetName}.asset";
@@ -119,6 +122,7 @@ namespace SurveHive.BuildTools
             var so = new SerializedObject(upgrade);
             so.FindProperty("_upgradeId").stringValue = id;
             so.FindProperty("_displayName").stringValue = displayName;
+            so.FindProperty("_effectLabel").stringValue = effectLabel;
             so.FindProperty("_description").stringValue = description;
             so.FindProperty("_statType").enumValueIndex = (int)statType;
             so.FindProperty("_maxRank").intValue = maxRank;
@@ -205,24 +209,33 @@ namespace SurveHive.BuildTools
             Button worldBackButton = CreateMenuButton(worldPanel.transform, "BackButton", "BACK",
                 font, buttonSprite, new Vector2(0f, -420f));
 
-            // --- Hive Upgrades (shop) panel ---
-            GameObject shopPanel = CreatePanel(canvasGo.transform, "ShopPanel", panelSprite, new Vector2(1000f, 1700f));
+            // --- Hive Upgrades (shop) panel: near-fullscreen 2×3 card grid ---
+            GameObject shopPanel = CreatePanel(canvasGo.transform, "ShopPanel", panelSprite, new Vector2(1060f, 1880f));
 
-            CreateMenuText(shopPanel.transform, "Title", "HIVE UPGRADES", font, 70f, HoneyGold,
-                anchorY: 1f, offsetY: -70f, new Vector2(940f, 100f));
-            TMP_Text balanceText = CreateMenuText(shopPanel.transform, "BalanceText", "HONEY: 0", font, 44f, Amber,
-                anchorY: 1f, offsetY: -170f, new Vector2(940f, 70f));
+            CreateMenuText(shopPanel.transform, "Title", "HIVE UPGRADES", font, 64f, HoneyGold,
+                anchorY: 1f, offsetY: -40f, new Vector2(1000f, 90f));
+            TMP_Text balanceText = CreateMenuText(shopPanel.transform, "BalanceText", "HONEY: 0", font, 42f, Amber,
+                anchorY: 1f, offsetY: -140f, new Vector2(1000f, 60f));
 
             var upgrades = new MetaUpgradeSO[MetaUpgradePaths.Length];
             var rows = new MetaShopRowUI[MetaUpgradePaths.Length];
+            var cardSize = new Vector2(490f, 410f);
             for (int i = 0; i < MetaUpgradePaths.Length; i++)
             {
                 upgrades[i] = AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>(MetaUpgradePaths[i]);
-                rows[i] = CreateShopRow(shopPanel.transform, upgrades[i], i, font, panelSprite, buttonSprite);
+                int col = i % 2;
+                int gridRow = i / 2;
+                var center = new Vector2(col == 0 ? -258f : 258f, 440f - (gridRow * 430f));
+                rows[i] = CreateShopCard(shopPanel.transform, upgrades[i], center, cardSize, font, panelSprite, buttonSprite);
             }
 
             Button shopBackButton = CreateMenuButton(shopPanel.transform, "BackButton", "BACK",
-                font, buttonSprite, new Vector2(0f, -730f));
+                font, buttonSprite, Vector2.zero);
+            var shopBackRect = (RectTransform)shopBackButton.transform;
+            shopBackRect.anchorMin = new Vector2(0.5f, 0f);
+            shopBackRect.anchorMax = new Vector2(0.5f, 0f);
+            shopBackRect.pivot = new Vector2(0.5f, 0f);
+            shopBackRect.anchoredPosition = new Vector2(0f, 30f);
 
             MetaShopUI shopUi = shopPanel.AddComponent<MetaShopUI>();
             var shopSerialized = new SerializedObject(shopUi);
@@ -421,55 +434,56 @@ namespace SurveHive.BuildTools
             return dropdown;
         }
 
-        private static MetaShopRowUI CreateShopRow(
-            Transform parent, MetaUpgradeSO upgrade, int index, TMP_FontAsset font,
-            Sprite panelSprite, Sprite buttonSprite)
+        // One shop grid card (vertical: name / description / value change / rank /
+        // cost / BUY). Its MetaShopRowUI keeps the generic name for the shared
+        // component; the layout is a card, not a row.
+        private static MetaShopRowUI CreateShopCard(
+            Transform parent, MetaUpgradeSO upgrade, Vector2 centerOffset, Vector2 size,
+            TMP_FontAsset font, Sprite panelSprite, Sprite buttonSprite)
         {
-            var rowGo = new GameObject($"Row_{upgrade.name}", typeof(RectTransform));
-            rowGo.transform.SetParent(parent, false);
+            var cardGo = new GameObject($"Card_{upgrade.name}", typeof(RectTransform));
+            cardGo.transform.SetParent(parent, false);
 
-            var rect = (RectTransform)rowGo.transform;
-            rect.anchorMin = new Vector2(0.5f, 1f);
-            rect.anchorMax = new Vector2(0.5f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = new Vector2(0f, -240f - (index * 180f));
-            rect.sizeDelta = new Vector2(940f, 170f);
+            var rect = (RectTransform)cardGo.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = centerOffset;
+            rect.sizeDelta = size;
 
-            Image bg = rowGo.AddComponent<Image>();
+            Image bg = cardGo.AddComponent<Image>();
             bg.sprite = panelSprite;
             bg.type = Image.Type.Sliced;
             bg.pixelsPerUnitMultiplier = 2f;
-            bg.color = new Color(CombBrown.r, CombBrown.g, CombBrown.b, 0.85f);
+            bg.color = new Color(CombBrown.r, CombBrown.g, CombBrown.b, 0.9f);
             bg.raycastTarget = false;
 
-            TMP_Text nameText = CreateRowText(rowGo.transform, "Name", font, 38f, HoneyGold,
-                new Vector2(20f, -14f), new Vector2(620f, 50f), TextAlignmentOptions.Left);
-            TMP_Text descText = CreateRowText(rowGo.transform, "Description", font, 26f, Wax,
-                new Vector2(20f, -66f), new Vector2(620f, 46f), TextAlignmentOptions.Left);
-            TMP_Text rankText = CreateRowText(rowGo.transform, "Rank", font, 28f, Amber,
-                new Vector2(20f, -116f), new Vector2(620f, 44f), TextAlignmentOptions.Left);
+            float width = size.x - 40f;
+            TMP_Text nameText = CreateCardText(cardGo.transform, "Name", font, 34f, HoneyGold,
+                -16f, 46f, width, TextAlignmentOptions.Center);
+            TMP_Text descText = CreateCardText(cardGo.transform, "Description", font, 22f, Wax,
+                -64f, 84f, width, TextAlignmentOptions.Top);
+            TMP_Text effectText = CreateCardText(cardGo.transform, "Effect", font, 26f, HoneyGold,
+                -156f, 44f, width, TextAlignmentOptions.Center);
+            TMP_Text rankText = CreateCardText(cardGo.transform, "Rank", font, 24f, Amber,
+                -204f, 36f, width, TextAlignmentOptions.Center);
+            TMP_Text costText = CreateCardText(cardGo.transform, "Cost", font, 30f, Amber,
+                -246f, 40f, width, TextAlignmentOptions.Center);
 
-            Button buyButton = CreateButton(rowGo.transform, "BuyButton", "BUY", font, buttonSprite,
-                Vector2.zero, new Vector2(220f, 90f), 34f);
+            Button buyButton = CreateButton(cardGo.transform, "BuyButton", "BUY", font, buttonSprite,
+                Vector2.zero, new Vector2(300f, 76f), 32f);
             var buyRect = (RectTransform)buyButton.transform;
-            buyRect.anchorMin = new Vector2(1f, 0.5f);
-            buyRect.anchorMax = new Vector2(1f, 0.5f);
-            buyRect.pivot = new Vector2(1f, 0.5f);
-            buyRect.anchoredPosition = new Vector2(-20f, 20f);
+            buyRect.anchorMin = new Vector2(0.5f, 0f);
+            buyRect.anchorMax = new Vector2(0.5f, 0f);
+            buyRect.pivot = new Vector2(0.5f, 0f);
+            buyRect.anchoredPosition = new Vector2(0f, 18f);
 
-            TMP_Text costText = CreateRowText(rowGo.transform, "Cost", font, 30f, Amber,
-                Vector2.zero, new Vector2(220f, 44f), TextAlignmentOptions.Center);
-            var costRect = (RectTransform)costText.transform;
-            costRect.anchorMin = new Vector2(1f, 0.5f);
-            costRect.anchorMax = new Vector2(1f, 0.5f);
-            costRect.pivot = new Vector2(1f, 1f);
-            costRect.anchoredPosition = new Vector2(-20f, -30f);
-
-            var row = rowGo.AddComponent<MetaShopRowUI>();
+            var row = cardGo.AddComponent<MetaShopRowUI>();
             var rowSerialized = new SerializedObject(row);
             rowSerialized.FindProperty("_upgrade").objectReferenceValue = upgrade;
             rowSerialized.FindProperty("_nameText").objectReferenceValue = nameText;
             rowSerialized.FindProperty("_descriptionText").objectReferenceValue = descText;
+            rowSerialized.FindProperty("_effectText").objectReferenceValue = effectText;
             rowSerialized.FindProperty("_rankText").objectReferenceValue = rankText;
             rowSerialized.FindProperty("_costText").objectReferenceValue = costText;
             rowSerialized.FindProperty("_buyButton").objectReferenceValue = buyButton;
@@ -478,19 +492,20 @@ namespace SurveHive.BuildTools
             return row;
         }
 
-        private static TMP_Text CreateRowText(
+        // Top-anchored, horizontally-centered text inside a card.
+        private static TMP_Text CreateCardText(
             Transform parent, string name, TMP_FontAsset font, float fontSize, Color color,
-            Vector2 topLeftOffset, Vector2 size, TextAlignmentOptions alignment)
+            float topOffset, float height, float width, TextAlignmentOptions alignment)
         {
             var textGo = new GameObject(name, typeof(RectTransform));
             textGo.transform.SetParent(parent, false);
 
             var rect = (RectTransform)textGo.transform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = topLeftOffset;
-            rect.sizeDelta = size;
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, topOffset);
+            rect.sizeDelta = new Vector2(width, height);
 
             var tmp = textGo.AddComponent<TextMeshProUGUI>();
             tmp.font = font;

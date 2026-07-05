@@ -19,6 +19,15 @@ namespace SurveHive.Spawning
 
         private void Update()
         {
+            // Freeze the regular drip while a boss owns the arena (PLAN adj.
+            // 2026-07-05): the boss fight is the focus, and its own summons still
+            // spawn directly. The timer freezes with it and resumes on boss death.
+            if (SurveHive.Stage.StageDirector.Instance != null
+                && SurveHive.Stage.StageDirector.Instance.IsBossActive)
+            {
+                return;
+            }
+
             _elapsedSeconds += Time.deltaTime;
             _spawnTimer -= Time.deltaTime;
 

@@ -15,8 +15,9 @@ MonoBehaviour:
   _upgradeId: meta_max_health
   _displayName: Thick Comb Walls
   _description: Permanently raises max health.
+  _effectLabel: Max HP
   _statType: 0
   _maxRank: 10
-  _baseCost: 50
-  _costGrowth: 1.35
-  _effectPerRank: 10
+  _baseCost: 40
+  _costGrowth: 1.3
+  _effectPerRank: 25

@@ -15,8 +15,9 @@ MonoBehaviour:
   _upgradeId: meta_currency_gain
   _displayName: Honey Hoarder
   _description: Permanently raises honey gained in runs.
+  _effectLabel: Honey Gain
   _statType: 5
-  _maxRank: 10
-  _baseCost: 80
-  _costGrowth: 1.5
-  _effectPerRank: 5
+  _maxRank: 8
+  _baseCost: 70
+  _costGrowth: 1.45
+  _effectPerRank: 10

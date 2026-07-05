@@ -92,6 +92,12 @@ namespace SurveHive.Player
             NotifyChanged();
         }
 
+        public void IncreaseAttackDamageFlat(float amount)
+        {
+            _attackDamage = RoundToHundredths(_attackDamage + amount);
+            NotifyChanged();
+        }
+
         public void DecreaseAttackCooldownPercent(float percent)
         {
             _attackCooldown = RoundToHundredths(_attackCooldown * (1f - percent / 100f));

@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.MetaUpgradeSO
   _upgradeId: meta_damage
   _displayName: Royal Jelly Diet
-  _description: Permanently raises all damage.
+  _description: Permanently raises base attack damage.
+  _effectLabel: Damage
   _statType: 1
   _maxRank: 10
   _baseCost: 60
-  _costGrowth: 1.4
-  _effectPerRank: 4
+  _costGrowth: 1.35
+  _effectPerRank: 1

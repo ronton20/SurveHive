@@ -29,7 +29,10 @@ namespace SurveHive.Stage
         [SerializeField] private float _spawnDistance = 12f;
         [SerializeField] private float _spawnShakeAmplitude = 0.4f;
 
-        private HealthComponent _finalBossHealth;
+        // The boss currently gating the timeline (miniboss or final). Killing it
+        // resumes the stage (miniboss) or wins the run (final boss).
+        private HealthComponent _gatingBossHealth;
+        private bool _gatingBossIsFinal;
         private bool _victoryShown;
 
         private void OnEnable()
@@ -47,7 +50,7 @@ namespace SurveHive.Stage
                 _director.OnBossEvent -= HandleBossEvent;
             }
 
-            UnhookFinalBoss();
+            UnhookGatingBoss();
         }
 
         private void HandleBossEvent(StageTimelineEvent stageEvent)
@@ -86,19 +89,43 @@ namespace SurveHive.Stage
                 queen.Initialize(_spawner, _summonStats);
             }
 
-            if (stageEvent.Type == StageEventType.FinalBoss && health != null)
+            // Gate the timeline on this boss (freeze progress + drip). Only if it
+            // has health to die by, else the run would soft-lock frozen.
+            if (health != null)
             {
-                UnhookFinalBoss();
-                _finalBossHealth = health;
-                _finalBossHealth.OnDied += HandleFinalBossDied;
+                UnhookGatingBoss();
+                _gatingBossHealth = health;
+                _gatingBossIsFinal = stageEvent.Type == StageEventType.FinalBoss;
+                _gatingBossHealth.OnDied += HandleGatingBossDied;
+
+                if (StageDirector.Instance != null)
+                {
+                    StageDirector.Instance.SetBossActive(true);
+                }
             }
         }
 
-        // Killing the Queen = world clear (PLAN §5.2): first winnable run.
-        private void HandleFinalBossDied()
+        private void HandleGatingBossDied()
         {
-            UnhookFinalBoss();
+            bool wasFinal = _gatingBossIsFinal;
+            UnhookGatingBoss();
 
+            // Resume the timeline + drip (miniboss); for the final boss the
+            // victory pause takes over immediately anyway.
+            if (StageDirector.Instance != null)
+            {
+                StageDirector.Instance.SetBossActive(false);
+            }
+
+            if (wasFinal)
+            {
+                // Killing the Queen = world clear (PLAN §5.2): first winnable run.
+                ShowVictory();
+            }
+        }
+
+        private void ShowVictory()
+        {
             if (_victoryShown)
             {
                 return;
@@ -119,12 +146,12 @@ namespace SurveHive.Stage
             GamePause.SetPaused(true);
         }
 
-        private void UnhookFinalBoss()
+        private void UnhookGatingBoss()
         {
-            if (_finalBossHealth != null)
+            if (_gatingBossHealth != null)
             {
-                _finalBossHealth.OnDied -= HandleFinalBossDied;
-                _finalBossHealth = null;
+                _gatingBossHealth.OnDied -= HandleGatingBossDied;
+                _gatingBossHealth = null;
             }
         }
 

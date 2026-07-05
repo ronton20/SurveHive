@@ -209,6 +209,7 @@ namespace SurveHive.BuildTools
                 }
 
                 ok &= Check(!string.IsNullOrEmpty(upgrade.UpgradeId), $"{path} has an upgrade id");
+                ok &= Check(!string.IsNullOrEmpty(upgrade.EffectLabel), $"{path} has an effect label");
                 ok &= Check(upgradeIds.Add(upgrade.UpgradeId), $"{path} id '{upgrade.UpgradeId}' unique");
                 ok &= Check(upgradeStats.Add(upgrade.StatType), $"{path} stat '{upgrade.StatType}' unique");
                 ok &= Check(upgrade.MaxRank > 0, $"{path} max rank > 0");
@@ -477,6 +478,10 @@ namespace SurveHive.BuildTools
                             $"Shop row {i} upgrade wired");
                         ok &= Check(rowSo.FindProperty("_nameText").objectReferenceValue != null,
                             $"Shop row {i} name text wired");
+                        ok &= Check(rowSo.FindProperty("_descriptionText").objectReferenceValue != null,
+                            $"Shop row {i} description text wired");
+                        ok &= Check(rowSo.FindProperty("_effectText").objectReferenceValue != null,
+                            $"Shop row {i} effect/value text wired");
                         ok &= Check(rowSo.FindProperty("_rankText").objectReferenceValue != null,
                             $"Shop row {i} rank text wired");
                         ok &= Check(rowSo.FindProperty("_costText").objectReferenceValue != null,
