@@ -7,6 +7,30 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Combat 2.0 — Power-up lanes (Phase 1A–1E) (2026-07-05)
+
+Restructured the flat level-up pool into **three lanes**, each with its own distinct-pick
+cap and card banner, tagged with an **element** (physical/fire/poison/electric/frost/honey).
+
+- **Taxonomy & caps (1A/1B)**: `PowerUpLane` (Passive/Enhancement/Ability) + `SkillElement`
+  on every skill; each offer card shows a lane banner + element gem. Per-lane distinct caps —
+  **Passive 5 / Enhancement 3 / Ability 5** — enforced by the pure `LaneEligibility`: once a
+  lane is full, no *new* pick from it is offered, but owned picks keep leveling.
+- **Passives (1C)**: added **Armor** (percent damage-taken reduction via an `IDamageMitigator`
+  on the player's `HealthComponent`, capped) and **Ability Power** (multiplier on all
+  active-skill damage). Projectile-count / attack-range moved out of Passive into Enhancement.
+- **Enhancements — new lane (1D)**: a composable modifier layer on the basic attack
+  (`BasicAttackPayload` → `Projectile`). **Multishot** damage tradeoff (~1.5× total per extra
+  projectile, each softer); **Piercing Stinger** (pierce 2/4/everything over 3 levels, damage
+  penalty 30%/20%/0%, extended travel); **Burning** & **Poison Stinger** (on-hit DoT, chance +
+  damage/tick both scale per level); **Frost Stinger** (chance to freeze); **Shock Stinger**
+  (chance to bounce with damage/chance falloff). Retired the standalone Piercing Lance active.
+- **Abilities (1E)**: the radial stinger burst now **pierces**; added **Frost Nova** (radial
+  freeze), **Ball Lightning** (radial stun), and **Honey Bomb** (homing explosion + slow),
+  reusing existing pools. All ability damage scales with Ability Power.
+- Built additively via the idempotent `SurveHive/Combat 2.0/*` editor passes; EditMode tests
+  cover the lane caps, armor/multishot/pierce math, and the active-skill growth tables.
+
 ### Phase 5A — Audio Service (2026-07-05)
 
 - **Audio system**: a scene-scoped `AudioService` behind an `IAudioService` seam — a

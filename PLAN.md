@@ -65,7 +65,7 @@ Reshape the Passive lane to the intended roster and add the two new stats.
 - **Touch:** `Player/PlayerStats.cs`, `Health/HealthComponent.cs` (armor intake), `Combat/Skills/ActiveSkillManager.cs` (ability-power multiply), `Progression/SkillEffectType.cs` + `SkillEffectApplier.cs` (new effect types), `Data/Skills/*`.
 - **Done when:** armor measurably reduces damage taken; ability power measurably raises Ability damage; the Passive lane holds exactly the player-stat roster.
 
-### 1D — Enhancement lane (new): basic-attack modifier system ☐
+### 1D — Enhancement lane (new): basic-attack modifier system ✅
 The genuinely new system. A composable modifier layer on the basic auto-attack.
 - New `PlayerAttackModifiers` component (or extend `PlayerStats`) holding basic-attack modifier state: bonus projectile count, per-projectile damage factor, pierce count, on-hit status procs (type/chance/potency/duration), bonus range, elemental tag.
 - `AutoAttack.FireAtTarget` reads these: projectile count and per-projectile damage factor (Multishot: +1 projectile, each softer, ~1.5× total per level), range from modifiers.
@@ -76,7 +76,7 @@ The genuinely new system. A composable modifier layer on the basic auto-attack.
 - **Tests:** EditMode — Multishot total-damage curve (~1.5× per level), pierce hit count, on-hit burn application.
 - **Done when:** taking Multishot adds projectiles with the intended total-damage scaling; Piercing Shot pierces; Ignite burns; all three respect the 3-cap.
 
-### 1E — Ability lane expansion ☐
+### 1E — Ability lane expansion ✅
 Grow and polish the active-skill roster; wire ability-power scaling (from 1C).
 - **Make the 360° stinger burst (RadialVolley / Stinger Barrage) pierce** — its projectiles pass through enemies.
 - Add new abilities across behaviors/elements: **Honey Bomb** (lobbed AoE burst), **Chain Lightning** (extend/second ChainArc), **Exploding Stinger** (HomingBolt explode variant), **Poison Cloud** (Aura, if not already covered by Pollen Cloud) — reuse existing `ActiveSkillBehavior`s where possible; add a new behavior only if a delivery truly doesn't exist.
