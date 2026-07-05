@@ -54,6 +54,21 @@ namespace SurveHive.Progression
                 case SkillEffectType.AbilityPowerPercent:
                     stats.IncreaseAbilityPowerPercent(skill.Magnitude);
                     break;
+                case SkillEffectType.BasicAttackPierceFlat:
+                    stats.LevelUpPierce();
+                    break;
+                case SkillEffectType.IgniteChanceFlat:
+                    stats.LevelUpBurnStinger(skill.Magnitude);
+                    break;
+                case SkillEffectType.PoisonStingerChance:
+                    stats.LevelUpPoisonStinger(skill.Magnitude);
+                    break;
+                case SkillEffectType.FrostStingerChance:
+                    stats.LevelUpFrostStinger(skill.Magnitude);
+                    break;
+                case SkillEffectType.ElectricStingerChance:
+                    stats.LevelUpShockStinger(skill.Magnitude);
+                    break;
                 case SkillEffectType.ActiveSkill:
                     if (activeSkills != null)
                     {

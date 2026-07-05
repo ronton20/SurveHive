@@ -1,4 +1,5 @@
 using System.Text;
+using SurveHive.Combat;
 using SurveHive.Combat.Status;
 using SurveHive.Data;
 using SurveHive.Player;
@@ -86,6 +87,31 @@ namespace SurveHive.Progression
                     AppendPercentLine(sb, "Ability Power", stats.AbilityPowerMultiplier * 100f,
                         CompoundUp(stats.AbilityPowerMultiplier, skill.Magnitude, applications) * 100f);
                     break;
+                case SkillEffectType.BasicAttackPierceFlat:
+                    AppendPierceLines(sb, skill, currentLevel, applications, stats);
+                    break;
+                case SkillEffectType.IgniteChanceFlat:
+                    AppendPercentLine(sb, "Burn Chance", stats.BurnStingerChance,
+                        Mathf.Min(100f, stats.BurnStingerChance + (skill.Magnitude * applications)));
+                    AppendLine(sb, "Burn DMG/Tick", stats.BurnStingerDps,
+                        stats.BurnStingerDps + (stats.BurnStingerDpsPerLevel * applications));
+                    break;
+                case SkillEffectType.PoisonStingerChance:
+                    AppendPercentLine(sb, "Poison Chance", stats.PoisonStingerChance,
+                        Mathf.Min(100f, stats.PoisonStingerChance + (skill.Magnitude * applications)));
+                    AppendLine(sb, "Poison DMG/Tick", stats.PoisonStingerDps,
+                        stats.PoisonStingerDps + (stats.PoisonStingerDpsPerLevel * applications));
+                    break;
+                case SkillEffectType.FrostStingerChance:
+                    AppendPercentLine(sb, "Freeze Chance", stats.FrostStingerChance,
+                        Mathf.Min(100f, stats.FrostStingerChance + (skill.Magnitude * applications)));
+                    break;
+                case SkillEffectType.ElectricStingerChance:
+                    AppendPercentLine(sb, "Bounce Chance", stats.ShockStingerChance,
+                        Mathf.Min(100f, stats.ShockStingerChance + (skill.Magnitude * applications)));
+                    AppendLine(sb, "Bounces", stats.ShockStingerBounces,
+                        stats.ShockStingerBounces + applications);
+                    break;
                 case SkillEffectType.ActiveSkill:
                     AppendActiveSkillLines(sb, skill.ActiveSkill, currentLevel, applications, activeSkillLevelCap);
                     break;
@@ -135,6 +161,40 @@ namespace SurveHive.Progression
             if (!Mathf.Approximately(before.StatusChancePercent, after.StatusChancePercent))
             {
                 AppendPercentLine(sb, GetStatusLabel(active.StatusType), before.StatusChancePercent, after.StatusChancePercent);
+            }
+        }
+
+        // Pierce shows a count (or "ALL" at max level) plus the damage penalty,
+        // both keyed off the skill's level so the "pierce everything" tier reads.
+        private static void AppendPierceLines(
+            StringBuilder sb, SkillDefinitionSO skill, int currentLevel, int applications, PlayerStats stats)
+        {
+            int maxLevel = skill.MaxLevel;
+            int newLevel = Mathf.Min(currentLevel + applications, maxLevel);
+
+            sb.Append("Pierce ");
+            AppendPierceCount(sb, currentLevel, maxLevel);
+            sb.Append(Arrow);
+            AppendPierceCount(sb, newLevel, maxLevel);
+            sb.Append('\n');
+
+            float before = (1f - CombatMath.PierceDamageMultiplier(
+                currentLevel, maxLevel, stats.PierceBasePenalty, stats.PiercePenaltyStep)) * 100f;
+            float after = (1f - CombatMath.PierceDamageMultiplier(
+                newLevel, maxLevel, stats.PierceBasePenalty, stats.PiercePenaltyStep)) * 100f;
+            AppendPercentLine(sb, "Attack DMG Penalty", before, after);
+        }
+
+        private static void AppendPierceCount(StringBuilder sb, int level, int maxLevel)
+        {
+            int count = CombatMath.PierceCount(level, maxLevel);
+            if (count == int.MaxValue)
+            {
+                sb.Append("ALL");
+            }
+            else
+            {
+                sb.Append(count);
             }
         }
 

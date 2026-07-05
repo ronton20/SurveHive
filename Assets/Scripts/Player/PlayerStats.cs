@@ -36,6 +36,43 @@ namespace SurveHive.Player
         // Multiplier on active-skill (Ability) damage — grows via Ability Power.
         [SerializeField] private float _abilityPowerMultiplier = 1f;
 
+        [Header("Combat 2.0 Basic-Attack Enhancements")]
+        // Piercing Stinger level → pierce count (+2/level, "everything" at max) and
+        // damage penalty (5%/level). Keep _pierceMaxLevel matched to the asset's
+        // MaxLevel so the "pierce everything" tier lands on the last level.
+        [SerializeField] private int _pierceLevel;
+        [SerializeField] private int _pierceMaxLevel = 3;
+        // Damage penalty starts here and lightens by _piercePenaltyStep per level,
+        // gone entirely at max level: −30% / −20% / −0% over 3 levels.
+        [SerializeField] private float _pierceBasePenalty = 0.30f;
+        [SerializeField] private float _piercePenaltyStep = 0.10f;
+
+        // Burning Stinger (fire DoT): chance + damage/tick, both grow per level.
+        [SerializeField, Range(0f, 100f)] private float _burnStingerChance;
+        [SerializeField] private float _burnStingerDps;
+        [SerializeField] private float _burnStingerDpsPerLevel = 2f;
+        [SerializeField] private float _burnStingerDuration = 3f;
+
+        // Poison Stinger (poison DoT): chance + damage/tick, both grow per level.
+        [SerializeField, Range(0f, 100f)] private float _poisonStingerChance;
+        [SerializeField] private float _poisonStingerDps;
+        [SerializeField] private float _poisonStingerDpsPerLevel = 1.5f;
+        [SerializeField] private float _poisonStingerDuration = 3f;
+
+        // Frost Stinger: chance to freeze (hard CC — rarer, chance-only).
+        [SerializeField, Range(0f, 100f)] private float _frostStingerChance;
+        [SerializeField] private float _frostStingerBreakThreshold = 12f;
+        [SerializeField] private float _frostStingerDuration = 1.2f;
+
+        // Shock Stinger: chance the shot bounces to another enemy; each bounce
+        // reduces damage and the chance of a further bounce. Chance + bounce count
+        // both grow per level.
+        [SerializeField, Range(0f, 100f)] private float _shockStingerChance;
+        [SerializeField] private int _shockStingerBounces;
+        [SerializeField] private float _shockBounceRange = 4f;
+        [SerializeField, Range(0f, 1f)] private float _shockBounceDamageFalloff = 0.65f;
+        [SerializeField, Range(0f, 1f)] private float _shockBounceChanceFalloff = 0.6f;
+
         public event Action OnStatsChanged;
 
         public float MoveSpeed => _moveSpeed;
@@ -80,6 +117,51 @@ namespace SurveHive.Player
         public float MaxArmorPercent => _maxArmorPercent;
 
         public float AbilityPowerMultiplier => _abilityPowerMultiplier;
+
+        public int PierceLevel => _pierceLevel;
+
+        public int PierceMaxLevel => _pierceMaxLevel;
+
+        public int BasicAttackPierce => SurveHive.Combat.CombatMath.PierceCount(_pierceLevel, _pierceMaxLevel);
+
+        public float PierceDamageMultiplier =>
+            SurveHive.Combat.CombatMath.PierceDamageMultiplier(_pierceLevel, _pierceMaxLevel, _pierceBasePenalty, _piercePenaltyStep);
+
+        public float PierceBasePenalty => _pierceBasePenalty;
+
+        public float PiercePenaltyStep => _piercePenaltyStep;
+
+        public float BurnStingerChance => _burnStingerChance;
+
+        public float BurnStingerDps => _burnStingerDps;
+
+        public float BurnStingerDpsPerLevel => _burnStingerDpsPerLevel;
+
+        public float BurnStingerDuration => _burnStingerDuration;
+
+        public float PoisonStingerChance => _poisonStingerChance;
+
+        public float PoisonStingerDps => _poisonStingerDps;
+
+        public float PoisonStingerDpsPerLevel => _poisonStingerDpsPerLevel;
+
+        public float PoisonStingerDuration => _poisonStingerDuration;
+
+        public float FrostStingerChance => _frostStingerChance;
+
+        public float FrostStingerBreakThreshold => _frostStingerBreakThreshold;
+
+        public float FrostStingerDuration => _frostStingerDuration;
+
+        public float ShockStingerChance => _shockStingerChance;
+
+        public int ShockStingerBounces => _shockStingerBounces;
+
+        public float ShockBounceRange => _shockBounceRange;
+
+        public float ShockBounceDamageFalloff => _shockBounceDamageFalloff;
+
+        public float ShockBounceChanceFalloff => _shockBounceChanceFalloff;
 
         public void IncreaseMoveSpeedPercent(float percent)
         {
@@ -171,6 +253,41 @@ namespace SurveHive.Player
         public void IncreaseAbilityPowerPercent(float percent)
         {
             _abilityPowerMultiplier = RoundToHundredths(_abilityPowerMultiplier * (1f + percent / 100f));
+            NotifyChanged();
+        }
+
+        public void LevelUpPierce()
+        {
+            _pierceLevel++;
+            NotifyChanged();
+        }
+
+        // Fire/poison stingers grow both proc chance and damage/tick per level.
+        public void LevelUpBurnStinger(float chancePoints)
+        {
+            _burnStingerChance = Mathf.Min(100f, RoundToHundredths(_burnStingerChance + chancePoints));
+            _burnStingerDps = RoundToHundredths(_burnStingerDps + _burnStingerDpsPerLevel);
+            NotifyChanged();
+        }
+
+        public void LevelUpPoisonStinger(float chancePoints)
+        {
+            _poisonStingerChance = Mathf.Min(100f, RoundToHundredths(_poisonStingerChance + chancePoints));
+            _poisonStingerDps = RoundToHundredths(_poisonStingerDps + _poisonStingerDpsPerLevel);
+            NotifyChanged();
+        }
+
+        public void LevelUpFrostStinger(float chancePoints)
+        {
+            _frostStingerChance = Mathf.Min(100f, RoundToHundredths(_frostStingerChance + chancePoints));
+            NotifyChanged();
+        }
+
+        // Shock grows bounce chance and one extra bounce per level.
+        public void LevelUpShockStinger(float chancePoints)
+        {
+            _shockStingerChance = Mathf.Min(100f, RoundToHundredths(_shockStingerChance + chancePoints));
+            _shockStingerBounces += 1;
             NotifyChanged();
         }
 

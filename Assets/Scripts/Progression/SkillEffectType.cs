@@ -25,6 +25,13 @@ namespace SurveHive.Progression
 
         // Phase 1C passives (Combat 2.0).
         ArmorPercent,
-        AbilityPowerPercent
+        AbilityPowerPercent,
+
+        // Phase 1D basic-attack enhancements (Combat 2.0).
+        BasicAttackPierceFlat,
+        IgniteChanceFlat,
+        PoisonStingerChance,
+        FrostStingerChance,
+        ElectricStingerChance
     }
 }

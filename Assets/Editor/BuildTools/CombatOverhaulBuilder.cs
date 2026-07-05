@@ -247,6 +247,91 @@ namespace SurveHive.BuildTools
             EditorUtility.SetDirty(db);
         }
 
+        // ------------------------------------------------------------------
+        // 1D: Enhancement-lane basic-attack modifiers. Adds Piercing Shot (pierce,
+        // less damage) and Ignite (on-hit burn), and retires the Piercing Lance
+        // active skill so pierce lives on the basic attack. Idempotent.
+        // ------------------------------------------------------------------
+        [MenuItem("SurveHive/Combat 2.0/1D - Add Enhancements + retire Piercing Lance")]
+        public static void AddEnhancements()
+        {
+            SkillDefinitionSO pierce = EnsureSkill(
+                SkillsFolder + "/PiercingShot.asset", "PiercingStinger", "Piercing Stinger",
+                "Attacks pierce through enemies for a small damage penalty. At max level they pierce everything.",
+                SkillEffectType.BasicAttackPierceFlat,
+                PowerUpLane.Enhancement, SkillElement.Physical, 1f, 3, SkillRarity.Rare,
+                "Icon_PictoIcon_Target");
+
+            SkillDefinitionSO burn = EnsureSkill(
+                SkillsFolder + "/Ignite.asset", "BurningStinger", "Burning Stinger",
+                "Attacks can set enemies ablaze; each level raises the chance and burn damage.",
+                SkillEffectType.IgniteChanceFlat,
+                PowerUpLane.Enhancement, SkillElement.Fire, 20f, 4, SkillRarity.Rare,
+                "Icon_PictoIcon_Fire");
+
+            SkillDefinitionSO poison = EnsureSkill(
+                SkillsFolder + "/PoisonStinger.asset", "PoisonStinger", "Poison Stinger",
+                "Attacks can poison enemies; each level raises the chance and poison damage.",
+                SkillEffectType.PoisonStingerChance,
+                PowerUpLane.Enhancement, SkillElement.Poison, 18f, 4, SkillRarity.Rare,
+                "Icon_PictoIcon_Skull");
+
+            SkillDefinitionSO frost = EnsureSkill(
+                SkillsFolder + "/FrostStinger.asset", "FrostStinger", "Frost Stinger",
+                "Attacks have a chance to freeze enemies solid.",
+                SkillEffectType.FrostStingerChance,
+                PowerUpLane.Enhancement, SkillElement.Frost, 8f, 5, SkillRarity.Epic,
+                "Icon_PictoIcon_Star");
+
+            SkillDefinitionSO shock = EnsureSkill(
+                SkillsFolder + "/ShockStinger.asset", "ShockStinger", "Shock Stinger",
+                "Attacks can bounce to another enemy; each bounce hits softer. Level raises chance and bounces.",
+                SkillEffectType.ElectricStingerChance,
+                PowerUpLane.Enhancement, SkillElement.Electric, 15f, 4, SkillRarity.Epic,
+                "Icon_PictoIcon_Energy");
+
+            RegisterInDatabase(pierce, burn, poison, frost, shock);
+
+            // Retire the Piercing Lance active — pierce is now a basic-attack
+            // enhancement, so stop offering the active (asset kept on disk).
+            var lance = AssetDatabase.LoadAssetAtPath<SkillDefinitionSO>(SkillsFolder + "/PiercingLanceCard.asset");
+            if (lance != null)
+            {
+                RemoveFromDatabase(lance);
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("Combat 2.0 1D: Piercing Shot + Ignite added; Piercing Lance retired.");
+        }
+
+        private static void RemoveFromDatabase(SkillDefinitionSO skill)
+        {
+            var db = AssetDatabase.LoadAssetAtPath<SkillDatabaseSO>(DatabasePath);
+            if (db == null)
+            {
+                return;
+            }
+
+            var so = new SerializedObject(db);
+            SerializedProperty arr = so.FindProperty("_skills");
+            for (int i = arr.arraySize - 1; i >= 0; i--)
+            {
+                SerializedProperty element = arr.GetArrayElementAtIndex(i);
+                if (element.objectReferenceValue != skill)
+                {
+                    continue;
+                }
+
+                // Current Unity removes an object-reference element directly (the
+                // old "null then delete again" idiom over-deletes the next entry).
+                arr.DeleteArrayElementAtIndex(i);
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(db);
+        }
+
         private static bool ContainsReference(SerializedProperty array, Object value)
         {
             for (int i = 0; i < array.arraySize; i++)
