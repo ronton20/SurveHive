@@ -14,41 +14,47 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.ActiveSkillSO
   _id: BallLightning
   _displayName: Ball Lightning
-  _behavior: 0
+  _behavior: 7
   _levels:
-  - Damage: 7
+  - Damage: 4
+    Cooldown: 6
+    Count: 0
+    Area: 1
+    StatusChancePercent: 0
+    StatusDuration: 0
+  - Damage: 5
+    Cooldown: 5.5
+    Count: 0
+    Area: 1.2
+    StatusChancePercent: 0
+    StatusDuration: 0
+  - Damage: 6
+    Cooldown: 5
+    Count: 0
+    Area: 1.4
+    StatusChancePercent: 0
+    StatusDuration: 0
+  - Damage: 8
+    Cooldown: 4.5
+    Count: 0
+    Area: 1.6
+    StatusChancePercent: 0
+    StatusDuration: 0
+  - Damage: 10
     Cooldown: 4
-    Count: 5
-    Area: 0
-    StatusChancePercent: 15
-  - Damage: 9
-    Cooldown: 3.7
-    Count: 6
-    Area: 0
-    StatusChancePercent: 18
-  - Damage: 11
-    Cooldown: 3.4
-    Count: 7
-    Area: 0
-    StatusChancePercent: 22
-  - Damage: 14
-    Cooldown: 3.1
-    Count: 8
-    Area: 0
-    StatusChancePercent: 26
-  - Damage: 17
-    Cooldown: 2.8
-    Count: 10
-    Area: 0
-    StatusChancePercent: 30
-  _projectileSpeed: 9
-  _range: 7
-  _projectilePoolId: 8
+    Count: 0
+    Area: 1.9
+    StatusChancePercent: 0
+    StatusDuration: 0
+  _projectileTint: {r: 1, g: 0.95, b: 0.4, a: 1}
+  _projectileSpeed: 3
+  _range: 0
+  _projectilePoolId: 24
   _impactVfxPoolId: -1
   _zonePoolId: -1
-  _zoneDuration: 3.5
-  _zoneTickInterval: 0.5
+  _zoneDuration: 5
+  _zoneTickInterval: 0.3
   _appliesStatus: 1
   _statusType: 4
   _statusPotency: 0
-  _statusDuration: 1
+  _statusDuration: 0

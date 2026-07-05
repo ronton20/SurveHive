@@ -19,7 +19,7 @@ namespace SurveHive.Combat.Status
     /// </summary>
     public sealed class StatusEffectBuffer
     {
-        public const int EffectTypeCount = 5;
+        public const int EffectTypeCount = 6;
         public const float DotTickInterval = 0.5f;
         public const int PoisonMaxStacks = 5;
         public const float StunDiminishWindowSeconds = 6f;
@@ -94,8 +94,21 @@ namespace SurveHive.Combat.Status
                     return 0f;
                 }
 
+                // Strongest of the generic Slow and the frost Cold wins.
+                float potency = 0f;
                 ref readonly Slot slow = ref _slots[(int)StatusEffectType.Slow];
-                return slow.Active ? Mathf.Clamp01(1f - slow.Potency) : 1f;
+                if (slow.Active)
+                {
+                    potency = slow.Potency;
+                }
+
+                ref readonly Slot cold = ref _slots[(int)StatusEffectType.Cold];
+                if (cold.Active)
+                {
+                    potency = Mathf.Max(potency, cold.Potency);
+                }
+
+                return potency > 0f ? Mathf.Clamp01(1f - potency) : 1f;
             }
         }
 
@@ -154,6 +167,7 @@ namespace SurveHive.Combat.Status
                     break;
 
                 case StatusEffectType.Slow:
+                case StatusEffectType.Cold:
                     slot.Potency = slot.Active ? Mathf.Max(slot.Potency, potency) : potency;
                     slot.Remaining = Mathf.Max(slot.Active ? slot.Remaining : 0f, duration);
                     slot.Stacks = 1;
@@ -224,6 +238,7 @@ namespace SurveHive.Combat.Status
             TickDot(ref _slots[(int)StatusEffectType.Burn], 1, deltaTime, ref _pendingBurnDamage);
             TickDot(ref _slots[(int)StatusEffectType.Poison], _slots[(int)StatusEffectType.Poison].Stacks, deltaTime, ref _pendingPoisonDamage);
             TickDuration(ref _slots[(int)StatusEffectType.Slow], deltaTime);
+            TickDuration(ref _slots[(int)StatusEffectType.Cold], deltaTime);
             TickDuration(ref _slots[(int)StatusEffectType.Freeze], deltaTime);
             TickDuration(ref _slots[(int)StatusEffectType.Stun], deltaTime);
         }

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SkillDefinitionSO
   _id: BallLightningCard
   _displayName: Ball Lightning
-  _description: Hurls a ring of crackling orbs that can stun enemies.
+  _description: Releases a slow orb that pierces enemies, damaging them over time
+    and bouncing off the screen edges.
   _effectType: 12
   _lane: 2
   _element: 3

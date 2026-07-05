@@ -14,41 +14,47 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.ActiveSkillSO
   _id: HoneyBomb
   _displayName: Honey Bomb
-  _behavior: 5
+  _behavior: 8
   _levels:
-  - Damage: 12
-    Cooldown: 3.5
-    Count: 1
-    Area: 2
-    StatusChancePercent: 60
+  - Damage: 6
+    Cooldown: 4
+    Count: 3
+    Area: 1.3
+    StatusChancePercent: 100
+    StatusDuration: 0
+  - Damage: 8
+    Cooldown: 3.7
+    Count: 4
+    Area: 1.4
+    StatusChancePercent: 100
+    StatusDuration: 0
+  - Damage: 10
+    Cooldown: 3.4
+    Count: 5
+    Area: 1.5
+    StatusChancePercent: 100
+    StatusDuration: 0
+  - Damage: 13
+    Cooldown: 3.1
+    Count: 6
+    Area: 1.6
+    StatusChancePercent: 100
+    StatusDuration: 0
   - Damage: 16
-    Cooldown: 3.2
-    Count: 1
-    Area: 2.3
-    StatusChancePercent: 65
-  - Damage: 20
-    Cooldown: 2.9
-    Count: 1
-    Area: 2.6
-    StatusChancePercent: 70
-  - Damage: 25
-    Cooldown: 2.6
-    Count: 1
-    Area: 2.9
-    StatusChancePercent: 80
-  - Damage: 31
-    Cooldown: 2.3
-    Count: 1
-    Area: 3.2
-    StatusChancePercent: 90
-  _projectileSpeed: 7
-  _range: 11
-  _projectilePoolId: 11
-  _impactVfxPoolId: 14
-  _zonePoolId: -1
-  _zoneDuration: 3.5
+    Cooldown: 2.8
+    Count: 8
+    Area: 1.7
+    StatusChancePercent: 100
+    StatusDuration: 0
+  _projectileTint: {r: 1, g: 0.78, b: 0.15, a: 1}
+  _projectileSpeed: 8
+  _range: 4
+  _projectilePoolId: 10
+  _impactVfxPoolId: 15
+  _zonePoolId: 12
+  _zoneDuration: 2.5
   _zoneTickInterval: 0.5
   _appliesStatus: 1
   _statusType: 2
-  _statusPotency: 0.4
-  _statusDuration: 2.5
+  _statusPotency: 0.35
+  _statusDuration: 1.5

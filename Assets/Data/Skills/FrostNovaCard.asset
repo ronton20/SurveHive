@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SkillDefinitionSO
   _id: FrostNovaCard
   _displayName: Frost Nova
-  _description: Blasts a ring of frost shards that can freeze enemies solid.
+  _description: "Unleashes a 360\xB0 frost blast that damages and slows nearby enemies.
+    Levels grow the radius and slow."
   _effectType: 12
   _lane: 2
   _element: 4

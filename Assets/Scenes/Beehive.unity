@@ -262,6 +262,14 @@ MonoBehaviour:
     prefab: {fileID: 4040392077581135489, guid: 173b590e20e9f427f88d106ac1a8129d, type: 3}
     prewarmCount: 1
     maxSize: 4
+  - poolId: 24
+    prefab: {fileID: 4513233140392214313, guid: a75fe654c4e5f482d87fb4467423ad87, type: 3}
+    prewarmCount: 2
+    maxSize: 6
+  - poolId: 25
+    prefab: {fileID: 3706521483829871726, guid: ab3a691a912f2443ca478670046d9cec, type: 3}
+    prewarmCount: 2
+    maxSize: 6
   _poolParent: {fileID: 12424195}
 --- !u!114 &12424192
 MonoBehaviour:

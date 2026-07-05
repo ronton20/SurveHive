@@ -1,4 +1,6 @@
+using SurveHive.Combat.Skills;
 using SurveHive.Combat.Status;
+using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Progression;
 using SurveHive.UI;
@@ -34,6 +36,7 @@ namespace SurveHive.BuildTools
             public int Count;
             public float Area;
             public float StatusChance;
+            public float StatusDuration;
         }
 
         [MenuItem("SurveHive/Combat 2.0/1A - Power-Up Card Banners")]
@@ -336,9 +339,9 @@ namespace SurveHive.BuildTools
 
         // ------------------------------------------------------------------
         // 1E: Ability-lane expansion. The radial stinger burst now pierces (code,
-        // ActiveSkillManager). Adds three abilities that reuse existing pools:
-        // Frost Nova (radial freeze), Ball Lightning (radial stun), Honey Bomb
-        // (homing explosion + slow). Idempotent.
+        // ActiveSkillManager). Adds three abilities with distinct gameplay:
+        // Frost Nova (instant 360° slow blast), Ball Lightning (slow bouncing orb,
+        // ticking damage), Honey Bomb (scatters slowing honey zones). Idempotent.
         // ------------------------------------------------------------------
         [MenuItem("SurveHive/Combat 2.0/1E - Add Abilities (Frost Nova, Ball Lightning, Honey Bomb)")]
         public static void AddAbilities()
@@ -348,55 +351,69 @@ namespace SurveHive.BuildTools
                 AssetDatabase.CreateFolder(SkillsFolder, "Actives");
             }
 
-            // Reused pools: 8 = stinger (radial), 11 = ember bolt, 14 = ember blast VFX.
+            GameObject orbPrefab = EnsureBallLightningPrefab();
+            GameObject wavePrefab = EnsureNovaWavePrefab();
+
+            // Frost Nova: a ring expanding outward from the player, slowing each
+            // enemy the front reaches. A CC tool — low damage, big radius. Reused
+            // fields: Range = start radius, Area = max radius, ZoneDuration = expand
+            // time. Radius already bumped ~1.5× and damage kept low.
             ActiveSkillSO frostNova = EnsureActiveSkill(
                 ActivesFolder + "/FrostNova.asset", "FrostNova", "Frost Nova",
-                ActiveSkillBehavior.RadialVolley, new[]
+                ActiveSkillBehavior.Nova, new[]
                 {
-                    new LevelRow { Damage = 6, Cooldown = 4.5f, Count = 6, StatusChance = 20 },
-                    new LevelRow { Damage = 8, Cooldown = 4.2f, Count = 7, StatusChance = 25 },
-                    new LevelRow { Damage = 10, Cooldown = 3.9f, Count = 8, StatusChance = 30 },
-                    new LevelRow { Damage = 12, Cooldown = 3.6f, Count = 10, StatusChance = 35 },
-                    new LevelRow { Damage = 15, Cooldown = 3.3f, Count = 12, StatusChance = 40 },
-                }, 9f, 7f, 8, -1, -1, StatusEffectType.Freeze, 12f, 1.2f);
+                    new LevelRow { Damage = 3, Cooldown = 5f, Area = 3.75f, StatusDuration = 2.0f },
+                    new LevelRow { Damage = 4, Cooldown = 4.5f, Area = 4.5f, StatusDuration = 2.5f },
+                    new LevelRow { Damage = 5, Cooldown = 4.0f, Area = 5.25f, StatusDuration = 3.0f },
+                    new LevelRow { Damage = 7, Cooldown = 3.5f, Area = 6.0f, StatusDuration = 3.5f },
+                    new LevelRow { Damage = 9, Cooldown = 3.0f, Area = 6.75f, StatusDuration = 4.0f },
+                }, 0f, 1.2f, -1, -1, PoolIds.NovaWave, StatusEffectType.Cold, 0.4f, 0f,
+                new Color(0.85f, 0.93f, 1f, 0.9f), zoneDuration: 0.5f, zoneTickInterval: 0.4f);
 
+            // Ball Lightning: slow bouncing orb using the new orb pool; damages
+            // everything it overlaps each tick. Size + damage scale per level.
             ActiveSkillSO ballLightning = EnsureActiveSkill(
                 ActivesFolder + "/BallLightning.asset", "BallLightning", "Ball Lightning",
-                ActiveSkillBehavior.RadialVolley, new[]
+                ActiveSkillBehavior.BouncingOrb, new[]
                 {
-                    new LevelRow { Damage = 7, Cooldown = 4f, Count = 5, StatusChance = 15 },
-                    new LevelRow { Damage = 9, Cooldown = 3.7f, Count = 6, StatusChance = 18 },
-                    new LevelRow { Damage = 11, Cooldown = 3.4f, Count = 7, StatusChance = 22 },
-                    new LevelRow { Damage = 14, Cooldown = 3.1f, Count = 8, StatusChance = 26 },
-                    new LevelRow { Damage = 17, Cooldown = 2.8f, Count = 10, StatusChance = 30 },
-                }, 9f, 7f, 8, -1, -1, StatusEffectType.Stun, 0f, 1f);
+                    new LevelRow { Damage = 4, Cooldown = 6f, Area = 1.0f },
+                    new LevelRow { Damage = 5, Cooldown = 5.5f, Area = 1.2f },
+                    new LevelRow { Damage = 6, Cooldown = 5f, Area = 1.4f },
+                    new LevelRow { Damage = 8, Cooldown = 4.5f, Area = 1.6f },
+                    new LevelRow { Damage = 10, Cooldown = 4f, Area = 1.9f },
+                }, 3f, 0f, PoolIds.BallLightningOrb, -1, -1, StatusEffectType.Stun, 0f, 0f,
+                new Color(1f, 0.95f, 0.4f), zoneDuration: 5f, zoneTickInterval: 0.3f);
 
+            // Honey Bomb: scatters Count honey zones at random points around the
+            // player, each slowing + damaging. Jars + damage scale per level.
             ActiveSkillSO honeyBomb = EnsureActiveSkill(
                 ActivesFolder + "/HoneyBomb.asset", "HoneyBomb", "Honey Bomb",
-                ActiveSkillBehavior.HomingBolt, new[]
+                ActiveSkillBehavior.ScatterZones, new[]
                 {
-                    new LevelRow { Damage = 12, Cooldown = 3.5f, Count = 1, Area = 2f, StatusChance = 60 },
-                    new LevelRow { Damage = 16, Cooldown = 3.2f, Count = 1, Area = 2.3f, StatusChance = 65 },
-                    new LevelRow { Damage = 20, Cooldown = 2.9f, Count = 1, Area = 2.6f, StatusChance = 70 },
-                    new LevelRow { Damage = 25, Cooldown = 2.6f, Count = 1, Area = 2.9f, StatusChance = 80 },
-                    new LevelRow { Damage = 31, Cooldown = 2.3f, Count = 1, Area = 3.2f, StatusChance = 90 },
-                }, 7f, 11f, 11, 14, -1, StatusEffectType.Slow, 0.4f, 2.5f);
+                    new LevelRow { Damage = 6, Cooldown = 4.0f, Count = 3, Area = 1.3f, StatusChance = 100 },
+                    new LevelRow { Damage = 8, Cooldown = 3.7f, Count = 4, Area = 1.4f, StatusChance = 100 },
+                    new LevelRow { Damage = 10, Cooldown = 3.4f, Count = 5, Area = 1.5f, StatusChance = 100 },
+                    new LevelRow { Damage = 13, Cooldown = 3.1f, Count = 6, Area = 1.6f, StatusChance = 100 },
+                    new LevelRow { Damage = 16, Cooldown = 2.8f, Count = 8, Area = 1.7f, StatusChance = 100 },
+                }, 8f, 4f, PoolIds.SkillHoneyGlob, PoolIds.HoneySplashVfx, PoolIds.HoneyPuddle,
+                StatusEffectType.Slow, 0.35f, 1.5f, new Color(1f, 0.78f, 0.15f),
+                zoneDuration: 2.5f, zoneTickInterval: 0.5f);
 
             SkillDefinitionSO frostCard = EnsureSkill(
                 SkillsFolder + "/FrostNovaCard.asset", "FrostNovaCard", "Frost Nova",
-                "Blasts a ring of frost shards that can freeze enemies solid.",
+                "Unleashes a 360° frost blast that damages and slows nearby enemies. Levels grow the radius and slow.",
                 SkillEffectType.ActiveSkill, PowerUpLane.Ability, SkillElement.Frost,
                 0f, 5, SkillRarity.Rare, "Icon_PictoIcon_Star", frostNova);
 
             SkillDefinitionSO ballCard = EnsureSkill(
                 SkillsFolder + "/BallLightningCard.asset", "BallLightningCard", "Ball Lightning",
-                "Hurls a ring of crackling orbs that can stun enemies.",
+                "Releases a slow orb that pierces enemies, damaging them over time and bouncing off the screen edges.",
                 SkillEffectType.ActiveSkill, PowerUpLane.Ability, SkillElement.Electric,
                 0f, 5, SkillRarity.Rare, "Icon_PictoIcon_Energy", ballLightning);
 
             SkillDefinitionSO honeyCard = EnsureSkill(
                 SkillsFolder + "/HoneyBombCard.asset", "HoneyBombCard", "Honey Bomb",
-                "Lobs a homing honey bomb that explodes and slows everything caught in it.",
+                "Scatters honey jars around you that pool into slowing, damaging puddles. Levels add jars.",
                 SkillEffectType.ActiveSkill, PowerUpLane.Ability, SkillElement.Honey,
                 0f, 5, SkillRarity.Rare, "Icon_PictoIcon_Heart", honeyBomb);
 
@@ -404,14 +421,203 @@ namespace SurveHive.BuildTools
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-            Debug.Log("Combat 2.0 1E: Frost Nova + Ball Lightning + Honey Bomb added; radial burst pierces.");
+
+            RegisterPools(orbPrefab, wavePrefab);
+
+            Debug.Log("Combat 2.0 1E: Frost Nova (wave), Ball Lightning (bouncing orb), Honey Bomb (scatter) built.");
+        }
+
+        private const string OrbPrefabPath = "Assets/Prefabs/Skills/BallLightningOrb.prefab";
+
+        // Builds the pooled Ball Lightning orb prefab (round sprite, trigger
+        // collider, kinematic body, BouncingOrbProjectile). Idempotent.
+        private static GameObject EnsureBallLightningPrefab()
+        {
+            if (!AssetDatabase.IsValidFolder("Assets/Prefabs/Skills"))
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/Prefabs"))
+                {
+                    AssetDatabase.CreateFolder("Assets", "Prefabs");
+                }
+
+                AssetDatabase.CreateFolder("Assets/Prefabs", "Skills");
+            }
+
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(OrbPrefabPath) == null)
+            {
+                var go = new GameObject("BallLightningOrb", typeof(SpriteRenderer), typeof(Rigidbody2D),
+                    typeof(CircleCollider2D), typeof(BouncingOrbProjectile));
+                PrefabUtility.SaveAsPrefabAsset(go, OrbPrefabPath);
+                Object.DestroyImmediate(go);
+            }
+
+            GameObject contents = PrefabUtility.LoadPrefabContents(OrbPrefabPath);
+            try
+            {
+                var sr = contents.GetComponent<SpriteRenderer>();
+                sr.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Sprites/ExpOrb.png");
+                sr.color = Color.white;
+                sr.sortingOrder = 3;
+
+                var rb = contents.GetComponent<Rigidbody2D>();
+                rb.bodyType = RigidbodyType2D.Kinematic;
+                rb.gravityScale = 0f;
+
+                var col = contents.GetComponent<CircleCollider2D>();
+                col.isTrigger = true;
+                col.radius = 0.5f;
+
+                var so = new SerializedObject(contents.GetComponent<BouncingOrbProjectile>());
+                so.FindProperty("_poolId").intValue = PoolIds.BallLightningOrb;
+                so.FindProperty("_targetTag").stringValue = "Enemy";
+                so.ApplyModifiedPropertiesWithoutUndo();
+
+                PrefabUtility.SaveAsPrefabAsset(contents, OrbPrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
+
+            return AssetDatabase.LoadAssetAtPath<GameObject>(OrbPrefabPath);
+        }
+
+        private const string WavePrefabPath = "Assets/Prefabs/Skills/NovaWave.prefab";
+
+        // Builds the pooled Frost Nova wave prefab (a scaling sprite, no collider —
+        // it damages via a registry scan). Idempotent.
+        private static GameObject EnsureNovaWavePrefab()
+        {
+            if (AssetDatabase.LoadAssetAtPath<GameObject>(WavePrefabPath) == null)
+            {
+                var go = new GameObject("NovaWave", typeof(SpriteRenderer), typeof(ExpandingWave));
+                PrefabUtility.SaveAsPrefabAsset(go, WavePrefabPath);
+                Object.DestroyImmediate(go);
+            }
+
+            Sprite ring = EnsureFrostRingSprite();
+
+            GameObject contents = PrefabUtility.LoadPrefabContents(WavePrefabPath);
+            try
+            {
+                var sr = contents.GetComponent<SpriteRenderer>();
+                sr.sprite = ring;
+                sr.color = Color.white; // runtime tint (icy white) drives the look
+                sr.sortingOrder = 0;
+
+                var so = new SerializedObject(contents.GetComponent<ExpandingWave>());
+                so.FindProperty("_poolId").intValue = PoolIds.NovaWave;
+                so.FindProperty("_renderer").objectReferenceValue = sr;
+                // Ring outer radius at scale 1: 31px / 16 PPU.
+                so.FindProperty("_spriteBaseRadius").floatValue = 31f / 16f;
+                so.ApplyModifiedPropertiesWithoutUndo();
+
+                PrefabUtility.SaveAsPrefabAsset(contents, WavePrefabPath);
+            }
+            finally
+            {
+                PrefabUtility.UnloadPrefabContents(contents);
+            }
+
+            return AssetDatabase.LoadAssetAtPath<GameObject>(WavePrefabPath);
+        }
+
+        // Generates a hollow white ring sprite (transparent centre, no fill) for
+        // the frost wave. 64px @ PPU 16 → ~2u radius at scale 1.
+        private static Sprite EnsureFrostRingSprite()
+        {
+            const string ringPath = "Assets/Sprites/FrostRing.png";
+            Sprite existing = AssetDatabase.LoadAssetAtPath<Sprite>(ringPath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            const int diameter = 64;
+            const float center = 31.5f;
+            const float outer = 31f;
+            const float inner = 26f;
+            var pixels = new Color32[diameter * diameter];
+            for (int y = 0; y < diameter; y++)
+            {
+                for (int x = 0; x < diameter; x++)
+                {
+                    float dx = x - center;
+                    float dy = y - center;
+                    float d = Mathf.Sqrt((dx * dx) + (dy * dy));
+                    // Opaque white only within the ring band; fully transparent elsewhere.
+                    pixels[(y * diameter) + x] = d <= outer && d >= inner
+                        ? new Color32(255, 255, 255, 255)
+                        : new Color32(255, 255, 255, 0);
+                }
+            }
+
+            var texture = new Texture2D(diameter, diameter, TextureFormat.RGBA32, false);
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            System.IO.File.WriteAllBytes(ringPath, texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+            AssetDatabase.ImportAsset(ringPath, ImportAssetOptions.ForceUpdate);
+
+            var importer = (TextureImporter)AssetImporter.GetAtPath(ringPath);
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
+            importer.alphaIsTransparency = true;
+            importer.mipmapEnabled = false;
+            importer.filterMode = FilterMode.Point;
+            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.spritePixelsPerUnit = 16f;
+            importer.SaveAndReimport();
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(ringPath);
+        }
+
+        // Registers the new orb + nova-wave pools on the Beehive GameBootstrap.
+        private static void RegisterPools(GameObject orbPrefab, GameObject wavePrefab)
+        {
+            EditorSceneManager.OpenScene(BeehiveScenePath, OpenSceneMode.Single);
+            GameObject bootstrapGo = GameObject.Find("GameBootstrap");
+            if (bootstrapGo == null)
+            {
+                Debug.LogError("Combat 2.0 1E: GameBootstrap not found — pools not registered.");
+                return;
+            }
+
+            var so = new SerializedObject(bootstrapGo.GetComponent<SurveHive.Core.GameBootstrap>());
+            SerializedProperty pools = so.FindProperty("_pools");
+            EnsurePoolEntry(pools, PoolIds.BallLightningOrb, orbPrefab, 2, 6);
+            EnsurePoolEntry(pools, PoolIds.NovaWave, wavePrefab, 2, 6);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(bootstrapGo);
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+        }
+
+        private static void EnsurePoolEntry(SerializedProperty pools, int poolId, GameObject prefab, int prewarm, int maxSize)
+        {
+            for (int i = 0; i < pools.arraySize; i++)
+            {
+                if (pools.GetArrayElementAtIndex(i).FindPropertyRelative("poolId").intValue == poolId)
+                {
+                    pools.GetArrayElementAtIndex(i).FindPropertyRelative("prefab").objectReferenceValue = prefab;
+                    return;
+                }
+            }
+
+            int index = pools.arraySize;
+            pools.arraySize = index + 1;
+            SerializedProperty entry = pools.GetArrayElementAtIndex(index);
+            entry.FindPropertyRelative("poolId").intValue = poolId;
+            entry.FindPropertyRelative("prefab").objectReferenceValue = prefab;
+            entry.FindPropertyRelative("prewarmCount").intValue = prewarm;
+            entry.FindPropertyRelative("maxSize").intValue = maxSize;
         }
 
         private static ActiveSkillSO EnsureActiveSkill(
             string assetPath, string id, string displayName, ActiveSkillBehavior behavior,
             LevelRow[] levels, float projectileSpeed, float range,
             int projectilePoolId, int impactVfxPoolId, int zonePoolId,
-            StatusEffectType statusType, float statusPotency, float statusDuration)
+            StatusEffectType statusType, float statusPotency, float statusDuration, Color projectileTint,
+            float zoneDuration = 3.5f, float zoneTickInterval = 0.5f)
         {
             var skill = AssetDatabase.LoadAssetAtPath<ActiveSkillSO>(assetPath);
             if (skill == null)
@@ -424,11 +630,14 @@ namespace SurveHive.BuildTools
             so.FindProperty("_id").stringValue = id;
             so.FindProperty("_displayName").stringValue = displayName;
             so.FindProperty("_behavior").enumValueIndex = (int)behavior;
+            so.FindProperty("_projectileTint").colorValue = projectileTint;
             so.FindProperty("_projectileSpeed").floatValue = projectileSpeed;
             so.FindProperty("_range").floatValue = range;
             so.FindProperty("_projectilePoolId").intValue = projectilePoolId;
             so.FindProperty("_impactVfxPoolId").intValue = impactVfxPoolId;
             so.FindProperty("_zonePoolId").intValue = zonePoolId;
+            so.FindProperty("_zoneDuration").floatValue = zoneDuration;
+            so.FindProperty("_zoneTickInterval").floatValue = zoneTickInterval;
             so.FindProperty("_appliesStatus").boolValue = true;
             so.FindProperty("_statusType").enumValueIndex = (int)statusType;
             so.FindProperty("_statusPotency").floatValue = statusPotency;
@@ -444,6 +653,7 @@ namespace SurveHive.BuildTools
                 row.FindPropertyRelative("Count").intValue = levels[i].Count;
                 row.FindPropertyRelative("Area").floatValue = levels[i].Area;
                 row.FindPropertyRelative("StatusChancePercent").floatValue = levels[i].StatusChance;
+                row.FindPropertyRelative("StatusDuration").floatValue = levels[i].StatusDuration;
             }
 
             so.ApplyModifiedPropertiesWithoutUndo();

@@ -8,6 +8,9 @@ namespace SurveHive.Combat.Status
         Poison = 1,
         Slow = 2,
         Freeze = 3,
-        Stun = 4
+        Stun = 4,
+        // Combat 2.0 1E: a persistent frost slow (its own slot so it lingers
+        // independently of the generic Slow). Applied by Frost Nova.
+        Cold = 5
     }
 }

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SkillDefinitionSO
   _id: HoneyBombCard
   _displayName: Honey Bomb
-  _description: Lobs a homing honey bomb that explodes and slows everything caught
-    in it.
+  _description: Scatters honey jars around you that pool into slowing, damaging puddles.
+    Levels add jars.
   _effectType: 12
   _lane: 2
   _element: 5

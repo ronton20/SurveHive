@@ -29,12 +29,27 @@ namespace SurveHive.Combat.Skills
         private float _statusPotency;
         private float _statusDuration;
         private bool _released;
+        private Color _originalColor = Color.white;
+
+        private void Awake()
+        {
+            if (_renderer != null)
+            {
+                _originalColor = _renderer.color;
+            }
+        }
 
         public void Configure(
             float radius, float duration, float tickInterval, float tickDamage,
             bool appliesStatus, StatusEffectType statusType, float statusChancePercent,
-            float statusPotency, float statusDuration)
+            float statusPotency, float statusDuration, Color tint)
         {
+            if (_renderer != null)
+            {
+                // Alpha 0 = no tint → keep the prefab's own colour.
+                _renderer.color = tint.a > 0f ? tint : _originalColor;
+            }
+
             _radius = radius;
             _remainingDuration = duration;
             _tickInterval = Mathf.Max(0.1f, tickInterval);

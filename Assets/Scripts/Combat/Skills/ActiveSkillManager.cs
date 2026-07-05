@@ -137,6 +137,15 @@ namespace SurveHive.Combat.Skills
                 case ActiveSkillBehavior.HomingBolt:
                     id = SfxId.SkillEmberSting;
                     break;
+                case ActiveSkillBehavior.Nova:
+                    id = SfxId.SkillStingerBarrage;
+                    break;
+                case ActiveSkillBehavior.BouncingOrb:
+                    id = SfxId.SkillStaticWings;
+                    break;
+                case ActiveSkillBehavior.ScatterZones:
+                    id = SfxId.SkillHoneySplash;
+                    break;
                 default:
                     return;
             }
@@ -160,6 +169,12 @@ namespace SurveHive.Combat.Skills
                     return FireChainArc(skill, in stats);
                 case ActiveSkillBehavior.HomingBolt:
                     return FireHomingBolt(skill, in stats);
+                case ActiveSkillBehavior.Nova:
+                    return FireNova(skill, in stats);
+                case ActiveSkillBehavior.BouncingOrb:
+                    return FireBouncingOrb(skill, in stats);
+                case ActiveSkillBehavior.ScatterZones:
+                    return FireScatterZones(skill, in stats);
             }
 
             return false;
@@ -213,6 +228,13 @@ namespace SurveHive.Combat.Skills
                 ? transform.position + (toTarget.normalized * skill.Range)
                 : target.position;
 
+            return LaunchLobbedGlob(skill, in stats, landingPoint);
+        }
+
+        // Lobs one glob to a landing point, spawning a damaging/status zone there.
+        // Shared by Honey Splash (one, aimed) and Honey Bomb (several, scattered).
+        private bool LaunchLobbedGlob(ActiveSkillSO skill, in ActiveSkillLevelStats stats, Vector3 landingPoint)
+        {
             GameObject projectileObj = PoolManager.Instance.Get(
                 skill.ProjectilePoolId, transform.position, Quaternion.identity);
             if (!projectileObj.TryGetComponent(out SkillProjectile projectile))
@@ -222,6 +244,7 @@ namespace SurveHive.Combat.Skills
 
             var config = new SkillProjectileConfig
             {
+                Tint = skill.ProjectileTint,
                 Speed = skill.ProjectileSpeed,
                 Damage = AbilityDamage(stats.Damage),
                 Range = skill.Range * 2f,
@@ -239,6 +262,79 @@ namespace SurveHive.Combat.Skills
                 ZoneTickInterval = skill.ZoneTickInterval,
             };
             projectile.Launch(in config);
+            return true;
+        }
+
+        // Frost Nova: a ring that expands outward from the player, applying its
+        // effect (low damage + slow) to each enemy once as the front reaches it.
+        // Max radius + slow duration scale per level. Reused SO fields:
+        // Range = start radius, Area = max radius, ZoneDuration = expand time.
+        private bool FireNova(ActiveSkillSO skill, in ActiveSkillLevelStats stats)
+        {
+            if (PoolManager.Instance == null || skill.ZonePoolId < 0)
+            {
+                return false;
+            }
+
+            GameObject waveObj = PoolManager.Instance.Get(skill.ZonePoolId, transform.position, Quaternion.identity);
+            if (!waveObj.TryGetComponent(out ExpandingWave wave))
+            {
+                return false;
+            }
+
+            float slowDuration = stats.StatusDuration > 0f ? stats.StatusDuration : skill.StatusDuration;
+            float startRadius = skill.Range > 0f ? skill.Range : 1.2f;
+            wave.Configure(
+                startRadius, stats.Area, skill.ZoneDuration, AbilityDamage(stats.Damage),
+                skill.AppliesStatus, skill.StatusType, skill.StatusPotency, slowDuration, skill.ProjectileTint);
+            return true;
+        }
+
+        // Ball Lightning: fires a slow persistent orb toward the nearest enemy (or
+        // a random heading if none) that pierces, deals ticking damage, and bounces
+        // off the screen edges. Size + damage scale per level.
+        private bool FireBouncingOrb(ActiveSkillSO skill, in ActiveSkillLevelStats stats)
+        {
+            if (PoolManager.Instance == null)
+            {
+                return false;
+            }
+
+            Transform target = _targeter.CurrentTarget;
+            Vector2 direction = target != null
+                ? ((Vector2)(target.position - transform.position)).normalized
+                : Random.insideUnitCircle.normalized;
+
+            GameObject orbObj = PoolManager.Instance.Get(skill.ProjectilePoolId, transform.position, Quaternion.identity);
+            if (!orbObj.TryGetComponent(out BouncingOrbProjectile orb))
+            {
+                return false;
+            }
+
+            // Reused SO fields: ProjectileSpeed = orb speed, ZoneTickInterval = tick,
+            // ZoneDuration = lifetime, Area = orb size.
+            orb.Launch(
+                direction, skill.ProjectileSpeed, AbilityDamage(stats.Damage), skill.ZoneTickInterval,
+                stats.Area, skill.ZoneDuration, skill.ProjectileTint);
+            return true;
+        }
+
+        // Honey Bomb: scatters Count lobbed honey zones at random points around the
+        // player, each slowing + damaging. Jar count + damage scale per level.
+        private bool FireScatterZones(ActiveSkillSO skill, in ActiveSkillLevelStats stats)
+        {
+            if (PoolManager.Instance == null)
+            {
+                return false;
+            }
+
+            int count = Mathf.Max(1, stats.Count);
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 offset = Random.insideUnitCircle * skill.Range;
+                LaunchLobbedGlob(skill, in stats, transform.position + (Vector3)offset);
+            }
+
             return true;
         }
 
@@ -344,6 +440,7 @@ namespace SurveHive.Combat.Skills
             var config = new SkillProjectileConfig
             {
                 Direction = direction,
+                Tint = skill.ProjectileTint,
                 Speed = skill.ProjectileSpeed,
                 Damage = AbilityDamage(stats.Damage),
                 Range = skill.Range,

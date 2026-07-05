@@ -32,5 +32,9 @@ namespace SurveHive.Core
         public const int WaxShieldDrop = 21;
         public const int RoyalBombDrop = 22;
         public const int NukeVfx = 23;
+
+        // Combat 2.0 1E — distinct ability gameplay.
+        public const int BallLightningOrb = 24;
+        public const int NovaWave = 25;
     }
 }

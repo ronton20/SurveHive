@@ -17,7 +17,15 @@ namespace SurveHive.Data
         // Instant arc chaining between up to Count enemies.
         ChainArc = 4,
         // Homing projectile that explodes on impact.
-        HomingBolt = 5
+        HomingBolt = 5,
+
+        // Combat 2.0 1E — distinct-gameplay behaviors:
+        // Instant 360° blast around the player (damage + guaranteed status).
+        Nova = 6,
+        // Slow persistent orb: pierces, deals ticking damage, bounces off screen edges.
+        BouncingOrb = 7,
+        // Scatters several lobbed zones at random points around the player.
+        ScatterZones = 8
     }
 
     // One row of the per-level growth table. Meaning of Count/Area varies by
@@ -31,6 +39,9 @@ namespace SurveHive.Data
         public int Count;
         public float Area;
         [Range(0f, 100f)] public float StatusChancePercent;
+        // Per-level status duration (Combat 2.0 1E, e.g. Frost Nova's slow length).
+        // 0 = fall back to the skill's flat StatusDuration.
+        public float StatusDuration;
     }
 
     [CreateAssetMenu(menuName = "SurveHive/Active Skill", fileName = "NewActiveSkill")]
@@ -42,6 +53,10 @@ namespace SurveHive.Data
         [SerializeField] private ActiveSkillLevelStats[] _levels;
 
         [Header("Delivery")]
+        // Tints the pooled projectile so skills sharing a pool read as distinct
+        // (e.g. blue frost vs yellow electric on the same stinger sprite). Alpha 0
+        // means "leave the prefab's own colour" (the default for pre-tint skills).
+        [SerializeField] private Color _projectileTint = new Color(1f, 1f, 1f, 0f);
         [SerializeField] private float _projectileSpeed = 10f;
         // Max targeting/travel distance from the player.
         [SerializeField] private float _range = 8f;
@@ -66,6 +81,8 @@ namespace SurveHive.Data
         public string DisplayName => _displayName;
 
         public ActiveSkillBehavior Behavior => _behavior;
+
+        public Color ProjectileTint => _projectileTint;
 
         public int MaxLevel => _levels != null ? _levels.Length : 0;
 

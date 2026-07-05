@@ -87,7 +87,7 @@ namespace SurveHive.BuildTools
                 {
                     var so = new SerializedObject(gb);
                     var pools = so.FindProperty("_pools");
-                    ok &= Check(pools.arraySize == 24, $"GameBootstrap._pools has 24 entries (found {pools.arraySize})");
+                    ok &= Check(pools.arraySize >= 24, $"GameBootstrap._pools has >=24 entries (found {pools.arraySize})");
                     bool hasDamageNumberPool = false;
                     bool hasQueensGuardPool = false;
                     bool hasDeathVfxPool = false;

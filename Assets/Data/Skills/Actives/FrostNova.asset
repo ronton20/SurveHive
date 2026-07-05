@@ -14,41 +14,47 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.ActiveSkillSO
   _id: FrostNova
   _displayName: Frost Nova
-  _behavior: 0
+  _behavior: 6
   _levels:
-  - Damage: 6
+  - Damage: 3
+    Cooldown: 5
+    Count: 0
+    Area: 3.75
+    StatusChancePercent: 0
+    StatusDuration: 2
+  - Damage: 4
     Cooldown: 4.5
-    Count: 6
-    Area: 0
-    StatusChancePercent: 20
-  - Damage: 8
-    Cooldown: 4.2
-    Count: 7
-    Area: 0
-    StatusChancePercent: 25
-  - Damage: 10
-    Cooldown: 3.9
-    Count: 8
-    Area: 0
-    StatusChancePercent: 30
-  - Damage: 12
-    Cooldown: 3.6
-    Count: 10
-    Area: 0
-    StatusChancePercent: 35
-  - Damage: 15
-    Cooldown: 3.3
-    Count: 12
-    Area: 0
-    StatusChancePercent: 40
-  _projectileSpeed: 9
-  _range: 7
-  _projectilePoolId: 8
+    Count: 0
+    Area: 4.5
+    StatusChancePercent: 0
+    StatusDuration: 2.5
+  - Damage: 5
+    Cooldown: 4
+    Count: 0
+    Area: 5.25
+    StatusChancePercent: 0
+    StatusDuration: 3
+  - Damage: 7
+    Cooldown: 3.5
+    Count: 0
+    Area: 6
+    StatusChancePercent: 0
+    StatusDuration: 3.5
+  - Damage: 9
+    Cooldown: 3
+    Count: 0
+    Area: 6.75
+    StatusChancePercent: 0
+    StatusDuration: 4
+  _projectileTint: {r: 0.85, g: 0.93, b: 1, a: 0.9}
+  _projectileSpeed: 0
+  _range: 1.2
+  _projectilePoolId: -1
   _impactVfxPoolId: -1
-  _zonePoolId: -1
-  _zoneDuration: 3.5
-  _zoneTickInterval: 0.5
+  _zonePoolId: 25
+  _zoneDuration: 0.5
+  _zoneTickInterval: 0.4
   _appliesStatus: 1
-  _statusType: 3
-  _statusPotency: 12
-  _statusDuration: 1.2
+  _statusType: 5
+  _statusPotency: 0.4
+  _statusDuration: 0

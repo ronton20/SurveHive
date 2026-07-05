@@ -11,6 +11,7 @@ namespace SurveHive.Combat.Skills
     public struct SkillProjectileConfig
     {
         public Vector2 Direction;
+        public Color Tint;
         public float Speed;
         public float Damage;
         public float Range;
@@ -55,11 +56,18 @@ namespace SurveHive.Combat.Skills
         private float _remainingRange;
         private bool _released;
         private Collider2D _lastHitCollider;
+        private SpriteRenderer _spriteRenderer;
+        private Color _originalColor = Color.white;
 
         private void Awake()
         {
             // Poison the default so an un-launched pooled instance self-releases.
             _remainingRange = 0f;
+            _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            if (_spriteRenderer != null)
+            {
+                _originalColor = _spriteRenderer.color;
+            }
         }
 
         public void Launch(in SkillProjectileConfig config)
@@ -70,6 +78,13 @@ namespace SurveHive.Combat.Skills
             _released = false;
             _lastHitCollider = null;
             transform.rotation = Quaternion.FromToRotation(Vector3.right, _direction);
+
+            if (_spriteRenderer != null)
+            {
+                // Always reset (pooled instances bleed colour otherwise). Alpha 0 =
+                // "no tint" → restore the prefab's own colour.
+                _spriteRenderer.color = config.Tint.a > 0f ? config.Tint : _originalColor;
+            }
         }
 
         private void OnEnable()
@@ -220,7 +235,7 @@ namespace SurveHive.Combat.Skills
                 zone.Configure(
                     _config.ZoneRadius, _config.ZoneDuration, _config.ZoneTickInterval, _config.Damage,
                     _config.AppliesStatus, _config.StatusType, _config.StatusChancePercent,
-                    _config.StatusPotency, _config.StatusDuration);
+                    _config.StatusPotency, _config.StatusDuration, _config.Tint);
             }
         }
 

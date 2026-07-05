@@ -22,6 +22,7 @@ namespace SurveHive.Combat.Status
         private static readonly Color BurnTint = new Color(1f, 0.55f, 0.35f);
         private static readonly Color PoisonTint = new Color(0.6f, 1f, 0.45f);
         private static readonly Color SlowTint = new Color(0.65f, 0.75f, 1f);
+        private static readonly Color ColdTint = new Color(0.6f, 0.85f, 1f);
 
         private readonly StatusEffectBuffer _buffer = new StatusEffectBuffer();
         private Color _baseTint = Color.white;
@@ -146,6 +147,11 @@ namespace SurveHive.Combat.Status
             if (_buffer.IsActive(StatusEffectType.Poison))
             {
                 return PoisonTint;
+            }
+
+            if (_buffer.IsActive(StatusEffectType.Cold))
+            {
+                return ColdTint;
             }
 
             if (_buffer.IsActive(StatusEffectType.Slow))
