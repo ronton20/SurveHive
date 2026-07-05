@@ -108,8 +108,25 @@ namespace SurveHive.Stage
         private void HandleGatingBossDied()
         {
             bool wasFinal = _gatingBossIsFinal;
+            Vector3 deathPosition = _gatingBossHealth != null
+                ? _gatingBossHealth.transform.position
+                : (_spawner != null && _spawner.Player != null ? _spawner.Player.position : Vector3.zero);
             UnhookGatingBoss();
 
+            // Play the cinematic death beat (slow-mo + invuln + shockwave), then
+            // resume the timeline / show victory once it finishes (Phase 2C).
+            if (BossDeathSequence.Instance != null)
+            {
+                BossDeathSequence.Instance.Play(deathPosition, () => CompleteBossDeath(wasFinal));
+            }
+            else
+            {
+                CompleteBossDeath(wasFinal);
+            }
+        }
+
+        private void CompleteBossDeath(bool wasFinal)
+        {
             // Resume the timeline + drip (miniboss); for the final boss the
             // victory pause takes over immediately anyway.
             if (StageDirector.Instance != null)
@@ -119,7 +136,7 @@ namespace SurveHive.Stage
 
             if (wasFinal)
             {
-                // Killing the Queen = world clear (PLAN §5.2): first winnable run.
+                // Killing the Queen = world clear: first winnable run.
                 ShowVictory();
             }
         }

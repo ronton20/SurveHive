@@ -30,7 +30,8 @@ namespace SurveHive.Core
 
         public void Request(float duration)
         {
-            if (GamePause.IsPaused || duration <= 0f)
+            // A real pause or the boss-death slow-mo owns the time scale.
+            if (GamePause.IsPaused || BossDeathSequence.IsPlaying || duration <= 0f)
             {
                 return;
             }

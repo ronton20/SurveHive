@@ -32,6 +32,13 @@ namespace SurveHive.Health
 
         private IDamageAbsorber _damageAbsorber;
         private IDamageMitigator _damageMitigator;
+        private bool _invulnerable;
+
+        /// <summary>Ignores all incoming damage while set (e.g. the boss-death beat).</summary>
+        public void SetInvulnerable(bool value)
+        {
+            _invulnerable = value;
+        }
 
         /// <summary>Optional interceptor (e.g. Wax Shield); null to clear.</summary>
         public void SetDamageAbsorber(IDamageAbsorber absorber)
@@ -47,7 +54,7 @@ namespace SurveHive.Health
 
         public void TakeDamage(float amount, GameObject instigator)
         {
-            if (_isDead || amount <= 0f)
+            if (_isDead || amount <= 0f || _invulnerable)
             {
                 return;
             }

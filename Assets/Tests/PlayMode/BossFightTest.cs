@@ -78,9 +78,14 @@ namespace SurveHive.Tests
             yield return null;
             Assert.IsNull(FindEnemyWithRank(4), "Queen does not spawn while the miniboss gate holds");
 
-            // ...but killing the miniboss clears the gate synchronously (checked
-            // before the next Update spawns and re-gates on the Queen)...
+            // ...but killing the miniboss clears the gate once the Phase 2C death
+            // beat (slow-mo) finishes, then the Queen crossing can fire.
             miniboss.Health.TakeDamage(1_000_000f, null);
+            while (SurveHive.Core.BossDeathSequence.IsPlaying)
+            {
+                yield return null;
+            }
+
             Assert.IsFalse(director.IsBossActive, "miniboss death resumes the timeline");
 
             // ...and the pending 100% crossing now fires the flood wave + Queen.
@@ -107,7 +112,11 @@ namespace SurveHive.Tests
             }
 
             queen.Health.TakeDamage(1_000_000f, null);
-            yield return null;
+            while (SurveHive.Core.BossDeathSequence.IsPlaying)
+            {
+                yield return null;
+            }
+
             yield return null;
 
             GameObject victoryPanel = GameObject.Find("VictoryPanel");

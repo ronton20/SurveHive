@@ -5,6 +5,7 @@ using SurveHive.Data;
 using SurveHive.Progression;
 using SurveHive.Stage;
 using SurveHive.UI;
+using SurveHive.View;
 using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -961,6 +962,37 @@ namespace SurveHive.BuildTools
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
             Debug.Log("Phase 2A: pre-spawn warning banner built + wired.");
+        }
+
+        // ------------------------------------------------------------------
+        // Phase 2C: boss/miniboss death sequence coordinator (slow-mo + invuln +
+        // shockwave). Reuses the Royal Bomb nuke VFX as the shockwave. Idempotent.
+        // ------------------------------------------------------------------
+        [MenuItem("SurveHive/Combat 2.0/2C - Boss Death Sequence")]
+        public static void ApplyBossDeathSequence()
+        {
+            EditorSceneManager.OpenScene(BeehiveScenePath, OpenSceneMode.Single);
+
+            GameObject go = GameObject.Find("BossDeathSequence");
+            if (go == null)
+            {
+                go = new GameObject("BossDeathSequence");
+            }
+
+            if (!go.TryGetComponent(out BossDeathSequence sequence))
+            {
+                sequence = go.AddComponent<BossDeathSequence>();
+            }
+
+            var shaker = Object.FindFirstObjectByType<CameraShaker>();
+            var so = new SerializedObject(sequence);
+            so.FindProperty("_shaker").objectReferenceValue = shaker;
+            so.FindProperty("_shockwavePoolId").intValue = PoolIds.NukeVfx;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(go);
+
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+            Debug.Log("Phase 2C: boss death sequence built + wired.");
         }
     }
 }
