@@ -30,6 +30,9 @@ namespace SurveHive.UI
         [SerializeField] private TMP_Text[] _choiceBanners;
         [SerializeField] private Image[] _choiceBannerBackgrounds;
         [SerializeField] private Image[] _choiceElementGems;
+        // Shows the lane's owned/cap (e.g. "2/5") so players can see how much room
+        // a lane has left before committing a pick (Combat 2.0 1F).
+        [SerializeField] private TMP_Text[] _choiceLaneCounters;
 
         // Move speed is intentionally excluded here — it grows only through power-ups
         // (the Swift Wings skill), keeping it a rarer, more meaningful stat.
@@ -73,6 +76,7 @@ namespace SurveHive.UI
         private Image[] _choiceBackgrounds;
         private CanvasGroup _canvasGroup;
         private readonly StringBuilder _descriptionBuilder = new StringBuilder(96);
+        private readonly StringBuilder _counterBuilder = new StringBuilder(8);
         private readonly System.Random _rng = new System.Random();
 
         private void Awake()
@@ -237,6 +241,18 @@ namespace SurveHive.UI
             if (_choiceElementGems != null && i < _choiceElementGems.Length && _choiceElementGems[i] != null)
             {
                 _choiceElementGems[i].color = GetElementColor(skill.Element);
+            }
+
+            // Owned/cap for this card's lane (populated by BuildEligibleBuffer,
+            // which runs before this loop). Runs on the paused level-up screen.
+            if (_choiceLaneCounters != null && i < _choiceLaneCounters.Length && _choiceLaneCounters[i] != null)
+            {
+                int lane = (int)skill.Lane;
+                _counterBuilder.Clear();
+                _counterBuilder.Append(_ownedPerLane[lane]);
+                _counterBuilder.Append('/');
+                _counterBuilder.Append(_laneCaps[lane]);
+                _choiceLaneCounters[i].text = _counterBuilder.ToString();
             }
         }
 

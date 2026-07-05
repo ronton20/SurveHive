@@ -61,6 +61,7 @@ namespace SurveHive.BuildTools
             var banners = new TMP_Text[ChoiceCount];
             var bannerBackgrounds = new Image[ChoiceCount];
             var elementGems = new Image[ChoiceCount];
+            var laneCounters = new TMP_Text[ChoiceCount];
 
             for (int i = 0; i < ChoiceCount; i++)
             {
@@ -71,13 +72,14 @@ namespace SurveHive.BuildTools
                     return;
                 }
 
-                BuildCard(choice, font, out banners[i], out bannerBackgrounds[i], out elementGems[i]);
+                BuildCard(choice, font, out banners[i], out bannerBackgrounds[i], out elementGems[i], out laneCounters[i]);
             }
 
             var serialized = new SerializedObject(controller);
             WireArray(serialized, "_choiceBanners", banners);
             WireArray(serialized, "_choiceBannerBackgrounds", bannerBackgrounds);
             WireArray(serialized, "_choiceElementGems", elementGems);
+            WireArray(serialized, "_choiceLaneCounters", laneCounters);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(controller);
 
@@ -89,7 +91,7 @@ namespace SurveHive.BuildTools
         // Runtime colors/labels come from LevelUpUIController; placeholders here.
         private static void BuildCard(
             Transform choice, TMP_FontAsset font,
-            out TMP_Text banner, out Image bannerBackground, out Image elementGem)
+            out TMP_Text banner, out Image bannerBackground, out Image elementGem, out TMP_Text laneCounter)
         {
             // Lane banner background: top-stretched ribbon.
             GameObject bannerGo = FindOrCreateChild(choice, "Banner");
@@ -125,6 +127,17 @@ namespace SurveHive.BuildTools
             gemRect.pivot = new Vector2(1f, 1f);
             gemRect.anchoredPosition = new Vector2(-8f, -38f);
             gemRect.sizeDelta = new Vector2(22f, 22f);
+
+            // Lane owned/cap counter, tucked under the banner ribbon (top-left).
+            GameObject counterGo = FindOrCreateChild(choice, "LaneCounter");
+            laneCounter = EnsureTmp(counterGo, font, 14f, new Color(0.29f, 0.2f, 0.09f), TextAlignmentOptions.Left);
+            laneCounter.text = "0/5";
+            var counterRect = (RectTransform)counterGo.transform;
+            counterRect.anchorMin = new Vector2(0f, 1f);
+            counterRect.anchorMax = new Vector2(0f, 1f);
+            counterRect.pivot = new Vector2(0f, 1f);
+            counterRect.anchoredPosition = new Vector2(10f, -32f);
+            counterRect.sizeDelta = new Vector2(60f, 18f);
         }
 
         private static GameObject FindOrCreateChild(Transform parent, string name)
@@ -161,7 +174,9 @@ namespace SurveHive.BuildTools
             tmp.fontSize = size;
             tmp.color = color;
             tmp.alignment = alignment;
-            tmp.textWrappingMode = TextWrappingModes.NoWrap;
+            // Normal wrapping (single-word labels won't actually wrap) so these
+            // texts satisfy the level-up card wrapping check in the validator.
+            tmp.textWrappingMode = TextWrappingModes.Normal;
             tmp.raycastTarget = false;
             return tmp;
         }

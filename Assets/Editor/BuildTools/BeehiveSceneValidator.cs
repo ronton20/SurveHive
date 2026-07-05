@@ -157,9 +157,11 @@ namespace SurveHive.BuildTools
                     ok &= Check(so.FindProperty("_database").objectReferenceValue != null, "LevelUpUIController._database wired");
                     var buttons = so.FindProperty("_choiceButtons");
                     ok &= Check(buttons.arraySize == 3, $"LevelUpUIController._choiceButtons has 3 entries (found {buttons.arraySize})");
-                    // Combat 2.0 1A: lane banners wired (run "SurveHive/Combat 2.0/1A").
+                    // Combat 2.0 1A/1F: lane banners + counters wired (run "SurveHive/Combat 2.0/1A").
                     var banners = so.FindProperty("_choiceBanners");
                     ok &= Check(banners.arraySize == 3, $"LevelUpUIController._choiceBanners has 3 entries (found {banners.arraySize})");
+                    var laneCounters = so.FindProperty("_choiceLaneCounters");
+                    ok &= Check(laneCounters.arraySize == 3, $"LevelUpUIController._choiceLaneCounters has 3 entries (found {laneCounters.arraySize})");
                 }
             }
 
@@ -690,10 +692,11 @@ namespace SurveHive.BuildTools
                 ok &= Check(allWrap && cardTexts.Length > 0, "Level-up card texts use word wrapping");
             }
 
-            // Skill database: 16 cards, all with icons; 6 active cards resolve.
+            // Skill database populated, all with icons; active cards resolve.
+            // Minimums, not exact: the roster grows across Combat 2.0 sub-phases.
             var database = AssetDatabase.LoadAssetAtPath<Data.SkillDatabaseSO>("Assets/Data/Skills/SkillDatabase.asset");
-            ok &= Check(database != null && database.Skills != null && database.Skills.Length == 16,
-                $"SkillDatabase has 16 skills (found {(database != null && database.Skills != null ? database.Skills.Length : 0)})");
+            ok &= Check(database != null && database.Skills != null && database.Skills.Length >= 16,
+                $"SkillDatabase populated (>=16 skills, found {(database != null && database.Skills != null ? database.Skills.Length : 0)})");
             if (database != null && database.Skills != null)
             {
                 int activeCards = 0;
@@ -717,7 +720,7 @@ namespace SurveHive.BuildTools
                 }
 
                 ok &= Check(allIcons, "All database skills have icons");
-                ok &= Check(activeCards == 6, $"Database contains 6 active skill cards (found {activeCards})");
+                ok &= Check(activeCards >= 6, $"Database contains >=6 active skill cards (found {activeCards})");
                 ok &= Check(activeRefsOk, "Active skill cards reference ActiveSkillSO with matching level caps");
             }
 
