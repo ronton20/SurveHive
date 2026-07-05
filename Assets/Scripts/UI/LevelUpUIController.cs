@@ -313,6 +313,40 @@ namespace SurveHive.UI
             _playerStats.IncreaseAttackSpeedPercent(_bonusAttackSpeedPercentPerLevel);
         }
 
+        /// <summary>Cap on distinct picks for a lane (Combat 2.0 1F build list).</summary>
+        public int GetLaneCap(PowerUpLane lane)
+        {
+            switch (lane)
+            {
+                case PowerUpLane.Enhancement:
+                    return _enhancementCap;
+                case PowerUpLane.Ability:
+                    return _abilityCap;
+                default:
+                    return _passiveCap;
+            }
+        }
+
+        /// <summary>
+        /// Fills <paramref name="results"/> with every power-up owned this run
+        /// (run-level ≥ 1). Called only while paused, so allocation is fine.
+        /// </summary>
+        public void GetOwnedPowerUps(System.Collections.Generic.List<OwnedPowerUp> results)
+        {
+            results.Clear();
+            SkillDefinitionSO[] skills = _database.Skills;
+            for (int i = 0; i < skills.Length; i++)
+            {
+                if (_skillLevels[i] <= 0)
+                {
+                    continue;
+                }
+
+                SkillDefinitionSO skill = skills[i];
+                results.Add(new OwnedPowerUp(skill.DisplayName, skill.Lane, skill.Element, _skillLevels[i]));
+            }
+        }
+
         private int BuildEligibleBuffer()
         {
             _laneCaps[(int)PowerUpLane.Passive] = _passiveCap;

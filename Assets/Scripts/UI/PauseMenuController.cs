@@ -23,6 +23,12 @@ namespace SurveHive.UI
         [SerializeField] private Button _abandonButton;
         [SerializeField] private string _menuSceneName = "MainMenu";
 
+        [Header("Combat 2.0 1F — build list (optional)")]
+        [SerializeField] private GameObject _powerUpsPanel;
+        [SerializeField] private Button _powerUpsButton;
+        [SerializeField] private Button _powerUpsBackButton;
+        [SerializeField] private OwnedPowerUpsView _powerUpsView;
+
         private bool _isOpen;
 
         public bool IsOpen => _isOpen;
@@ -34,6 +40,16 @@ namespace SurveHive.UI
             _settingsButton.onClick.AddListener(OpenSettings);
             _settingsBackButton.onClick.AddListener(CloseSettings);
             _abandonButton.onClick.AddListener(AbandonRun);
+
+            if (_powerUpsButton != null)
+            {
+                _powerUpsButton.onClick.AddListener(OpenPowerUps);
+            }
+
+            if (_powerUpsBackButton != null)
+            {
+                _powerUpsBackButton.onClick.AddListener(ClosePowerUps);
+            }
         }
 
         private void OnDestroy()
@@ -43,6 +59,16 @@ namespace SurveHive.UI
             _settingsButton.onClick.RemoveListener(OpenSettings);
             _settingsBackButton.onClick.RemoveListener(CloseSettings);
             _abandonButton.onClick.RemoveListener(AbandonRun);
+
+            if (_powerUpsButton != null)
+            {
+                _powerUpsButton.onClick.RemoveListener(OpenPowerUps);
+            }
+
+            if (_powerUpsBackButton != null)
+            {
+                _powerUpsBackButton.onClick.RemoveListener(ClosePowerUps);
+            }
         }
 
         private void Update()
@@ -87,6 +113,11 @@ namespace SurveHive.UI
             _isOpen = true;
             _pausePanel.SetActive(true);
             _settingsPanel.SetActive(false);
+            if (_powerUpsPanel != null)
+            {
+                _powerUpsPanel.SetActive(false);
+            }
+
             GamePause.SetPaused(true);
         }
 
@@ -99,6 +130,11 @@ namespace SurveHive.UI
 
             _isOpen = false;
             _settingsPanel.SetActive(false);
+            if (_powerUpsPanel != null)
+            {
+                _powerUpsPanel.SetActive(false);
+            }
+
             _pausePanel.SetActive(false);
             GamePause.SetPaused(false);
         }
@@ -123,6 +159,30 @@ namespace SurveHive.UI
         private void CloseSettings()
         {
             _settingsPanel.SetActive(false);
+            _pausePanel.SetActive(true);
+        }
+
+        private void OpenPowerUps()
+        {
+            if (_powerUpsView != null)
+            {
+                _powerUpsView.Refresh();
+            }
+
+            _pausePanel.SetActive(false);
+            if (_powerUpsPanel != null)
+            {
+                _powerUpsPanel.SetActive(true);
+            }
+        }
+
+        private void ClosePowerUps()
+        {
+            if (_powerUpsPanel != null)
+            {
+                _powerUpsPanel.SetActive(false);
+            }
+
             _pausePanel.SetActive(true);
         }
 

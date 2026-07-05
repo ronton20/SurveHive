@@ -713,5 +713,188 @@ namespace SurveHive.BuildTools
             string path = AssetDatabase.GUIDToAssetPath(guids[0]);
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
+
+        // ------------------------------------------------------------------
+        // 1F: owned power-ups pause panel. Adds a POWER-UPS button + a panel
+        // listing the run's build (grouped by lane) onto the existing PauseRoot.
+        // Additive over Phase 4's pause menu; idempotent.
+        // ------------------------------------------------------------------
+        private const string UiKitPath = "Assets/ThirdParty/PixelUI/UI SIMPLE PIXEL UNSPLIT.png";
+        private static readonly Color DeepBrownC = new Color(0.227f, 0.141f, 0.086f);
+        private static readonly Color HoneyGoldC = new Color(1f, 0.765f, 0.043f);
+        private static readonly Color WaxC = new Color(0.91f, 0.847f, 0.627f);
+
+        [MenuItem("SurveHive/Combat 2.0/1F - Owned Power-ups Pause Panel")]
+        public static void ApplyPowerUpsPanel()
+        {
+            EditorSceneManager.OpenScene(BeehiveScenePath, OpenSceneMode.Single);
+
+            GameObject canvasGo = GameObject.Find("Canvas");
+            Transform pauseRoot = canvasGo != null ? canvasGo.transform.Find("PauseRoot") : null;
+            Transform pausePanel = pauseRoot != null ? pauseRoot.Find("PausePanel") : null;
+            if (pausePanel == null)
+            {
+                Debug.LogError("Combat 2.0 1F: PauseRoot/PausePanel not found — run the Phase 4 pause pass first.");
+                return;
+            }
+
+            var controller = pauseRoot.GetComponent<PauseMenuController>();
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
+            Sprite panelSprite = LoadUiSprite("PixelPanel");
+            Sprite buttonSprite = LoadUiSprite("PixelButton");
+
+            // Make room in the pause panel, then add the POWER-UPS entry.
+            SetAnchoredY(pausePanel.Find("ResumeButton"), 180f);
+            SetAnchoredY(pausePanel.Find("SettingsButton"), -100f);
+            SetAnchoredY(pausePanel.Find("AbandonButton"), -240f);
+            Button powerUpsButton = MakeButton(pausePanel, "PowerUpsButton", "POWER-UPS", font, buttonSprite, new Vector2(0f, 40f));
+
+            // Build-list panel.
+            GameObject panel = MakePanel(pauseRoot, "PowerUpsPanel", panelSprite, new Vector2(820f, 1100f));
+            MakeTitle(panel.transform, font);
+            TMP_Text listText = MakeListText(panel.transform, font);
+            Button backButton = MakeButton(panel.transform, "BackButton", "BACK", font, buttonSprite, new Vector2(0f, -470f));
+
+            if (!panel.TryGetComponent(out OwnedPowerUpsView view))
+            {
+                view = panel.AddComponent<OwnedPowerUpsView>();
+            }
+
+            Transform levelUpPanel = canvasGo.transform.Find("LevelUpPanel");
+            LevelUpUIController levelUp = levelUpPanel != null ? levelUpPanel.GetComponent<LevelUpUIController>() : null;
+            var viewSo = new SerializedObject(view);
+            viewSo.FindProperty("_levelUp").objectReferenceValue = levelUp;
+            viewSo.FindProperty("_text").objectReferenceValue = listText;
+            viewSo.ApplyModifiedPropertiesWithoutUndo();
+
+            var so = new SerializedObject(controller);
+            so.FindProperty("_powerUpsPanel").objectReferenceValue = panel;
+            so.FindProperty("_powerUpsButton").objectReferenceValue = powerUpsButton;
+            so.FindProperty("_powerUpsBackButton").objectReferenceValue = backButton;
+            so.FindProperty("_powerUpsView").objectReferenceValue = view;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(controller);
+
+            panel.SetActive(false);
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+            Debug.Log("Combat 2.0 1F: owned power-ups pause panel built + wired.");
+        }
+
+        private static void SetAnchoredY(Transform t, float y)
+        {
+            if (t != null)
+            {
+                var rect = (RectTransform)t;
+                rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, y);
+            }
+        }
+
+        private static Sprite LoadUiSprite(string spriteName)
+        {
+            Object[] subAssets = AssetDatabase.LoadAllAssetsAtPath(UiKitPath);
+            for (int i = 0; i < subAssets.Length; i++)
+            {
+                if (subAssets[i] is Sprite sprite && sprite.name == spriteName)
+                {
+                    return sprite;
+                }
+            }
+
+            Debug.LogError($"Combat 2.0 1F: UI kit sprite '{spriteName}' not found.");
+            return null;
+        }
+
+        private static GameObject MakePanel(Transform parent, string name, Sprite sprite, Vector2 size)
+        {
+            GameObject go = FindOrCreateChild(parent, name);
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = size;
+
+            Image image = EnsureImage(go);
+            image.sprite = sprite;
+            image.type = Image.Type.Sliced;
+            image.pixelsPerUnitMultiplier = 2f;
+            image.color = new Color(DeepBrownC.r, DeepBrownC.g, DeepBrownC.b, 0.97f);
+            image.raycastTarget = true;
+            return go;
+        }
+
+        private static Button MakeButton(
+            Transform parent, string name, string label, TMP_FontAsset font, Sprite sprite, Vector2 pos)
+        {
+            GameObject go = FindOrCreateChild(parent, name);
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = pos;
+            rect.sizeDelta = new Vector2(620f, 120f);
+
+            Image image = EnsureImage(go);
+            image.sprite = sprite;
+            image.type = Image.Type.Sliced;
+            image.pixelsPerUnitMultiplier = 2f;
+            image.color = HoneyGoldC;
+
+            if (!go.TryGetComponent(out Button button))
+            {
+                button = go.AddComponent<Button>();
+            }
+
+            button.targetGraphic = image;
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(1f, 0.92f, 0.7f);
+            colors.pressedColor = new Color(0.9f, 0.7f, 0.2f);
+            colors.disabledColor = new Color(0.45f, 0.42f, 0.38f);
+            button.colors = colors;
+
+            if (!go.TryGetComponent(out UIClickSfx _))
+            {
+                go.AddComponent<UIClickSfx>();
+            }
+
+            GameObject labelGo = FindOrCreateChild(go.transform, "Label");
+            var labelRect = (RectTransform)labelGo.transform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+            TMP_Text tmp = EnsureTmp(labelGo, font, 40f, DeepBrownC, TextAlignmentOptions.Center);
+            tmp.text = label;
+
+            return button;
+        }
+
+        private static void MakeTitle(Transform panel, TMP_FontAsset font)
+        {
+            GameObject go = FindOrCreateChild(panel, "Title");
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, -50f);
+            rect.sizeDelta = new Vector2(760f, 90f);
+            TMP_Text tmp = EnsureTmp(go, font, 60f, HoneyGoldC, TextAlignmentOptions.Center);
+            tmp.text = "YOUR BUILD";
+        }
+
+        private static TMP_Text MakeListText(Transform panel, TMP_FontAsset font)
+        {
+            GameObject go = FindOrCreateChild(panel, "BuildList");
+            var rect = (RectTransform)go.transform;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(48f, 150f);
+            rect.offsetMax = new Vector2(-48f, -140f);
+            TMP_Text tmp = EnsureTmp(go, font, 30f, WaxC, TextAlignmentOptions.TopLeft);
+            tmp.text = string.Empty;
+            return tmp;
+        }
     }
 }
