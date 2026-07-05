@@ -84,7 +84,7 @@ Grow and polish the active-skill roster; wire ability-power scaling (from 1C).
 - **Touch:** `Combat/Skills/ActiveSkillManager.cs`, `Data/ActiveSkillSO.cs` (if new behavior), new `Data/Skills/*` ability assets + pool IDs, `Data/SkillDatabaseSO`.
 - **Done when:** stinger burst pierces; ≥3 new abilities are offerable and scale with ability power; 5-cap holds.
 
-### 1F — Power-up readability UX ☐
+### 1F — Power-up readability UX ✅
 Help players strategize around the lane caps now that the lanes exist. Pure surfacing of state
 the controller already tracks — no new mechanics. Cheap; slot after the functional lanes land.
 - **Lane counter on the offer card** — under each card's lane banner, show an `owned/cap`

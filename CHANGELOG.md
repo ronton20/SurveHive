@@ -28,6 +28,11 @@ cap and card banner, tagged with an **element** (physical/fire/poison/electric/f
 - **Abilities (1E)**: the radial stinger burst now **pierces**; added **Frost Nova** (radial
   freeze), **Ball Lightning** (radial stun), and **Honey Bomb** (homing explosion + slow),
   reusing existing pools. All ability damage scales with Ability Power.
+- **Distinct ability gameplay (1E revamp)**: Frost Nova is an expanding icy ring that chills
+  (new persistent **Cold** status); Ball Lightning is a slow player-sized orb that pierces,
+  ticks damage, and bounces off the screen edges; Honey Bomb scatters slowing honey zones.
+- **Readability (1F)**: each offer card shows its lane's `owned/cap`; the pause menu gains a
+  **POWER-UPS** panel listing the run's build grouped by lane with levels + element cues.
 - Built additively via the idempotent `SurveHive/Combat 2.0/*` editor passes; EditMode tests
   cover the lane caps, armor/multishot/pierce math, and the active-skill growth tables.
 
