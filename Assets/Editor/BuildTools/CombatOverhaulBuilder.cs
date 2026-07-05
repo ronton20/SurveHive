@@ -1,3 +1,5 @@
+using SurveHive.Data;
+using SurveHive.Progression;
 using SurveHive.UI;
 using TMPro;
 using UnityEditor;
@@ -18,6 +20,8 @@ namespace SurveHive.BuildTools
     {
         private const string BeehiveScenePath = "Assets/Scenes/Beehive.unity";
         private const string FontAssetPath = "Assets/ThirdParty/Fonts/BoldPixels/Assets/font/BoldPixels SDF.asset";
+        private const string SkillsFolder = "Assets/Data/Skills";
+        private const string DatabasePath = SkillsFolder + "/SkillDatabase.asset";
         private const int ChoiceCount = 3;
 
         [MenuItem("SurveHive/Combat 2.0/1A - Power-Up Card Banners")]
@@ -158,6 +162,115 @@ namespace SurveHive.BuildTools
             {
                 prop.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
             }
+        }
+
+        // ------------------------------------------------------------------
+        // 1C: two new Passive-lane stats — Armor (damage-taken reduction) and
+        // Ability Power (scales active-skill damage). Creates the skill assets
+        // and registers them in the SkillDatabase. Idempotent.
+        // ------------------------------------------------------------------
+        [MenuItem("SurveHive/Combat 2.0/1C - Add Armor & Ability Power Passives")]
+        public static void AddPassives()
+        {
+            SkillDefinitionSO armor = EnsureSkill(
+                SkillsFolder + "/PassiveArmor.asset", "PassiveArmor", "Waxen Plating",
+                "Reduce all damage taken.", SkillEffectType.ArmorPercent,
+                PowerUpLane.Passive, SkillElement.Physical, 5f, 8, SkillRarity.Common,
+                "Icon_PictoIcon_Defense");
+
+            SkillDefinitionSO abilityPower = EnsureSkill(
+                SkillsFolder + "/AbilityPower.asset", "AbilityPower", "Royal Focus",
+                "Increase all ability damage.", SkillEffectType.AbilityPowerPercent,
+                PowerUpLane.Passive, SkillElement.Physical, 12f, 8, SkillRarity.Rare,
+                "Icon_PictoIcon_Energy");
+
+            RegisterInDatabase(armor, abilityPower);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("Combat 2.0 1C: Armor + Ability Power passives created and registered.");
+        }
+
+        private static SkillDefinitionSO EnsureSkill(
+            string assetPath, string id, string displayName, string description,
+            SkillEffectType effect, PowerUpLane lane, SkillElement element,
+            float magnitude, int maxLevel, SkillRarity rarity, string iconName)
+        {
+            var skill = AssetDatabase.LoadAssetAtPath<SkillDefinitionSO>(assetPath);
+            if (skill == null)
+            {
+                skill = ScriptableObject.CreateInstance<SkillDefinitionSO>();
+                AssetDatabase.CreateAsset(skill, assetPath);
+            }
+
+            var so = new SerializedObject(skill);
+            so.FindProperty("_id").stringValue = id;
+            so.FindProperty("_displayName").stringValue = displayName;
+            so.FindProperty("_description").stringValue = description;
+            so.FindProperty("_effectType").enumValueIndex = (int)effect;
+            so.FindProperty("_lane").enumValueIndex = (int)lane;
+            so.FindProperty("_element").enumValueIndex = (int)element;
+            so.FindProperty("_magnitude").floatValue = magnitude;
+            so.FindProperty("_weight").floatValue = 1f;
+            so.FindProperty("_maxLevel").intValue = maxLevel;
+            so.FindProperty("_rarity").enumValueIndex = (int)rarity;
+            so.FindProperty("_icon").objectReferenceValue = FindIcon(iconName);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(skill);
+            return skill;
+        }
+
+        private static void RegisterInDatabase(params SkillDefinitionSO[] skills)
+        {
+            var db = AssetDatabase.LoadAssetAtPath<SkillDatabaseSO>(DatabasePath);
+            if (db == null)
+            {
+                Debug.LogError($"Combat 2.0 1C: SkillDatabase not found at {DatabasePath}.");
+                return;
+            }
+
+            var so = new SerializedObject(db);
+            SerializedProperty arr = so.FindProperty("_skills");
+
+            foreach (SkillDefinitionSO skill in skills)
+            {
+                if (ContainsReference(arr, skill))
+                {
+                    continue;
+                }
+
+                arr.arraySize++;
+                arr.GetArrayElementAtIndex(arr.arraySize - 1).objectReferenceValue = skill;
+            }
+
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(db);
+        }
+
+        private static bool ContainsReference(SerializedProperty array, Object value)
+        {
+            for (int i = 0; i < array.arraySize; i++)
+            {
+                if (array.GetArrayElementAtIndex(i).objectReferenceValue == value)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static Sprite FindIcon(string fileNameNoExt)
+        {
+            string[] guids = AssetDatabase.FindAssets($"{fileNameNoExt} t:Sprite");
+            if (guids.Length == 0)
+            {
+                Debug.LogWarning($"Combat 2.0 1C: icon '{fileNameNoExt}' not found; leaving unassigned.");
+                return null;
+            }
+
+            string path = AssetDatabase.GUIDToAssetPath(guids[0]);
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
     }
 }

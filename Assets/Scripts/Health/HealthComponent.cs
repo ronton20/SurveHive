@@ -31,11 +31,18 @@ namespace SurveHive.Health
         }
 
         private IDamageAbsorber _damageAbsorber;
+        private IDamageMitigator _damageMitigator;
 
         /// <summary>Optional interceptor (e.g. Wax Shield); null to clear.</summary>
         public void SetDamageAbsorber(IDamageAbsorber absorber)
         {
             _damageAbsorber = absorber;
+        }
+
+        /// <summary>Optional damage reducer applied after absorption (e.g. armor).</summary>
+        public void SetDamageMitigator(IDamageMitigator mitigator)
+        {
+            _damageMitigator = mitigator;
         }
 
         public void TakeDamage(float amount, GameObject instigator)
@@ -48,6 +55,15 @@ namespace SurveHive.Health
             if (_damageAbsorber != null && _damageAbsorber.TryAbsorb(amount))
             {
                 return;
+            }
+
+            if (_damageMitigator != null)
+            {
+                amount = _damageMitigator.Mitigate(amount);
+                if (amount <= 0f)
+                {
+                    return;
+                }
             }
 
             _currentHealth = Mathf.Max(0f, _currentHealth - amount);

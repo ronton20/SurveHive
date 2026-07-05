@@ -48,6 +48,12 @@ namespace SurveHive.Progression
                 case SkillEffectType.ActiveCooldownPercent:
                     stats.DecreaseActiveCooldownPercent(skill.Magnitude);
                     break;
+                case SkillEffectType.ArmorPercent:
+                    stats.IncreaseArmorPercent(skill.Magnitude);
+                    break;
+                case SkillEffectType.AbilityPowerPercent:
+                    stats.IncreaseAbilityPowerPercent(skill.Magnitude);
+                    break;
                 case SkillEffectType.ActiveSkill:
                     if (activeSkills != null)
                     {

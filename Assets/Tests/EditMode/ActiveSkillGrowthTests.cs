@@ -74,13 +74,15 @@ namespace SurveHive.Tests
         }
 
         [Test]
-        public void SkillDatabase_HasSixteenSkills_AllWithRarityCoverage()
+        public void SkillDatabase_IsPopulated_WithRarityAndLaneCoverage()
         {
             var database = AssetDatabase.LoadAssetAtPath<SkillDatabaseSO>("Assets/Data/Skills/SkillDatabase.asset");
             Assert.IsNotNull(database);
-            Assert.AreEqual(16, database.Skills.Length);
+            // Minimum, not exact: the roster grows across Combat 2.0 sub-phases.
+            Assert.GreaterOrEqual(database.Skills.Length, 18);
 
             int common = 0, rare = 0, epic = 0;
+            bool hasPassive = false, hasEnhancement = false, hasAbility = false;
             foreach (SkillDefinitionSO skill in database.Skills)
             {
                 Assert.IsNotNull(skill, "Database contains a null skill entry");
@@ -90,11 +92,21 @@ namespace SurveHive.Tests
                     case Progression.SkillRarity.Rare: rare++; break;
                     case Progression.SkillRarity.Epic: epic++; break;
                 }
+
+                switch (skill.Lane)
+                {
+                    case Progression.PowerUpLane.Passive: hasPassive = true; break;
+                    case Progression.PowerUpLane.Enhancement: hasEnhancement = true; break;
+                    case Progression.PowerUpLane.Ability: hasAbility = true; break;
+                }
             }
 
             Assert.Greater(common, 0, "No common skills");
             Assert.Greater(rare, 0, "No rare skills");
             Assert.Greater(epic, 0, "No epic skills");
+            Assert.IsTrue(hasPassive, "No Passive-lane skills");
+            Assert.IsTrue(hasEnhancement, "No Enhancement-lane skills");
+            Assert.IsTrue(hasAbility, "No Ability-lane skills");
         }
     }
 }

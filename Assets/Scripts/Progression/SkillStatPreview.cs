@@ -78,6 +78,14 @@ namespace SurveHive.Progression
                             CompoundDown(stats.ActiveCooldownMultiplier, skill.Magnitude, applications,
                                 stats.MinActiveCooldownMultiplier)) * 100f);
                     break;
+                case SkillEffectType.ArmorPercent:
+                    AppendPercentLine(sb, "Armor", stats.ArmorPercent,
+                        Mathf.Min(stats.MaxArmorPercent, stats.ArmorPercent + (skill.Magnitude * applications)));
+                    break;
+                case SkillEffectType.AbilityPowerPercent:
+                    AppendPercentLine(sb, "Ability Power", stats.AbilityPowerMultiplier * 100f,
+                        CompoundUp(stats.AbilityPowerMultiplier, skill.Magnitude, applications) * 100f);
+                    break;
                 case SkillEffectType.ActiveSkill:
                     AppendActiveSkillLines(sb, skill.ActiveSkill, currentLevel, applications, activeSkillLevelCap);
                     break;

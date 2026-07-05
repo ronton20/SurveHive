@@ -14,7 +14,11 @@ namespace SurveHive.Player
         private void Awake()
         {
             _movement.Initialize(_inputController, _stats);
-            PlayerContext.Register(_stats, GetComponent<HealthComponent>(), transform);
+
+            HealthComponent health = GetComponent<HealthComponent>();
+            // Armor passive (Combat 2.0 1C): reduces damage after shields absorb.
+            health.SetDamageMitigator(new ArmorMitigator(_stats));
+            PlayerContext.Register(_stats, health, transform);
         }
 
         private void OnDestroy()

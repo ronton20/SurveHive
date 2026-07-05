@@ -29,6 +29,13 @@ namespace SurveHive.Player
         // Multiplier on pickup attract radius (Nectar Sense).
         [SerializeField] private float _magnetRadiusMultiplier = 1f;
 
+        [Header("Combat 2.0 Passives")]
+        // Percent damage-taken reduction (Armor), capped so it can't fully negate.
+        [SerializeField, Range(0f, 100f)] private float _armorPercent;
+        [SerializeField] private float _maxArmorPercent = 80f;
+        // Multiplier on active-skill (Ability) damage — grows via Ability Power.
+        [SerializeField] private float _abilityPowerMultiplier = 1f;
+
         public event Action OnStatsChanged;
 
         public float MoveSpeed => _moveSpeed;
@@ -67,6 +74,12 @@ namespace SurveHive.Player
         public float MinActiveCooldownMultiplier => _minActiveCooldownMultiplier;
 
         public float MagnetRadiusMultiplier => _magnetRadiusMultiplier;
+
+        public float ArmorPercent => _armorPercent;
+
+        public float MaxArmorPercent => _maxArmorPercent;
+
+        public float AbilityPowerMultiplier => _abilityPowerMultiplier;
 
         public void IncreaseMoveSpeedPercent(float percent)
         {
@@ -145,6 +158,19 @@ namespace SurveHive.Player
         public void IncreaseMagnetRadiusPercent(float percent)
         {
             _magnetRadiusMultiplier = RoundToHundredths(_magnetRadiusMultiplier * (1f + percent / 100f));
+            NotifyChanged();
+        }
+
+        // Armor is additive percentage points, capped below 100 so damage always lands.
+        public void IncreaseArmorPercent(float percentPoints)
+        {
+            _armorPercent = Mathf.Min(_maxArmorPercent, RoundToHundredths(_armorPercent + percentPoints));
+            NotifyChanged();
+        }
+
+        public void IncreaseAbilityPowerPercent(float percent)
+        {
+            _abilityPowerMultiplier = RoundToHundredths(_abilityPowerMultiplier * (1f + percent / 100f));
             NotifyChanged();
         }
 

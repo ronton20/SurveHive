@@ -65,6 +65,12 @@ namespace SurveHive.Combat.Skills
             RefreshAuraVisual();
         }
 
+        // Ability Power passive (Combat 2.0 1C) scales all active-skill damage.
+        private float AbilityDamage(float baseDamage)
+        {
+            return baseDamage * _stats.AbilityPowerMultiplier;
+        }
+
         public int GetLevel(ActiveSkillSO skill)
         {
             for (int i = 0; i < _equippedCount; i++)
@@ -216,7 +222,7 @@ namespace SurveHive.Combat.Skills
             var config = new SkillProjectileConfig
             {
                 Speed = skill.ProjectileSpeed,
-                Damage = stats.Damage,
+                Damage = AbilityDamage(stats.Damage),
                 Range = skill.Range * 2f,
                 ImpactVfxPoolId = skill.ImpactVfxPoolId,
                 AppliesStatus = skill.AppliesStatus,
@@ -261,7 +267,7 @@ namespace SurveHive.Combat.Skills
 
                 // No popup: at 4 ticks/s the numbers would flood the screen —
                 // health bars + poison DoT numbers carry the feedback.
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, stats.Damage, false, gameObject, false);
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, AbilityDamage(stats.Damage), false, gameObject, false);
 
                 if (skill.AppliesStatus && enemy.StatusReceiver != null &&
                     Random.value * 100f < stats.StatusChancePercent)
@@ -292,7 +298,7 @@ namespace SurveHive.Combat.Skills
                 _chainTargets[found] = current;
                 found++;
 
-                DamageService.DealDamage(current.Health, current.transform.position, stats.Damage, true, gameObject);
+                DamageService.DealDamage(current.Health, current.transform.position, AbilityDamage(stats.Damage), true, gameObject);
 
                 if (skill.AppliesStatus && current.StatusReceiver != null &&
                     Random.value * 100f < stats.StatusChancePercent)
@@ -338,7 +344,7 @@ namespace SurveHive.Combat.Skills
             {
                 Direction = direction,
                 Speed = skill.ProjectileSpeed,
-                Damage = stats.Damage,
+                Damage = AbilityDamage(stats.Damage),
                 Range = skill.Range,
                 PierceCount = pierceCount,
                 HomingTarget = homingTarget,

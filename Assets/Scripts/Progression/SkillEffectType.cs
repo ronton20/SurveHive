@@ -21,6 +21,10 @@ namespace SurveHive.Progression
         ActiveCooldownPercent,
 
         // Card that unlocks/levels the ActiveSkillSO referenced by the definition.
-        ActiveSkill
+        ActiveSkill,
+
+        // Phase 1C passives (Combat 2.0).
+        ArmorPercent,
+        AbilityPowerPercent
     }
 }
