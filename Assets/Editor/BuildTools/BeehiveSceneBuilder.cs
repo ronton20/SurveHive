@@ -800,6 +800,7 @@ namespace SurveHive.BuildTools
                 SetAnchoredRect(buttonGo, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(20f + (i * 300f), 0f), new Vector2(280f, 400f));
                 Button button = buttonGo.AddComponent<Button>();
                 button.targetGraphic = buttonGo.GetComponent<Image>();
+                buttonGo.AddComponent<UIClickSfx>();
 
                 GameObject nameTextGo = CreateUIText($"Choice{i}Name", buttonGo.transform, "Skill Name");
                 SetAnchoredRect(nameTextGo, new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(10f, -60f), new Vector2(-10f, 60f));

@@ -56,6 +56,11 @@ namespace SurveHive.Enemies
                 RunSession.Instance.RegisterKill();
             }
 
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.PlaySfx(SfxId.Kill);
+            }
+
             if (stats.DeathHitStopSeconds > 0f && HitStop.Instance != null)
             {
                 HitStop.Instance.Request(stats.DeathHitStopSeconds);

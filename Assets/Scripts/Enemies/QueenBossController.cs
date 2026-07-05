@@ -161,6 +161,11 @@ namespace SurveHive.Enemies
                 return;
             }
 
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.PlaySfx(SfxId.BossStinger);
+            }
+
             float damage = _enemyController.Stats != null
                 ? _enemyController.Stats.ContactDamage * _stingerDamageFraction
                 : 10f;

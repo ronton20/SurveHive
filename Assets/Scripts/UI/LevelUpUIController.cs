@@ -107,6 +107,11 @@ namespace SurveHive.UI
 
         private void HandleLevelUp(int level)
         {
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.PlaySfx(SfxId.LevelUp);
+            }
+
             ShowChoices();
         }
 

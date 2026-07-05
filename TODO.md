@@ -1,8 +1,52 @@
 # SurveHive — TODO / Ideas
 
-Backlog of planned features and ideas. Nothing here is implemented yet — this is a
-running wishlist to pull from. Roughly grouped; order within a group is not priority.
-See `README.md` for what already exists and `CLAUDE.md` for coding standards.
+Backlog of planned features and ideas — a running wishlist to pull from. Items struck
+through with a *(done…)* note are already implemented (Phases 0–5A); the rest are still
+open. Roughly grouped; order within a group is not priority.
+See `README.md` for what already exists, `CHANGELOG.md` for the release history, and
+`CLAUDE.md` for coding standards.
+
+---
+
+## Suggested implementation order (open items)
+
+A recommended sequence for the *remaining* work, ordered by dependency and payoff. Item
+numbers refer to the backlog entries below. Nothing here is binding — it's the path that
+unlocks the most with the least rework.
+
+**A. Combat Depth 2.0 — the biggest richness-per-effort win.** Do these *in order*; each
+one is a prerequisite for the next, and doing them out of order means retrofitting:
+1. **#18 Enhancement categories & elements** — the taxonomy (category + element enums on
+   the skill SOs) + card badges. Foundation for everything below; also improves build
+   readability on its own, so it pays off even if you stop here.
+2. **#20 Damage typing (physical vs magic)** — every damage application carries a type.
+   Small, mechanical, and unlocks defenses paying off.
+3. **#23 Enemy defenses beyond HP** (armor / physical shield / magic shield) — makes damage
+   typing *matter* and gives raw-damage builds a reason to diversify.
+4. **#19 Elemental set effects** (2/3/4+ same-element bonuses) — the reward payoff for
+   committing to an element; depends on #18's tagging.
+
+**B. Enemy variety (#22)** — independent of chain A and the cheapest big *feel* win, since
+ranged / bomber / swarm all reuse existing pools + components. Slot it in whenever; it
+interleaves well with chain A (e.g. a magic-shielded ranged bee once #20/#23 exist).
+
+**C. Final-polish leftovers** (the tail of the original build push — Phases 0–5A are done):
+5. **Difficulty / curve tuning pass** — wants chains A/B in place *and* real playtest
+   feedback, so it comes after the systems it balances exist. Target: a first-time player
+   dies around **minute 8–12**; a meta-invested player can **clear** the Queen.
+6. **Mobile UI overhaul (#14–17) + mobile sanity pass** — the gap for "mobile-ready";
+   safe-area anchoring is the most urgent (the notch currently hides HUD meters).
+7. **Localization seam** — cheap now, only gets more expensive as UI/string count grows;
+   worth doing *before* the mobile UI pass touches all that text anyway.
+
+**D. Content expansion** — additional worlds (Garden / Woods / City / Alien Ship), custom
+Aseprite hero/boss art, a real hive tileset/floor. The biggest lift; best once the systems
+above are locked so new content drops into a stable framework rather than a moving one.
+
+> Rule of thumb: **A + B deepen the game that exists; C hardens it for release; D grows it.**
+> If you only want one more push, do **A** — it's what turns "more numbers" into "more decisions."
+
+---
 
 ## Skills & Progression
 1. ~~**Skill rarity system** — some skills show up more often than others (weighted by rarity tier, not just the current flat `_weight`).~~ *(done in Phase 2: Common/Rare/Epic tiers drive weighted offers + card frame colors.)*
@@ -33,11 +77,12 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 15. **UI scale pass for small screens** — HUD bars, counters, damage numbers, and card text are all too small at phone DPI; likely a `CanvasScaler` reference-resolution/match rework plus per-element size bumps.
 16. **Skill cards relayout for portrait/mobile** — cards should be oriented horizontally (icon left, name/description right) and stacked vertically instead of the current three tall side-by-side columns.
 17. **General mobile layout audit** — boss bar/banner, stage progress markers, results screens, and shield/aura indicators checked on tall aspect ratios (19.5:9+) in both orientations.
+24. **Mobile sanity pass** — verify joystick + tap flows in the Device Simulator on an **iPhone + a tall Android** profile, confirm HUD respects safe areas, texture memory is sane, and run a profiling pass at target-ish resolution (zero-GC + frame-rate regression check after all additions). *(Companion to #14–17: those fix layout, this verifies it on-device.)*
 
 ## Meta & Content
 11. ~~**Menus** — main menu, level/world selection, difficulty selection.~~ *(done in Phase 4B: MainMenu boot scene with home/world select/shop/settings-shell panels; Garden+Woods shown locked; difficulty dropdown seam fixed to Normal until a difficulty system exists.)*
 12. ~~**Meta progression** — the persistent between-run currency spend + upgrade system and its UI (the `IMetaProgressionStore` seam already exists for this).~~ *(done in Phases 4A+4B: JSON save, six escalating-cost stat upgrades applied at run start, purchase transactions, and the Hive Upgrades shop UI.)*
-13. **Art & polish** — ~~real sprites, animations, VFX, and proper UI elements to replace placeholders~~ *(done in Phase 1: PixelFantasy bee rig + animations, death VFX, pixel UI kit + BoldPixels TMP. Remaining: real audio, hive floor/tileset, custom Aseprite hero/boss art.)*
+13. **Art & polish** — ~~real sprites, animations, VFX, and proper UI elements to replace placeholders~~ *(done in Phase 1: PixelFantasy bee rig + animations, death VFX, pixel UI kit + BoldPixels TMP. Remaining: hive floor/tileset, custom Aseprite hero/boss art.)*
 
 ---
 
@@ -45,8 +90,9 @@ See `README.md` for what already exists and `CLAUDE.md` for coding standards.
 - ~~**Pause & settings menu** — in-run pause (audio/vibration/quality toggles); useful early for testing and expected on mobile.~~ *(done in Phase 4C: ESC/HUD-button pause with resume/settings/abandon; settings shared with the main menu, applied live and saved.)*
 - ~~**Run stats / results screen** — on death or stage clear, show time survived, kills, level, currency earned (feeds naturally into meta progression).~~ *(done in Phase 3: results block on both death and victory screens; currency banks on both paths.)*
 - ~~**Save/load** — persist meta-progression and settings (goes hand-in-hand with #12; decide on a serialization approach, e.g. JSON in `Application.persistentDataPath`).~~ *(done in Phase 4A: versioned JSON at `persistentDataPath`, safe-write, corrupt→fresh-start.)*
-- **Object-pool coverage for new spawners** — keep bosses / strong-wave hordes / drops pooled to hold the zero-GC guarantee as counts grow.
-- **Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, and drop rates.
-- **Audio pass** — SFX for hits/level-up/death/pickups and background music per world (currently only a placeholder shoot blip).
+- ~~**Object-pool coverage for new spawners** — keep bosses / strong-wave hordes / drops pooled to hold the zero-GC guarantee as counts grow.~~ *(done across Phases 2–3: 24 pool IDs cover both bosses, enemy projectiles, all four item drops, and every skill projectile/zone/VFX — all spawned via `PoolManager`.)*
+- **Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, spawn curve, drop rates, and boss HP. Target: a first-time player dies around **minute 8–12**; a meta-invested player can clear. Document what changed and why.
+- ~~**Audio pass** — SFX for hits/level-up/death/pickups and background music per world.~~ *(done in Phase 5A: pooled `AudioService` + CC0 SFX/music for every listed event, credits in `Assets/Audio/CREDITS.md`.)*
 - ~~**Damage feedback** — hit flash / knockback / screen shake to make combat feel impactful (cheap wins alongside status effects).~~ *(done in Phase 1: hit flash, knockback, screen shake, hit-stop on elite kills, death VFX.)*
-- **Localization seam** — if wider release is a goal, isolate user-facing strings early rather than retrofitting later.
+- **Localization seam** — if wider release is a goal, isolate user-facing strings early rather than retrofitting later: all user-facing strings flow through one string table/asset instead of hardcoded literals (actual translation deferred).
+- **Bloom / "magic honey" glow pass** — the URP Bloom post-process is set up (Global Volume) but not yet dialled in; tune a high threshold so only deliberately-bright VFX pixels bloom without smearing the pixel art. Optional follow-on: 2D lights for hive-interior mood.

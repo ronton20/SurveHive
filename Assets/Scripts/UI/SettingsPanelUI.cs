@@ -1,3 +1,4 @@
+using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Persistence;
 using TMPro;
@@ -9,9 +10,8 @@ namespace SurveHive.UI
     /// <summary>
     /// Settings block (used by both the main-menu settings panel and the in-run
     /// pause menu): music/SFX sliders, vibration and quality cycle-buttons.
-    /// Changes apply live and persist immediately through the 4A save.
-    /// Music volume is stored for the Phase 5 audio service; SFX drives the
-    /// master AudioListener today (SFX is the only audio that exists yet).
+    /// Changes apply live (through <see cref="AudioService"/>) and persist
+    /// immediately through the 4A save.
     /// </summary>
     public sealed class SettingsPanelUI : MonoBehaviour
     {
@@ -120,7 +120,12 @@ namespace SurveHive.UI
 
         private static void ApplyLive(SettingsData settings)
         {
-            AudioListener.volume = settings.sfxVolume;
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.SetSfxVolume(settings.sfxVolume);
+                AudioService.Instance.SetMusicVolume(settings.musicVolume);
+            }
+
             if (settings.qualityLevel >= 0 && settings.qualityLevel < QualitySettings.names.Length
                 && QualitySettings.GetQualityLevel() != settings.qualityLevel)
             {

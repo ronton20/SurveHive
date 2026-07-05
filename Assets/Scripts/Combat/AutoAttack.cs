@@ -59,7 +59,8 @@ namespace SurveHive.Combat
 
             if (_audioSource != null && _shootClip != null)
             {
-                _audioSource.PlayOneShot(_shootClip);
+                float volumeScale = AudioService.Instance != null ? AudioService.Instance.SfxVolume : 1f;
+                _audioSource.PlayOneShot(_shootClip, volumeScale);
             }
 
             for (int i = 0; i < projectileCount; i++)

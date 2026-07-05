@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using SurveHive.Core;
 using SurveHive.Currency;
+using SurveHive.Data;
 using SurveHive.Progression;
 using UnityEngine;
 
@@ -132,6 +133,14 @@ namespace SurveHive.Pickups
                     {
                         _currencyWallet.AddCurrency(Mathf.RoundToInt(_value));
                     }
+
+                    // Exp orbs are excluded: dozens collect per second at peak
+                    // horde (esp. with Magnet), which would flood the SFX pool.
+                    if (AudioService.Instance != null)
+                    {
+                        AudioService.Instance.PlaySfx(SfxId.Pickup);
+                    }
+
                     break;
             }
 

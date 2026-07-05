@@ -138,6 +138,11 @@ namespace SurveHive.Stage
                 RunSession.Instance.EndRun(victory: true);
             }
 
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.PlaySfx(SfxId.Victory);
+            }
+
             if (_victoryPanel != null)
             {
                 _victoryPanel.SetActive(true);

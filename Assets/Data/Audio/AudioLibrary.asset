@@ -1,0 +1,138 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf716c49544694ecebde42e9b49febbf, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.AudioLibrarySO
+  _sfx:
+  - id: 0
+    clips:
+    - {fileID: 8300000, guid: c5b798e8eb74b4661911af44d5e01a85, type: 3}
+    - {fileID: 8300000, guid: 586adeb3e80fe455cb68d4a31216284e, type: 3}
+    - {fileID: 8300000, guid: 9db0da64f211148808233b5d909bb5c0, type: 3}
+    volume: 0.5
+    pitchMin: 0.92
+    pitchMax: 1.08
+    minInterval: 0.05
+  - id: 1
+    clips:
+    - {fileID: 8300000, guid: 6bd9fe0164c5d48a1b09b921acf5f381, type: 3}
+    - {fileID: 8300000, guid: edbcb379ad43f4619ac3a00c6cd7849f, type: 3}
+    volume: 0.7
+    pitchMin: 0.95
+    pitchMax: 1.05
+    minInterval: 0.04
+  - id: 2
+    clips:
+    - {fileID: 8300000, guid: 2d1ea9d32ed534ab397ec78f48113e13, type: 3}
+    - {fileID: 8300000, guid: 0cabc9d7859214d9cb8b3b226265db67, type: 3}
+    volume: 0.5
+    pitchMin: 0.95
+    pitchMax: 1.12
+    minInterval: 0
+  - id: 3
+    clips:
+    - {fileID: 8300000, guid: c77932aeab62e421688c6977c01430db, type: 3}
+    volume: 0.8
+    pitchMin: 1
+    pitchMax: 1
+    minInterval: 0
+  - id: 4
+    clips:
+    - {fileID: 8300000, guid: f6e19a7984e36419f81f39da7d83829e, type: 3}
+    volume: 0.85
+    pitchMin: 0.96
+    pitchMax: 1.04
+    minInterval: 0
+  - id: 5
+    clips:
+    - {fileID: 8300000, guid: b903e348e7a2e4024b92808424d2128f, type: 3}
+    volume: 0.9
+    pitchMin: 1
+    pitchMax: 1
+    minInterval: 0
+  - id: 6
+    clips:
+    - {fileID: 8300000, guid: 43e632a236a5443df9ad09c09c9ce3c7, type: 3}
+    volume: 0.85
+    pitchMin: 1
+    pitchMax: 1
+    minInterval: 0
+  - id: 7
+    clips:
+    - {fileID: 8300000, guid: d4ec2b7e2a6434e1ab0aee3649ef2de2, type: 3}
+    volume: 0.55
+    pitchMin: 1
+    pitchMax: 1
+    minInterval: 0
+  - id: 8
+    clips:
+    - {fileID: 8300000, guid: bf963b5d0951e4796a983c7805399b5e, type: 3}
+    - {fileID: 8300000, guid: 1df743102c5a045aead93fedbd1d3ab6, type: 3}
+    volume: 0.85
+    pitchMin: 0.97
+    pitchMax: 1.03
+    minInterval: 0
+  - id: 9
+    clips:
+    - {fileID: 8300000, guid: ab22ec455ea81400fbbc6b33532f9d4d, type: 3}
+    - {fileID: 8300000, guid: cc56462b99dd846238ad15770ddf4555, type: 3}
+    volume: 0.55
+    pitchMin: 0.92
+    pitchMax: 1.08
+    minInterval: 0
+  - id: 10
+    clips:
+    - {fileID: 8300000, guid: cd3ea436ffd594af78ed6a344c649d0c, type: 3}
+    - {fileID: 8300000, guid: a60407733170849ceacf407ac095e3d3, type: 3}
+    volume: 0.6
+    pitchMin: 0.95
+    pitchMax: 1.05
+    minInterval: 0
+  - id: 11
+    clips:
+    - {fileID: 8300000, guid: 4d2faf98319014016a894dad2cbe2d85, type: 3}
+    - {fileID: 8300000, guid: da01dabd328874ea0a763cde309d9958, type: 3}
+    volume: 0.6
+    pitchMin: 0.95
+    pitchMax: 1.08
+    minInterval: 0
+  - id: 12
+    clips:
+    - {fileID: 8300000, guid: f32f89095bdd74a91972cc4acafe683b, type: 3}
+    - {fileID: 8300000, guid: b62cdafd9677c4f7f9c56209aef6fb0d, type: 3}
+    volume: 0.5
+    pitchMin: 0.95
+    pitchMax: 1.05
+    minInterval: 0
+  - id: 13
+    clips:
+    - {fileID: 8300000, guid: 6691257636e2f436e9d89fdedbcecf28, type: 3}
+    - {fileID: 8300000, guid: 62f5aa576764f40dfb09fdfb88d9cce4, type: 3}
+    volume: 0.6
+    pitchMin: 0.95
+    pitchMax: 1.08
+    minInterval: 0
+  - id: 14
+    clips:
+    - {fileID: 8300000, guid: 050c590ec46c04853abb3f266018783c, type: 3}
+    - {fileID: 8300000, guid: 913f2ce5172bd454e907643d26f15342, type: 3}
+    volume: 0.7
+    pitchMin: 0.95
+    pitchMax: 1.05
+    minInterval: 0
+  _music:
+  - id: 0
+    clip: {fileID: 8300000, guid: 6c8908b0d47f6402ebb23fb12bfc3456, type: 3}
+    volume: 0.5
+  - id: 1
+    clip: {fileID: 8300000, guid: 349f090456b274f4ba906c9dcbbf153c, type: 3}
+    volume: 0.45

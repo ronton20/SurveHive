@@ -1,3 +1,5 @@
+using SurveHive.Core;
+using SurveHive.Data;
 using SurveHive.Health;
 using SurveHive.View;
 using UnityEngine;
@@ -5,8 +7,8 @@ using UnityEngine;
 namespace SurveHive.Player
 {
     /// <summary>
-    /// Screen-shake feedback when the player gets hurt or dies. The white hit
-    /// flash itself comes from the shared <see cref="HitFlash"/> component.
+    /// Screen-shake + audio feedback when the player gets hurt or dies. The
+    /// white hit flash itself comes from the shared <see cref="HitFlash"/> component.
     /// </summary>
     public sealed class PlayerHitFeedback : MonoBehaviour
     {
@@ -33,6 +35,11 @@ namespace SurveHive.Player
             {
                 _shaker.Shake(_hurtShakeAmplitude);
             }
+
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.PlaySfx(SfxId.PlayerHurt);
+            }
         }
 
         private void HandleDied()
@@ -40,6 +47,11 @@ namespace SurveHive.Player
             if (_shaker != null)
             {
                 _shaker.Shake(_deathShakeAmplitude);
+            }
+
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.PlaySfx(SfxId.PlayerDeath);
             }
         }
     }

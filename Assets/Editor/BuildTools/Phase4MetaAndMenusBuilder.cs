@@ -376,6 +376,7 @@ namespace SurveHive.BuildTools
             colors.pressedColor = Amber;
             colors.disabledColor = new Color(0.45f, 0.42f, 0.38f);
             button.colors = colors;
+            buttonGo.AddComponent<UIClickSfx>();
 
             var labelGo = new GameObject("Label", typeof(RectTransform));
             labelGo.transform.SetParent(buttonGo.transform, false);

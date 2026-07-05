@@ -113,6 +113,11 @@ namespace SurveHive.Enemies
             {
                 _characterAnimator.PlayHit();
             }
+
+            if (AudioService.Instance != null)
+            {
+                AudioService.Instance.PlaySfx(SfxId.Hit);
+            }
         }
 
         // Corpses leave the registry immediately so auto-targeting and the

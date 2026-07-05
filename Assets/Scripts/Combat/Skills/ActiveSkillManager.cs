@@ -95,12 +95,47 @@ namespace SurveHive.Combat.Skills
                 if (Fire(skill, in stats))
                 {
                     _cooldowns[i] = stats.Cooldown * _stats.ActiveCooldownMultiplier;
+                    PlayFireSfx(skill.Behavior);
                 }
                 else
                 {
                     _cooldowns[i] = RetryInterval;
                 }
             }
+        }
+
+        // Pollen Cloud (Aura) ticks every ~0.25s regardless of hitting anyone —
+        // re-triggering a "fire" sound at that rate would be noise, not feedback.
+        private static void PlayFireSfx(ActiveSkillBehavior behavior)
+        {
+            if (behavior == ActiveSkillBehavior.Aura || AudioService.Instance == null)
+            {
+                return;
+            }
+
+            SfxId id;
+            switch (behavior)
+            {
+                case ActiveSkillBehavior.RadialVolley:
+                    id = SfxId.SkillStingerBarrage;
+                    break;
+                case ActiveSkillBehavior.PiercingShot:
+                    id = SfxId.SkillPiercingLance;
+                    break;
+                case ActiveSkillBehavior.LobbedPuddle:
+                    id = SfxId.SkillHoneySplash;
+                    break;
+                case ActiveSkillBehavior.ChainArc:
+                    id = SfxId.SkillStaticWings;
+                    break;
+                case ActiveSkillBehavior.HomingBolt:
+                    id = SfxId.SkillEmberSting;
+                    break;
+                default:
+                    return;
+            }
+
+            AudioService.Instance.PlaySfx(id);
         }
 
         private bool Fire(ActiveSkillSO skill, in ActiveSkillLevelStats stats)
