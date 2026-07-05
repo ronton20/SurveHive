@@ -108,7 +108,7 @@ the controller already tracks — no new mechanics. Cheap; slot after the functi
 Makes the run's set-pieces land. Independent of Phase 1 and cheap relative to payoff; can be
 interleaved with late Phase 1 if desired.
 
-### 2A — Pre-spawn warnings (5s lead) ☐
+### 2A — Pre-spawn warnings (5s lead) ✅
 - 5 seconds before a strong wave or a boss/miniboss event fires, show a warning banner ("⚠ Royal Guard incoming…") counting in until the spawn.
 - `StageDirector` currently fires events at their normalized time. Add a **lookahead**: convert 5s to normalized progress (`5 / TotalDurationSeconds`) and, per event, raise an `OnStageWarning(event)` when progress crosses `eventTime − lead`, then the real event at `eventTime`. Guard against double-firing (track warned events like `_firedBuffer`).
 - New/updated warning-banner UI (reuse `BossBannerUI` styling or a lighter HUD toast).
