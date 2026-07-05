@@ -750,10 +750,10 @@ namespace SurveHive.BuildTools
             Button powerUpsButton = MakeButton(pausePanel, "PowerUpsButton", "POWER-UPS", font, buttonSprite, new Vector2(0f, 40f));
 
             // Build-list panel.
-            GameObject panel = MakePanel(pauseRoot, "PowerUpsPanel", panelSprite, new Vector2(820f, 1100f));
+            GameObject panel = MakePanel(pauseRoot, "PowerUpsPanel", panelSprite, new Vector2(820f, 900f));
             MakeTitle(panel.transform, font);
             TMP_Text listText = MakeListText(panel.transform, font);
-            Button backButton = MakeButton(panel.transform, "BackButton", "BACK", font, buttonSprite, new Vector2(0f, -470f));
+            Button backButton = MakeButton(panel.transform, "BackButton", "BACK", font, buttonSprite, new Vector2(0f, -360f));
 
             if (!panel.TryGetComponent(out OwnedPowerUpsView view))
             {
@@ -890,9 +890,9 @@ namespace SurveHive.BuildTools
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
             rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.offsetMin = new Vector2(48f, 150f);
-            rect.offsetMax = new Vector2(-48f, -140f);
-            TMP_Text tmp = EnsureTmp(go, font, 30f, WaxC, TextAlignmentOptions.TopLeft);
+            rect.offsetMin = new Vector2(44f, 185f);
+            rect.offsetMax = new Vector2(-44f, -140f);
+            TMP_Text tmp = EnsureTmp(go, font, 28f, WaxC, TextAlignmentOptions.TopLeft);
             tmp.text = string.Empty;
             return tmp;
         }
