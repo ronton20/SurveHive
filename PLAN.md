@@ -115,7 +115,7 @@ interleaved with late Phase 1 if desired.
 - **Touch:** `Stage/StageDirector.cs`, `Stage/StageTimeline.cs` (warning-window collection), `UI/` new warning banner, HUD wiring.
 - **Done when:** every strong wave and boss shows a 5s warning that resolves exactly as the spawn happens.
 
-### 2B — Impactful miniboss kill: guaranteed lucky reward ☐
+### 2B — Impactful miniboss kill: guaranteed lucky reward ✅
 - On **miniboss** death (not the final boss), grant a **guaranteed lucky power-up** — a level-up offer where the picked card grants **+2 levels** (still a random offer set) — plus a burst of EXP.
 - `BossSpawner.HandleGatingBossDied` already distinguishes `_gatingBossIsFinal`. For the non-final case, trigger: (a) award bonus EXP via `PlayerExperience`, and (b) force the next level-up offer to be lucky. Add a "force lucky next offer" hook to `LevelUpUIController` (or a queued flag on `PlayerExperience`) so `ShowChoices` marks the cards lucky.
 - Sequence this **after** the 2C death animation completes (see ordering).

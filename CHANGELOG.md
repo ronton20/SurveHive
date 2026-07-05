@@ -7,6 +7,18 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Combat 2.0 — Boss & Wave Drama (Phase 2) (2026-07-05)
+
+Makes the run's set-pieces land.
+
+- **Pre-spawn warnings (2A)**: every strong wave and boss/miniboss telegraphs ~5s ahead with
+  an upper-centre countdown banner (`StageTimeline.CollectNewlyWarned` lookahead).
+- **Impactful miniboss kill (2B)**: killing a miniboss grants a guaranteed lucky (+2) level-up
+  offer plus a burst of EXP.
+- **Boss death sequence (2C)**: any boss/miniboss death drops into 0.25× slow-motion with the
+  player invulnerable, a shockwave + screen shake, and holds the timeline resume / victory /
+  reward until the beat finishes. Cooperates with `GamePause` + `HitStop` on the time scale.
+
 ### Combat 2.0 — Power-up lanes (Phase 1A–1E) (2026-07-05)
 
 Restructured the flat level-up pool into **three lanes**, each with its own distinct-pick
