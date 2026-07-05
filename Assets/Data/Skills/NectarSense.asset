@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Nectar Sense
   _description: Pickups drift to you from 25% further away.
   _effectType: 7
+  _lane: 0
+  _element: 0
   _magnitude: 25
   _weight: 1
   _maxLevel: 5

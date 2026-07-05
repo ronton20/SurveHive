@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Twin Stingers
   _description: +1 projectile per attack.
   _effectType: 5
+  _lane: 1
+  _element: 0
   _magnitude: 1
   _weight: 0.6
   _maxLevel: 4

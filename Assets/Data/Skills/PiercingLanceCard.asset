@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Piercing Lance
   _description: Fires a high-speed lance that pierces through every enemy in a line.
   _effectType: 12
+  _lane: 2
+  _element: 0
   _magnitude: 0
   _weight: 1
   _maxLevel: 5

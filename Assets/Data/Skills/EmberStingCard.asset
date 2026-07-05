@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Ember Sting
   _description: A fiery homing bolt that explodes on impact and sets enemies ablaze.
   _effectType: 12
+  _lane: 2
+  _element: 1
   _magnitude: 0
   _weight: 1
   _maxLevel: 5

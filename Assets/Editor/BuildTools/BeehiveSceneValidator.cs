@@ -157,6 +157,9 @@ namespace SurveHive.BuildTools
                     ok &= Check(so.FindProperty("_database").objectReferenceValue != null, "LevelUpUIController._database wired");
                     var buttons = so.FindProperty("_choiceButtons");
                     ok &= Check(buttons.arraySize == 3, $"LevelUpUIController._choiceButtons has 3 entries (found {buttons.arraySize})");
+                    // Combat 2.0 1A: lane banners wired (run "SurveHive/Combat 2.0/1A").
+                    var banners = so.FindProperty("_choiceBanners");
+                    ok &= Check(banners.arraySize == 3, $"LevelUpUIController._choiceBanners has 3 entries (found {banners.arraySize})");
                 }
             }
 

@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Deadly Precision
   _description: Critical hits deal +25% more damage.
   _effectType: 9
+  _lane: 0
+  _element: 0
   _magnitude: 25
   _weight: 1
   _maxLevel: 4

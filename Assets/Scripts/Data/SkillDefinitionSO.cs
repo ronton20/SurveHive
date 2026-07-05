@@ -10,6 +10,11 @@ namespace SurveHive.Data
         [SerializeField] private string _displayName;
         [SerializeField, TextArea] private string _description;
         [SerializeField] private SkillEffectType _effectType;
+        // Combat 2.0 taxonomy: which offer lane this card belongs to (drives the
+        // per-lane selection cap + card banner) and its element cue. Default to
+        // the neutral Passive/Physical so pre-taxonomy assets read sensibly.
+        [SerializeField] private PowerUpLane _lane = PowerUpLane.Passive;
+        [SerializeField] private SkillElement _element = SkillElement.Physical;
         [SerializeField] private float _magnitude;
         // Legacy flat weight — superseded by rarity-tier weighting (Phase 2);
         // kept so existing assets deserialize cleanly.
@@ -29,6 +34,10 @@ namespace SurveHive.Data
         public string Description => _description;
 
         public SkillEffectType EffectType => _effectType;
+
+        public PowerUpLane Lane => _lane;
+
+        public SkillElement Element => _element;
 
         public float Magnitude => _magnitude;
 

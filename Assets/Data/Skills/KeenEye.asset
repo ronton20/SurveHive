@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Keen Eye
   _description: +5% chance to land a critical hit for bonus damage.
   _effectType: 8
+  _lane: 0
+  _element: 0
   _magnitude: 5
   _weight: 1
   _maxLevel: 6

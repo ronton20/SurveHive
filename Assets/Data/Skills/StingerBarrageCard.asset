@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Stinger Barrage
   _description: Blasts a ring of stingers in all directions.
   _effectType: 12
+  _lane: 2
+  _element: 0
   _magnitude: 0
   _weight: 1
   _maxLevel: 5

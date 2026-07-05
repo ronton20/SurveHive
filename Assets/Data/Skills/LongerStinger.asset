@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Longer Stinger
   _description: +15% attack range.
   _effectType: 2
+  _lane: 1
+  _element: 0
   _magnitude: 15
   _weight: 1
   _maxLevel: 0

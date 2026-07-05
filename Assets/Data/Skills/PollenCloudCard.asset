@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Pollen Cloud
   _description: A toxic pollen aura surrounds you, poisoning everything inside.
   _effectType: 12
+  _lane: 2
+  _element: 2
   _magnitude: 0
   _weight: 1
   _maxLevel: 5

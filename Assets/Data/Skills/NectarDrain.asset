@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Nectar Drain
   _description: Heal for 2% of all damage you deal.
   _effectType: 10
+  _lane: 0
+  _element: 0
   _magnitude: 2
   _weight: 1
   _maxLevel: 5

@@ -8,11 +8,56 @@ See `README.md` for what already exists, `CHANGELOG.md` for the release history,
 
 ---
 
+> **Active execution plan:** `PLAN.md` is the phased, do-one-thing-at-a-time breakdown of
+> everything below, in priority order. Start there. This file remains the backlog/wishlist
+> and the rationale; `PLAN.md` is the sequencing. When a phase lands, tick it here too.
+
+## Combat System Overhaul 2.0 — the three power-up lanes (top priority; PLAN Phase 1)
+
+The level-up offer is being restructured from one flat skill pool into **three distinct
+lanes**, each with its own selection cap and its own card banner/label so the player reads at
+a glance what kind of pick it is. This supersedes the old TODO #18 "Passive / Active / Magic"
+category split — the lanes below *are* the categories; **element** (fire / poison / electric /
+frost / honey / physical) stays as an orthogonal tag on top for #19 set effects.
+
+- **PASSIVES** — enhancements to the *player itself* (never the attacks). Move speed, max HP,
+  **armor (new — flat/% damage-taken reduction)**, attack power, attack speed, **ability
+  cooldown**, **ability damage/power (new — scales Abilities)**, crit chance, crit damage,
+  lifesteal, pickup magnet. **Cap: 5 distinct passives**; once 5 are owned, no *new* passive
+  is offered (owned ones keep leveling). Existing basic-attack-shaping passives (projectile
+  count, attack range) migrate *out* of this lane into Enhancements.
+- **ENHANCEMENTS (new lane)** — modifiers to the *basic auto-attack*, scaling with attack
+  power + level. **Cap: 3 distinct.** Projectile +1 (each projectile hits softer, but ~1.5×
+  total damage), lifesteal-on-attack, **ignite (new — attacks apply burn)**, other elemental
+  procs, **piercing shot (moved off the active list — attacks deal less damage but pierce)**,
+  attack range, and any other basic-attack modifier. Needs a data-driven modifier layer over
+  `AutoAttack`/`Projectile`.
+- **ABILITIES** — the "active" auto-firing skills, separate from the basic attack, scaling
+  with level + ability power. **Cap: 5 distinct.** Honey bomb, chain lightning, the 360°
+  stinger burst (**make it pierce too**), exploding stinger, poison cloud, etc. — add more per
+  element as elements land. (These are today's `ActiveSkillSO` weapons.)
+
+Every offer card gets a **category banner/label** (Passive / Enhancement / Ability) plus the
+element cue from #18. Placeholder status/element icons now live in
+`Assets/ThirdParty/FantasyStatusIcons/` (slice + wire until custom art replaces them).
+
+## Boss & Wave Drama (PLAN Phase 2)
+
+- **Pre-spawn warnings** — 5 seconds before a strong wave or a boss/miniboss spawns, show a
+  warning banner counting in until it arrives (the timeline currently fires spawns instantly).
+- **Impactful miniboss kill** — a miniboss death grants a **guaranteed lucky power-up (+2
+  levels, still random)** plus a burst of EXP, so it feels like a real reward beat.
+- **Boss/miniboss death sequence** — on any boss/miniboss death, drop into **slow-motion** for
+  the death animation, make the **player invulnerable** for its duration, add a **shockwave +
+  screen shake**, and hold all downstream events (rewards, victory, timeline resume) until the
+  animation finishes.
+
 ## Suggested implementation order (open items)
 
 A recommended sequence for the *remaining* work, ordered by dependency and payoff. Item
 numbers refer to the backlog entries below. Nothing here is binding — it's the path that
-unlocks the most with the least rework.
+unlocks the most with the least rework. **The Combat 2.0 overhaul and Boss/Wave Drama above
+now lead this order (PLAN Phases 1–2); the chain below follows as PLAN Phases 3+.**
 
 **A. Combat Depth 2.0 — the biggest richness-per-effort win.** Do these *in order*; each
 one is a prerequisite for the next, and doing them out of order means retrofitting:
@@ -52,7 +97,7 @@ above are locked so new content drops into a stable framework rather than a movi
 1. ~~**Skill rarity system** — some skills show up more often than others (weighted by rarity tier, not just the current flat `_weight`).~~ *(done in Phase 2: Common/Rare/Epic tiers drive weighted offers + card frame colors.)*
 2. ~~**Skill double-level chance** — small chance a skill level-up grants +2 levels instead of +1; change the skill card background to indicate the lucky roll.~~ *(done in Phase 2: lucky picks with a green card.)*
 3. ~~**More skills** — pickup/magnet range, crit chance, lifesteal, projectile pierce, projectile speed, cooldown reduction, etc.~~ *(done in Phase 2: 10 passives incl. magnet, crit chance/damage, lifesteal, CDR; pierce lives on the Piercing Lance active.)*
-18. **Enhancement categories & elements** — classify every level-up offer into a **category** (Passive / Active Skill / Magic) and tag it with an **element** (fire/poison/electric/frost/honey/physical…). Surface both on the choice card: a category icon/badge and an element-colored frame or gem, so the player can read at a glance what kind of pick it is and what element it feeds. Groundwork for #19 (set effects). Needs a small taxonomy on `SkillDefinitionSO`/`ActiveSkillSO` (category enum + element enum) and card-UI slots for the badges.
+18. **Power-up categories & elements** — classify every level-up offer into one of the three **lanes** (Passive / Enhancement / Ability — see "Combat System Overhaul 2.0" above) and tag it with an **element** (fire/poison/electric/frost/honey/physical…). Surface both on the choice card: a lane banner/badge and an element-colored frame or gem, so the player reads at a glance what kind of pick it is and what element it feeds. Groundwork for #19 (set effects). Needs a small taxonomy on `SkillDefinitionSO`/`ActiveSkillSO` (lane/category enum + element enum) and card-UI slots for the badges. *(Delivered as PLAN Phase 1A/1B.)*
 
 ## Combat Depth
 4. ~~**Status effects** — burn, poison, slow, stun, freeze (damage-over-time + stat modifiers with durations).~~ *(done in Phase 2: all five, zero-GC fixed-slot buffers with stacking/freeze-break/stun-DR rules.)*

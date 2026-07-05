@@ -17,6 +17,8 @@ MonoBehaviour:
   _description: Lobs a honey glob that leaves a sticky puddle, damaging and slowing
     enemies.
   _effectType: 12
+  _lane: 2
+  _element: 5
   _magnitude: 0
   _weight: 1
   _maxLevel: 5

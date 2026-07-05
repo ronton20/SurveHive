@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Swift Wings
   _description: +10% move speed.
   _effectType: 0
+  _lane: 0
+  _element: 0
   _magnitude: 10
   _weight: 1
   _maxLevel: 0

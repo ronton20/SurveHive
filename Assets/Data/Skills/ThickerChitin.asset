@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Thicker Chitin
   _description: +20 max health.
   _effectType: 1
+  _lane: 0
+  _element: 0
   _magnitude: 20
   _weight: 1
   _maxLevel: 0

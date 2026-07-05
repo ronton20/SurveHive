@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Potent Venom
   _description: All damage you deal is increased by 10%.
   _effectType: 3
+  _lane: 0
+  _element: 0
   _magnitude: 10
   _weight: 1
   _maxLevel: 6

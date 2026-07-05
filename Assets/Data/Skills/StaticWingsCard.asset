@@ -16,6 +16,8 @@ MonoBehaviour:
   _displayName: Static Wings
   _description: Static discharge arcs between nearby enemies, with a chance to stun.
   _effectType: 12
+  _lane: 2
+  _element: 3
   _magnitude: 0
   _weight: 1
   _maxLevel: 5

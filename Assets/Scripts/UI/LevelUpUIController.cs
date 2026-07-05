@@ -24,6 +24,13 @@ namespace SurveHive.UI
         [SerializeField] private TMP_Text[] _choiceDescriptionTexts;
         [SerializeField] private Image[] _choiceIcons;
 
+        // Combat 2.0 card taxonomy (optional — guarded so the controller still runs
+        // before the banner-UI builder pass wires these). Banner text/background
+        // shows the lane (Passive/Enhancement/Ability); the gem tints by element.
+        [SerializeField] private TMP_Text[] _choiceBanners;
+        [SerializeField] private Image[] _choiceBannerBackgrounds;
+        [SerializeField] private Image[] _choiceElementGems;
+
         // Move speed is intentionally excluded here — it grows only through power-ups
         // (the Swift Wings skill), keeping it a rarer, more meaningful stat.
         [Header("Automatic Per-Level Stat Bonuses")]
@@ -163,6 +170,8 @@ namespace SurveHive.UI
                     _choiceIcons[i].enabled = skill.Icon != null;
                 }
 
+                ApplyCardTaxonomy(i, skill);
+
                 _choiceButtons[i].gameObject.SetActive(true);
             }
 
@@ -185,6 +194,75 @@ namespace SurveHive.UI
                     return _epicCardColor;
                 default:
                     return _commonCardColor;
+            }
+        }
+
+        // Drives the lane banner + element gem for choice i. All slots are guarded
+        // so the controller works before the banner-UI builder pass wires them.
+        private void ApplyCardTaxonomy(int i, SkillDefinitionSO skill)
+        {
+            if (_choiceBanners != null && i < _choiceBanners.Length && _choiceBanners[i] != null)
+            {
+                _choiceBanners[i].text = GetLaneLabel(skill.Lane);
+            }
+
+            if (_choiceBannerBackgrounds != null && i < _choiceBannerBackgrounds.Length && _choiceBannerBackgrounds[i] != null)
+            {
+                _choiceBannerBackgrounds[i].color = GetLaneColor(skill.Lane);
+            }
+
+            if (_choiceElementGems != null && i < _choiceElementGems.Length && _choiceElementGems[i] != null)
+            {
+                _choiceElementGems[i].color = GetElementColor(skill.Element);
+            }
+        }
+
+        private static string GetLaneLabel(PowerUpLane lane)
+        {
+            switch (lane)
+            {
+                case PowerUpLane.Enhancement:
+                    return "ENHANCEMENT";
+                case PowerUpLane.Ability:
+                    return "ABILITY";
+                default:
+                    return "PASSIVE";
+            }
+        }
+
+        private static Color GetLaneColor(PowerUpLane lane)
+        {
+            switch (lane)
+            {
+                // Steel blue: the player-self lane.
+                case PowerUpLane.Passive:
+                    return new Color(0.29f, 0.48f, 0.71f);
+                // Amber: the attack-shaping lane.
+                case PowerUpLane.Enhancement:
+                    return new Color(0.96f, 0.65f, 0.14f);
+                // Royal purple: the active-skill lane.
+                default:
+                    return new Color(0.48f, 0.18f, 0.55f);
+            }
+        }
+
+        private static Color GetElementColor(SkillElement element)
+        {
+            switch (element)
+            {
+                case SkillElement.Fire:
+                    return new Color(0.96f, 0.38f, 0.17f);
+                case SkillElement.Poison:
+                    return new Color(0.49f, 0.71f, 0.09f);
+                case SkillElement.Electric:
+                    return new Color(1f, 0.89f, 0.29f);
+                case SkillElement.Frost:
+                    return new Color(0.35f, 0.78f, 0.91f);
+                case SkillElement.Honey:
+                    return new Color(1f, 0.76f, 0.04f);
+                // Physical: neutral wax/silver.
+                default:
+                    return new Color(0.82f, 0.82f, 0.78f);
             }
         }
 
