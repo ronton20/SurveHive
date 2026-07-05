@@ -994,5 +994,33 @@ namespace SurveHive.BuildTools
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
             Debug.Log("Phase 2C: boss death sequence built + wired.");
         }
+
+        // ------------------------------------------------------------------
+        // Phase 2B: wire the miniboss reward — BossSpawner needs the player's
+        // PlayerExperience to grant the guaranteed-lucky level-up + EXP burst.
+        // Idempotent.
+        // ------------------------------------------------------------------
+        [MenuItem("SurveHive/Combat 2.0/2B - Miniboss Reward Wiring")]
+        public static void ApplyMinibossReward()
+        {
+            EditorSceneManager.OpenScene(BeehiveScenePath, OpenSceneMode.Single);
+
+            GameObject directorGo = GameObject.Find("StageDirector");
+            BossSpawner bossSpawner = directorGo != null ? directorGo.GetComponent<BossSpawner>() : null;
+            if (bossSpawner == null)
+            {
+                Debug.LogError("Phase 2B: BossSpawner not found — run the Phase 3 run-structure pass first.");
+                return;
+            }
+
+            var experience = Object.FindFirstObjectByType<SurveHive.Progression.PlayerExperience>();
+            var so = new SerializedObject(bossSpawner);
+            so.FindProperty("_playerExperience").objectReferenceValue = experience;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(bossSpawner);
+
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+            Debug.Log("Phase 2B: miniboss reward wired.");
+        }
     }
 }

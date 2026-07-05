@@ -153,6 +153,9 @@ namespace SurveHive.UI
         {
             ApplyAutoLevelBonus();
 
+            // Phase 2B: a miniboss reward makes this whole offer guaranteed-lucky.
+            bool forceLucky = _playerExperience.ConsumeForcedLucky();
+
             int eligibleCount = BuildEligibleBuffer();
             int choiceCount = SkillOfferSelector.Select(
                 _indexBuffer, _weightBuffer, eligibleCount, _choiceButtons.Length,
@@ -181,7 +184,7 @@ namespace SurveHive.UI
 
                 // Lucky only matters when the skill has 2+ levels of headroom.
                 bool canDoubleLevel = !skill.HasLevelCap || _skillLevels[dbIndex] + 2 <= skill.MaxLevel;
-                _currentChoiceLucky[i] = canDoubleLevel && _rng.NextDouble() < _luckyChance;
+                _currentChoiceLucky[i] = canDoubleLevel && (forceLucky || _rng.NextDouble() < _luckyChance);
 
                 _choiceNameTexts[i].text = skill.DisplayName;
                 _choiceDescriptionTexts[i].text = BuildDescription(skill, _skillLevels[dbIndex], _currentChoiceLucky[i]);

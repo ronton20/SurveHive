@@ -29,6 +29,10 @@ namespace SurveHive.Stage
         [SerializeField] private float _spawnDistance = 12f;
         [SerializeField] private float _spawnShakeAmplitude = 0.4f;
 
+        [Header("Phase 2B — miniboss reward")]
+        [SerializeField] private Progression.PlayerExperience _playerExperience;
+        [SerializeField] private float _minibossBonusExp = 60f;
+
         // The boss currently gating the timeline (miniboss or final). Killing it
         // resumes the stage (miniboss) or wins the run (final boss).
         private HealthComponent _gatingBossHealth;
@@ -138,6 +142,12 @@ namespace SurveHive.Stage
             {
                 // Killing the Queen = world clear: first winnable run.
                 ShowVictory();
+            }
+            else if (_playerExperience != null)
+            {
+                // Phase 2B: a miniboss kill is a real reward beat — a guaranteed
+                // lucky (+2) level-up offer plus a burst of EXP.
+                _playerExperience.GrantMinibossReward(_minibossBonusExp);
             }
         }
 

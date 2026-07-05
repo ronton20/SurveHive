@@ -88,6 +88,14 @@ namespace SurveHive.Tests
 
             Assert.IsFalse(director.IsBossActive, "miniboss death resumes the timeline");
 
+            // Phase 2B: the miniboss kill opens a guaranteed-lucky level-up offer
+            // (which pauses the run) — dismiss it before continuing.
+            while (GamePause.IsPaused)
+            {
+                ClickFirstLevelUpChoice();
+                yield return null;
+            }
+
             // ...and the pending 100% crossing now fires the flood wave + Queen.
             yield return null;
             yield return null;
@@ -134,6 +142,21 @@ namespace SurveHive.Tests
 
             // Leave global state clean for any test that follows.
             GamePause.SetPaused(false);
+        }
+
+        private static void ClickFirstLevelUpChoice()
+        {
+            GameObject panel = GameObject.Find("LevelUpPanel");
+            if (panel == null)
+            {
+                return;
+            }
+
+            var buttons = panel.GetComponentsInChildren<UnityEngine.UI.Button>(false);
+            if (buttons.Length > 0)
+            {
+                buttons[0].onClick.Invoke();
+            }
         }
 
         private static EnemyController FindEnemyWithRank(int rank)

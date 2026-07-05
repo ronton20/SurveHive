@@ -6154,6 +6154,8 @@ MonoBehaviour:
   _victoryPanel: {fileID: 2016979159}
   _spawnDistance: 12
   _spawnShakeAmplitude: 0.4
+  _playerExperience: {fileID: 1089349800}
+  _minibossBonusExp: 60
 --- !u!1 &984439099
 GameObject:
   m_ObjectHideFlags: 0
