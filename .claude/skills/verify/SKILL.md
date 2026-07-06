@@ -8,8 +8,30 @@ description: Build/launch/drive recipe for verifying SurveHive changes end-to-en
 Unity 6000.5.2f1 project; editor binary:
 `/Applications/Unity/Hub/Editor/6000.5.2f1/Unity.app/Contents/MacOS/Unity`
 
-Check first that the Unity editor doesn't have the project open
-(`ls Temp/UnityLockfile`) — batchmode needs the lock.
+## Runner script (use this instead of hand-typing Unity commands)
+
+`scripts/unity.sh` wraps every batch invocation with the lock/zombie guard and
+log parsing baked in. Run its batch subcommands with the harness
+`run_in_background: true` (a pass is 1–3 min and can hang — never foreground-`timeout` it).
+
+```
+scripts/unity.sh lock                 # report editor/lock state
+scripts/unity.sh build <Builder>      # SurveHive.BuildTools.<Builder>.Apply  (batch)
+scripts/unity.sh validate             # BeehiveSceneValidator + prints verdict (batch)
+scripts/unity.sh test EditMode        # -runTests, parses results XML (batch)
+scripts/unity.sh test PlayMode        # boots the real Beehive scene + plays it
+scripts/unity.sh drive [Method]       # visual capture, NO -batchmode, ~1 min GUI
+```
+
+Logs land in `VerifyShots/logs/` (gitignored). The `build`/`validate`/`test`/
+`drive` subcommands refuse to run while the user's GUI editor is open (they need
+the lock); `lock` tells you the current state. The raw commands each wraps are
+documented below in case you need to vary them.
+
+The guard distinguishes the user's GUI editor (`-useHub` in its args — never
+kill it) from a stray headless run of mine (`-batchmode`/`-runTests`). If a
+batch pass hangs and holds the lock: `kill <that-pid>`, `pkill -f
+AssetImportWorker`, `rm -f Temp/UnityLockfile`, retry.
 
 ## Layers (run in this order)
 

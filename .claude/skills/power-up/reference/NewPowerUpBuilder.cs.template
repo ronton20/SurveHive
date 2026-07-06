@@ -1,0 +1,169 @@
+// TEMPLATE — copy to Assets/Editor/BuildTools/<Name>Builder.cs, rename the class,
+// fill in the spec, delete the lane you don't need. This is an ADDITIVE, IDEMPOTENT
+// pass (find-or-create) — safe to re-run; it never clobbers hand-tuned assets.
+// Run it with:  .claude/skills/verify/scripts/unity.sh build <Name>Builder
+// (Apply() is the entry point unity.sh calls.)
+using SurveHive.Combat.Status;
+using SurveHive.Data;
+using SurveHive.Progression;
+using UnityEditor;
+using UnityEngine;
+
+namespace SurveHive.BuildTools
+{
+    public static class NewPowerUpBuilder
+    {
+        private const string SkillsFolder = "Assets/Data/Skills";
+        private const string ActivesFolder = SkillsFolder + "/Actives";
+        private const string DatabasePath = SkillsFolder + "/SkillDatabase.asset";
+
+        [MenuItem("SurveHive/Power-Ups/Add <DisplayName>")]
+        public static void Apply()
+        {
+            // ==== ABILITY LANE (auto-firing active skill) ====================
+            // Delete this whole block for a Passive/Enhancement card.
+            ActiveSkillSO active = EnsureActiveSkill(
+                ActivesFolder + "/<Name>.asset", "<Id>", "<Display Name>",
+                ActiveSkillBehavior.RadialVolley,          // reuse an existing behavior if you can
+                new[]
+                {
+                    //          Damage Cooldown Count Area  Status%  StatusDur
+                    Lvl(  8f,   3.0f,   6,   0f,   0f,   0f),   // level 1
+                    Lvl( 12f,   2.7f,   8,   0f,   0f,   0f),   // level 2
+                    Lvl( 18f,   2.4f,  10,   0f,   0f,   0f),   // level 3 (max)
+                },
+                element: SkillElement.Physical,
+                appliesStatus: false, statusType: StatusEffectType.Burn,
+                statusPotency: 0f, statusDuration: 0f,
+                projectileTint: new Color(1f, 1f, 1f, 0f),  // alpha 0 = keep prefab colour
+                projectileSpeed: 12f, range: 8f);
+
+            SkillDefinitionSO card = EnsureSkill(
+                SkillsFolder + "/<Name>Card.asset", "<Id>Card", "<Display Name>",
+                "<Card description shown on the level-up offer>.",
+                SkillEffectType.ActiveSkill, PowerUpLane.Ability, SkillElement.Physical,
+                magnitude: 0f, maxLevel: active.MaxLevel, SkillRarity.Rare,
+                iconName: "<icon>", activeSkill: active);
+
+            // ==== PASSIVE / ENHANCEMENT LANE (stat modifier) ================
+            // Use this form instead when there's no active skill. The effect MUST be a
+            // SkillEffectType already handled in SkillEffectApplier.Apply — if it's a
+            // brand-new stat, add the enum value (append!), the PlayerStats method, and
+            // the applier case first (see SKILL.md "Extending the system").
+            // SkillDefinitionSO card = EnsureSkill(
+            //     SkillsFolder + "/<Name>.asset", "<Id>", "<Display Name>",
+            //     "<description>", SkillEffectType.MoveSpeedPercent,
+            //     PowerUpLane.Passive, SkillElement.Physical,
+            //     magnitude: 0.10f, maxLevel: 5, SkillRarity.Common,
+            //     iconName: "<icon>", activeSkill: null);
+
+            RegisterInDatabase(card);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[NewPowerUpBuilder] Added <Display Name>.");
+        }
+
+        // --- helpers (find-or-create; mirror CombatOverhaulBuilder) -----------
+        private static ActiveSkillLevelStats Lvl(float dmg, float cd, int count, float area, float statusPct, float statusDur)
+            => new ActiveSkillLevelStats { Damage = dmg, Cooldown = cd, Count = count, Area = area, StatusChancePercent = statusPct, StatusDuration = statusDur };
+
+        private static SkillDefinitionSO EnsureSkill(
+            string assetPath, string id, string displayName, string description,
+            SkillEffectType effect, PowerUpLane lane, SkillElement element,
+            float magnitude, int maxLevel, SkillRarity rarity, string iconName,
+            ActiveSkillSO activeSkill)
+        {
+            var skill = AssetDatabase.LoadAssetAtPath<SkillDefinitionSO>(assetPath);
+            if (skill == null)
+            {
+                skill = ScriptableObject.CreateInstance<SkillDefinitionSO>();
+                AssetDatabase.CreateAsset(skill, assetPath);
+            }
+            var so = new SerializedObject(skill);
+            so.FindProperty("_id").stringValue = id;
+            so.FindProperty("_displayName").stringValue = displayName;
+            so.FindProperty("_description").stringValue = description;
+            so.FindProperty("_effectType").enumValueIndex = (int)effect;
+            so.FindProperty("_lane").enumValueIndex = (int)lane;
+            so.FindProperty("_element").enumValueIndex = (int)element;
+            so.FindProperty("_magnitude").floatValue = magnitude;
+            so.FindProperty("_weight").floatValue = 1f;
+            so.FindProperty("_maxLevel").intValue = maxLevel;
+            so.FindProperty("_rarity").enumValueIndex = (int)rarity;
+            so.FindProperty("_icon").objectReferenceValue = FindIcon(iconName);
+            so.FindProperty("_activeSkill").objectReferenceValue = activeSkill;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(skill);
+            return skill;
+        }
+
+        private static ActiveSkillSO EnsureActiveSkill(
+            string assetPath, string id, string displayName, ActiveSkillBehavior behavior,
+            ActiveSkillLevelStats[] levels, SkillElement element,
+            bool appliesStatus, StatusEffectType statusType, float statusPotency, float statusDuration,
+            Color projectileTint, float projectileSpeed, float range)
+        {
+            var skill = AssetDatabase.LoadAssetAtPath<ActiveSkillSO>(assetPath);
+            if (skill == null)
+            {
+                skill = ScriptableObject.CreateInstance<ActiveSkillSO>();
+                AssetDatabase.CreateAsset(skill, assetPath);
+            }
+            var so = new SerializedObject(skill);
+            so.FindProperty("_id").stringValue = id;
+            so.FindProperty("_displayName").stringValue = displayName;
+            so.FindProperty("_behavior").enumValueIndex = (int)behavior;
+            var arr = so.FindProperty("_levels");
+            arr.arraySize = levels.Length;
+            for (int i = 0; i < levels.Length; i++)
+            {
+                var e = arr.GetArrayElementAtIndex(i);
+                e.FindPropertyRelative("Damage").floatValue = levels[i].Damage;
+                e.FindPropertyRelative("Cooldown").floatValue = levels[i].Cooldown;
+                e.FindPropertyRelative("Count").intValue = levels[i].Count;
+                e.FindPropertyRelative("Area").floatValue = levels[i].Area;
+                e.FindPropertyRelative("StatusChancePercent").floatValue = levels[i].StatusChancePercent;
+                e.FindPropertyRelative("StatusDuration").floatValue = levels[i].StatusDuration;
+            }
+            so.FindProperty("_projectileTint").colorValue = projectileTint;
+            so.FindProperty("_projectileSpeed").floatValue = projectileSpeed;
+            so.FindProperty("_range").floatValue = range;
+            so.FindProperty("_appliesStatus").boolValue = appliesStatus;
+            so.FindProperty("_statusType").enumValueIndex = (int)statusType;
+            so.FindProperty("_statusPotency").floatValue = statusPotency;
+            so.FindProperty("_statusDuration").floatValue = statusDuration;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(skill);
+            return skill;
+        }
+
+        private static void RegisterInDatabase(params SkillDefinitionSO[] skills)
+        {
+            var db = AssetDatabase.LoadAssetAtPath<SkillDatabaseSO>(DatabasePath);
+            if (db == null) { Debug.LogError($"SkillDatabase not found at {DatabasePath}."); return; }
+            var so = new SerializedObject(db);
+            var arr = so.FindProperty("_skills");
+            foreach (var skill in skills)
+            {
+                bool present = false;
+                for (int i = 0; i < arr.arraySize; i++)
+                    if (arr.GetArrayElementAtIndex(i).objectReferenceValue == skill) { present = true; break; }
+                if (present) continue;
+                arr.arraySize++;
+                arr.GetArrayElementAtIndex(arr.arraySize - 1).objectReferenceValue = skill;
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(db);
+        }
+
+        private static Sprite FindIcon(string iconName)
+        {
+            if (string.IsNullOrEmpty(iconName)) return null;
+            foreach (var guid in AssetDatabase.FindAssets($"{iconName} t:Sprite"))
+            {
+                var s = AssetDatabase.LoadAssetAtPath<Sprite>(AssetDatabase.GUIDToAssetPath(guid));
+                if (s != null) return s;
+            }
+            return null;
+        }
+    }
+}
