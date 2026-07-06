@@ -1,6 +1,7 @@
 using SurveHive.Combat.Status;
 using SurveHive.Core;
 using SurveHive.Enemies;
+using SurveHive.Health;
 using UnityEngine;
 
 namespace SurveHive.Combat.Skills
@@ -22,6 +23,7 @@ namespace SurveHive.Combat.Skills
         private float _remainingDuration;
         private float _tickInterval;
         private float _tickDamage;
+        private DamageType _damageType;
         private float _tickTimer;
         private bool _appliesStatus;
         private StatusEffectType _statusType;
@@ -41,8 +43,8 @@ namespace SurveHive.Combat.Skills
 
         public void Configure(
             float radius, float duration, float tickInterval, float tickDamage,
-            bool appliesStatus, StatusEffectType statusType, float statusChancePercent,
-            float statusPotency, float statusDuration, Color tint)
+            DamageType damageType, bool appliesStatus, StatusEffectType statusType,
+            float statusChancePercent, float statusPotency, float statusDuration, Color tint)
         {
             if (_renderer != null)
             {
@@ -54,6 +56,7 @@ namespace SurveHive.Combat.Skills
             _remainingDuration = duration;
             _tickInterval = Mathf.Max(0.1f, tickInterval);
             _tickDamage = tickDamage;
+            _damageType = damageType;
             _tickTimer = _tickInterval * 0.5f;
             _appliesStatus = appliesStatus;
             _statusType = statusType;
@@ -117,7 +120,7 @@ namespace SurveHive.Combat.Skills
                     continue;
                 }
 
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, _tickDamage, false, gameObject);
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, _tickDamage, _damageType, false, gameObject);
 
                 if (_appliesStatus && enemy.StatusReceiver != null &&
                     Random.value * 100f < _statusChancePercent)

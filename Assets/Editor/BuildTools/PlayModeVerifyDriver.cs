@@ -246,7 +246,7 @@ namespace SurveHive.BuildTools
         {
             if (Player.PlayerContext.Health != null)
             {
-                Player.PlayerContext.Health.TakeDamage(999999f, null);
+                Player.PlayerContext.Health.TakeDamage(999999f, Health.DamageType.Physical, null);
                 Debug.Log("VerifyDriver: player killed for results screen.");
             }
             else

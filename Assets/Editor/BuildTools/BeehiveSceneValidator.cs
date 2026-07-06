@@ -702,6 +702,7 @@ namespace SurveHive.BuildTools
                 int activeCards = 0;
                 bool allIcons = true;
                 bool activeRefsOk = true;
+                bool damageTypesOk = true;
                 for (int i = 0; i < database.Skills.Length; i++)
                 {
                     Data.SkillDefinitionSO skill = database.Skills[i];
@@ -716,12 +717,21 @@ namespace SurveHive.BuildTools
                     {
                         activeCards++;
                         activeRefsOk &= skill.ActiveSkill != null && skill.MaxLevel == skill.ActiveSkill.MaxLevel;
+                        // Phase 3A damage typing: physical-element abilities deal
+                        // physical damage, elemental ones deal magic.
+                        if (skill.ActiveSkill != null)
+                        {
+                            bool physicalElement = skill.Element == Progression.SkillElement.Physical;
+                            bool physicalDamage = skill.ActiveSkill.DamageType == Health.DamageType.Physical;
+                            damageTypesOk &= physicalElement == physicalDamage;
+                        }
                     }
                 }
 
                 ok &= Check(allIcons, "All database skills have icons");
                 ok &= Check(activeCards >= 6, $"Database contains >=6 active skill cards (found {activeCards})");
                 ok &= Check(activeRefsOk, "Active skill cards reference ActiveSkillSO with matching level caps");
+                ok &= Check(damageTypesOk, "Ability damage types match card elements (physical ⇔ physical, elemental ⇔ magic)");
             }
 
             // Active skill assets: 5-level tables with sane growth.

@@ -1,6 +1,7 @@
 using SurveHive.Combat;
 using SurveHive.Core;
 using SurveHive.Enemies;
+using SurveHive.Health;
 using SurveHive.Player;
 using UnityEngine;
 
@@ -125,7 +126,9 @@ namespace SurveHive.Pickups
                     continue;
                 }
 
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, _nukeDamage, false, gameObject);
+                // Royal Bomb is a burst of royal-jelly energy — magic, so future
+                // physical shields (PLAN 3B) can't blank the panic button.
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, _nukeDamage, DamageType.Magic, false, gameObject);
             }
         }
 

@@ -105,7 +105,7 @@ namespace SurveHive.Combat
 
             if (other.TryGetComponent(out IDamageable damageable))
             {
-                DamageService.DealDamage(damageable, other.transform.position, _damage, true, gameObject);
+                DamageService.DealDamage(damageable, other.transform.position, _damage, DamageType.Physical, true, gameObject);
             }
 
             if (hasEnemy)

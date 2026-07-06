@@ -1,6 +1,7 @@
 using SurveHive.Combat.Status;
 using SurveHive.Core;
 using SurveHive.Enemies;
+using SurveHive.Health;
 using UnityEngine;
 
 namespace SurveHive.Combat.Skills
@@ -27,6 +28,7 @@ namespace SurveHive.Combat.Skills
         private float _elapsed;
         private float _currentRadius;
         private float _damage;
+        private DamageType _damageType;
         private bool _appliesStatus;
         private StatusEffectType _statusType;
         private float _statusPotency;
@@ -46,7 +48,7 @@ namespace SurveHive.Combat.Skills
         }
 
         public void Configure(
-            float startRadius, float maxRadius, float expandDuration, float damage,
+            float startRadius, float maxRadius, float expandDuration, float damage, DamageType damageType,
             bool appliesStatus, StatusEffectType statusType, float statusPotency, float statusDuration, Color tint)
         {
             _startRadius = Mathf.Max(0f, startRadius);
@@ -55,6 +57,7 @@ namespace SurveHive.Combat.Skills
             _elapsed = 0f;
             _currentRadius = _startRadius;
             _damage = damage;
+            _damageType = damageType;
             _appliesStatus = appliesStatus;
             _statusType = statusType;
             _statusPotency = statusPotency;
@@ -132,7 +135,7 @@ namespace SurveHive.Combat.Skills
                 }
 
                 MarkHit(id);
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, _damage, false, gameObject, false);
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, _damage, _damageType, false, gameObject, false);
 
                 if (_appliesStatus && enemy.StatusReceiver != null)
                 {

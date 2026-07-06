@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: BallLightning
   _displayName: Ball Lightning
   _behavior: 7
+  _damageType: 1
   _levels:
   - Damage: 4
     Cooldown: 6

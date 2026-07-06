@@ -7,6 +7,23 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Combat 2.0 — Damage typing (Phase 3A) (2026-07-06)
+
+Every damage application now carries a **physical/magic** `DamageType` (TODO #20) —
+the seam the upcoming enemy defenses (3B) and elemental set effects (3C) read.
+
+- `IDamageable.TakeDamage` and `DamageService.DealDamage` take a `DamageType`; every
+  call-site stamps one. Basic attack + enhancement procs, enemy contact, and enemy
+  projectiles are **physical**; elemental abilities, status DoTs (burn/poison), and the
+  Royal Bomb nuke are **magic**.
+- Each ability's type lives on its `ActiveSkillSO` (`_damageType`) and must match its
+  offer card's element (physical element ⇔ physical damage) — enforced by a new scene
+  validator check and an EditMode test. Stinger Barrage / Piercing Lance are physical;
+  the other seven abilities are magic.
+- `DamageOnContact` / `EnemyProjectile` expose a serialized damage type (physical by
+  default) so future magic-touch/caster enemies are pure data.
+- No balance change yet: mitigation still ignores the type until 3B lands.
+
 ### Combat 2.0 — Boss & Wave Drama (Phase 2) (2026-07-05)
 
 Makes the run's set-pieces land.

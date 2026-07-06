@@ -7,6 +7,8 @@ namespace SurveHive.Health
     public sealed class DamageOnContact : MonoBehaviour
     {
         [SerializeField] private float _damage = 10f;
+        // Touch attacks are physical by default; magic-touch enemies can override.
+        [SerializeField] private DamageType _damageType = DamageType.Physical;
         [SerializeField] private float _tickInterval = 1f;
         [SerializeField] private string _targetTag = "Player";
         // Optional: stunned/frozen owners deal no contact damage.
@@ -63,7 +65,7 @@ namespace SurveHive.Health
 
             if (other.TryGetComponent(out IDamageable damageable))
             {
-                damageable.TakeDamage(_damage, gameObject);
+                damageable.TakeDamage(_damage, _damageType, gameObject);
                 _cooldownRemaining = _tickInterval;
             }
         }

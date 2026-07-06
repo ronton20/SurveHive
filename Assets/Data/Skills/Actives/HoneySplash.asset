@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: HoneySplash
   _displayName: Honey Splash
   _behavior: 2
+  _damageType: 1
   _levels:
   - Damage: 4
     Cooldown: 5

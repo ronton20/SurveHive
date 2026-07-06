@@ -247,6 +247,7 @@ namespace SurveHive.Combat.Skills
                 Tint = skill.ProjectileTint,
                 Speed = skill.ProjectileSpeed,
                 Damage = AbilityDamage(stats.Damage),
+                DamageType = skill.DamageType,
                 Range = skill.Range * 2f,
                 ImpactVfxPoolId = skill.ImpactVfxPoolId,
                 AppliesStatus = skill.AppliesStatus,
@@ -285,7 +286,7 @@ namespace SurveHive.Combat.Skills
             float slowDuration = stats.StatusDuration > 0f ? stats.StatusDuration : skill.StatusDuration;
             float startRadius = skill.Range > 0f ? skill.Range : 1.2f;
             wave.Configure(
-                startRadius, stats.Area, skill.ZoneDuration, AbilityDamage(stats.Damage),
+                startRadius, stats.Area, skill.ZoneDuration, AbilityDamage(stats.Damage), skill.DamageType,
                 skill.AppliesStatus, skill.StatusType, skill.StatusPotency, slowDuration, skill.ProjectileTint);
             return true;
         }
@@ -314,8 +315,8 @@ namespace SurveHive.Combat.Skills
             // Reused SO fields: ProjectileSpeed = orb speed, ZoneTickInterval = tick,
             // ZoneDuration = lifetime, Area = orb size.
             orb.Launch(
-                direction, skill.ProjectileSpeed, AbilityDamage(stats.Damage), skill.ZoneTickInterval,
-                stats.Area, skill.ZoneDuration, skill.ProjectileTint);
+                direction, skill.ProjectileSpeed, AbilityDamage(stats.Damage), skill.DamageType,
+                skill.ZoneTickInterval, stats.Area, skill.ZoneDuration, skill.ProjectileTint);
             return true;
         }
 
@@ -364,7 +365,7 @@ namespace SurveHive.Combat.Skills
 
                 // No popup: at 4 ticks/s the numbers would flood the screen —
                 // health bars + poison DoT numbers carry the feedback.
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, AbilityDamage(stats.Damage), false, gameObject, false);
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, AbilityDamage(stats.Damage), skill.DamageType, false, gameObject, false);
 
                 if (skill.AppliesStatus && enemy.StatusReceiver != null &&
                     Random.value * 100f < stats.StatusChancePercent)
@@ -395,7 +396,7 @@ namespace SurveHive.Combat.Skills
                 _chainTargets[found] = current;
                 found++;
 
-                DamageService.DealDamage(current.Health, current.transform.position, AbilityDamage(stats.Damage), true, gameObject);
+                DamageService.DealDamage(current.Health, current.transform.position, AbilityDamage(stats.Damage), skill.DamageType, true, gameObject);
 
                 if (skill.AppliesStatus && current.StatusReceiver != null &&
                     Random.value * 100f < stats.StatusChancePercent)
@@ -443,6 +444,7 @@ namespace SurveHive.Combat.Skills
                 Tint = skill.ProjectileTint,
                 Speed = skill.ProjectileSpeed,
                 Damage = AbilityDamage(stats.Damage),
+                DamageType = skill.DamageType,
                 Range = skill.Range,
                 PierceCount = pierceCount,
                 HomingTarget = homingTarget,

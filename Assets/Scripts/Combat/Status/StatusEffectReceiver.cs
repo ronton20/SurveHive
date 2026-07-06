@@ -98,7 +98,8 @@ namespace SurveHive.Combat.Status
         private void DealDotDamage(float amount, Color color)
         {
             float rounded = Mathf.Max(1f, Mathf.Round(amount));
-            _health.TakeDamage(rounded, gameObject);
+            // Burn/poison DoTs are elemental effects — always magic damage.
+            _health.TakeDamage(rounded, DamageType.Magic, gameObject);
             DamagePopupSpawner.Spawn(transform.position, rounded, color, DamagePopupSpawner.DotSizeMultiplier);
         }
 

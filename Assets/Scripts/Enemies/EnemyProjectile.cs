@@ -14,6 +14,8 @@ namespace SurveHive.Enemies
     {
         [SerializeField] private int _poolId;
         [SerializeField] private string _targetTag = "Player";
+        // Boss stingers are physical; future casters can override per prefab.
+        [SerializeField] private DamageType _damageType = DamageType.Physical;
 
         private Vector2 _direction;
         private float _damage;
@@ -56,7 +58,7 @@ namespace SurveHive.Enemies
 
             if (other.TryGetComponent(out IDamageable damageable))
             {
-                damageable.TakeDamage(_damage, gameObject);
+                damageable.TakeDamage(_damage, _damageType, gameObject);
             }
 
             ReleaseSelf();

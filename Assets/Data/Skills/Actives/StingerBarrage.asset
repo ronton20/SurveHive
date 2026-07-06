@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: StingerBarrage
   _displayName: Stinger Barrage
   _behavior: 0
+  _damageType: 0
   _levels:
   - Damage: 8
     Cooldown: 2.6

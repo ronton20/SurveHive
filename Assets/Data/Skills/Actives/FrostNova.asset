@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: FrostNova
   _displayName: Frost Nova
   _behavior: 6
+  _damageType: 1
   _levels:
   - Damage: 3
     Cooldown: 5

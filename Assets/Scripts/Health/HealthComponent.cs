@@ -52,7 +52,9 @@ namespace SurveHive.Health
             _damageMitigator = mitigator;
         }
 
-        public void TakeDamage(float amount, GameObject instigator)
+        // damageType is carried but not yet consumed here — the PLAN 3B enemy
+        // mitigation pipeline (shield → armor → HP) reads it per incoming hit.
+        public void TakeDamage(float amount, DamageType damageType, GameObject instigator)
         {
             if (_isDead || amount <= 0f || _invulnerable)
             {

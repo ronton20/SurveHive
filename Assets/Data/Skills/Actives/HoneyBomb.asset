@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: HoneyBomb
   _displayName: Honey Bomb
   _behavior: 8
+  _damageType: 1
   _levels:
   - Damage: 6
     Cooldown: 4

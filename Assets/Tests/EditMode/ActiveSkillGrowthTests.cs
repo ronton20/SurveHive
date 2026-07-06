@@ -76,6 +76,34 @@ namespace SurveHive.Tests
             Assert.AreEqual(last.Damage, aboveRange.Damage);
         }
 
+        // Phase 3A damage typing: an ability's damage type must match its offer
+        // card's element — Physical element ⇔ Physical damage, elemental ⇔ Magic.
+        [Test]
+        public void AbilityDamageTypes_MatchCardElements()
+        {
+            var database = AssetDatabase.LoadAssetAtPath<SkillDatabaseSO>("Assets/Data/Skills/SkillDatabase.asset");
+            Assert.IsNotNull(database);
+
+            int abilityCards = 0;
+            foreach (SkillDefinitionSO skill in database.Skills)
+            {
+                if (skill == null || skill.EffectType != Progression.SkillEffectType.ActiveSkill)
+                {
+                    continue;
+                }
+
+                abilityCards++;
+                Assert.IsNotNull(skill.ActiveSkill, $"{skill.name} card has no ActiveSkillSO");
+
+                bool physicalElement = skill.Element == Progression.SkillElement.Physical;
+                bool physicalDamage = skill.ActiveSkill.DamageType == Health.DamageType.Physical;
+                Assert.AreEqual(physicalElement, physicalDamage,
+                    $"{skill.name}: element {skill.Element} but ability damage type {skill.ActiveSkill.DamageType}");
+            }
+
+            Assert.Greater(abilityCards, 0, "No ability cards found in the database");
+        }
+
         [Test]
         public void SkillDatabase_IsPopulated_WithRarityAndLaneCoverage()
         {

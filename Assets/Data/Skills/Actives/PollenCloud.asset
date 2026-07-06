@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: PollenCloud
   _displayName: Pollen Cloud
   _behavior: 3
+  _damageType: 1
   _levels:
   - Damage: 1
     Cooldown: 0.25

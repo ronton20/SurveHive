@@ -1,5 +1,6 @@
 using SurveHive.Core;
 using SurveHive.Enemies;
+using SurveHive.Health;
 using UnityEngine;
 
 namespace SurveHive.Combat.Skills
@@ -28,6 +29,7 @@ namespace SurveHive.Combat.Skills
         private Vector2 _direction;
         private float _speed;
         private float _damagePerTick;
+        private DamageType _damageType;
         private float _tickInterval;
         private float _tickTimer;
         private float _remainingLife;
@@ -48,12 +50,13 @@ namespace SurveHive.Combat.Skills
         }
 
         public void Launch(
-            Vector2 direction, float speed, float damagePerTick, float tickInterval,
-            float size, float lifetime, Color tint)
+            Vector2 direction, float speed, float damagePerTick, DamageType damageType,
+            float tickInterval, float size, float lifetime, Color tint)
         {
             _direction = direction.sqrMagnitude > 0.0001f ? direction.normalized : Vector2.right;
             _speed = speed;
             _damagePerTick = damagePerTick;
+            _damageType = damageType;
             _tickInterval = Mathf.Max(0.05f, tickInterval);
             _tickTimer = _tickInterval;
             _remainingLife = lifetime;
@@ -167,7 +170,7 @@ namespace SurveHive.Combat.Skills
                     continue;
                 }
 
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, _damagePerTick, false, gameObject, false);
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, _damagePerTick, _damageType, false, gameObject, false);
                 _overlap[write] = enemy;
                 write++;
             }

@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: EmberSting
   _displayName: Ember Sting
   _behavior: 5
+  _damageType: 1
   _levels:
   - Damage: 12
     Cooldown: 3.4

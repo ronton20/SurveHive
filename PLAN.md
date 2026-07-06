@@ -139,7 +139,7 @@ interleaved with late Phase 1 if desired.
 From `TODO.md` #20 → #23 → #19. Do in order; each is a prerequisite for the next. Builds on the
 element tags from Phase 1A.
 
-### 3A — Damage typing (physical vs magic) — TODO #20 ☐
+### 3A — Damage typing (physical vs magic) — TODO #20 ✅
 - Every damage application carries a `DamageType { Physical, Magic }`. Auto-attack/stingers/enhancements = Physical; magic abilities (honey/pollen/ember/static) = Magic. `DamageService` and status DoTs stamp the type.
 - **Touch:** `Combat/DamageService.cs`, `Health/IDamageable.cs`/`HealthComponent.cs`, `Combat/Status/*` DoT, all damage call-sites.
 

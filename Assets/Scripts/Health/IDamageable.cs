@@ -6,6 +6,6 @@ namespace SurveHive.Health
     {
         bool IsDead { get; }
 
-        void TakeDamage(float amount, GameObject instigator);
+        void TakeDamage(float amount, DamageType damageType, GameObject instigator);
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using SurveHive.Combat.Status;
+using SurveHive.Health;
 using UnityEngine;
 
 namespace SurveHive.Data
@@ -50,6 +51,9 @@ namespace SurveHive.Data
         [SerializeField] private string _id;
         [SerializeField] private string _displayName;
         [SerializeField] private ActiveSkillBehavior _behavior;
+        // Physical for stinger-type abilities, Magic for elemental ones — must
+        // match the offer card's SkillElement (Physical element ⇔ Physical damage).
+        [SerializeField] private DamageType _damageType = DamageType.Physical;
         [SerializeField] private ActiveSkillLevelStats[] _levels;
 
         [Header("Delivery")]
@@ -81,6 +85,8 @@ namespace SurveHive.Data
         public string DisplayName => _displayName;
 
         public ActiveSkillBehavior Behavior => _behavior;
+
+        public DamageType DamageType => _damageType;
 
         public Color ProjectileTint => _projectileTint;
 

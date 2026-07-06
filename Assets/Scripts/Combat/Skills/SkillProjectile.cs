@@ -14,6 +14,7 @@ namespace SurveHive.Combat.Skills
         public Color Tint;
         public float Speed;
         public float Damage;
+        public DamageType DamageType;
         public float Range;
         // 0 = release on first hit; N = pass through N extra targets.
         public int PierceCount;
@@ -161,7 +162,7 @@ namespace SurveHive.Combat.Skills
             }
 
             _lastHitCollider = other;
-            DamageService.DealDamage(damageable, other.transform.position, _config.Damage, true, gameObject);
+            DamageService.DealDamage(damageable, other.transform.position, _config.Damage, _config.DamageType, true, gameObject);
             TryApplyStatus(other);
 
             if (_config.KnockbackImpulse > 0f && other.TryGetComponent(out EnemyController enemy))
@@ -217,7 +218,7 @@ namespace SurveHive.Combat.Skills
                     continue;
                 }
 
-                DamageService.DealDamage(enemy.Health, enemy.transform.position, _config.Damage, true, gameObject);
+                DamageService.DealDamage(enemy.Health, enemy.transform.position, _config.Damage, _config.DamageType, true, gameObject);
                 TryApplyStatusTo(enemy.StatusReceiver);
             }
         }
@@ -234,7 +235,7 @@ namespace SurveHive.Combat.Skills
             {
                 zone.Configure(
                     _config.ZoneRadius, _config.ZoneDuration, _config.ZoneTickInterval, _config.Damage,
-                    _config.AppliesStatus, _config.StatusType, _config.StatusChancePercent,
+                    _config.DamageType, _config.AppliesStatus, _config.StatusType, _config.StatusChancePercent,
                     _config.StatusPotency, _config.StatusDuration, _config.Tint);
             }
         }

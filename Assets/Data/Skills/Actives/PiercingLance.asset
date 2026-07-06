@@ -15,6 +15,7 @@ MonoBehaviour:
   _id: PiercingLance
   _displayName: Piercing Lance
   _behavior: 1
+  _damageType: 0
   _levels:
   - Damage: 14
     Cooldown: 3.2

@@ -80,7 +80,7 @@ namespace SurveHive.Tests
 
             // ...but killing the miniboss clears the gate once the Phase 2C death
             // beat (slow-mo) finishes, then the Queen crossing can fire.
-            miniboss.Health.TakeDamage(1_000_000f, null);
+            miniboss.Health.TakeDamage(1_000_000f, Health.DamageType.Physical, null);
             while (SurveHive.Core.BossDeathSequence.IsPlaying)
             {
                 yield return null;
@@ -119,7 +119,7 @@ namespace SurveHive.Tests
                 yield return null;
             }
 
-            queen.Health.TakeDamage(1_000_000f, null);
+            queen.Health.TakeDamage(1_000_000f, Health.DamageType.Physical, null);
             while (SurveHive.Core.BossDeathSequence.IsPlaying)
             {
                 yield return null;

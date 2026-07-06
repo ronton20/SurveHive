@@ -13,15 +13,15 @@ namespace SurveHive.Combat
     public static class DamageService
     {
         /// <summary>Deals damage and returns the final amount actually applied.</summary>
-        public static float DealDamage(IDamageable target, Vector3 hitPosition, float baseDamage, bool canCrit, GameObject instigator)
+        public static float DealDamage(IDamageable target, Vector3 hitPosition, float baseDamage, DamageType damageType, bool canCrit, GameObject instigator)
         {
-            return DealDamage(target, hitPosition, baseDamage, canCrit, instigator, true);
+            return DealDamage(target, hitPosition, baseDamage, damageType, canCrit, instigator, true);
         }
 
         // showPopup=false for very fast tick sources (pollen aura at 4 ticks/s)
         // where per-hit numbers would flood the screen and the popup pool.
         public static float DealDamage(
-            IDamageable target, Vector3 hitPosition, float baseDamage, bool canCrit,
+            IDamageable target, Vector3 hitPosition, float baseDamage, DamageType damageType, bool canCrit,
             GameObject instigator, bool showPopup)
         {
             PlayerStats stats = PlayerContext.Stats;
@@ -36,7 +36,7 @@ namespace SurveHive.Combat
             }
 
             damage = Mathf.Max(1f, Mathf.Round(damage));
-            target.TakeDamage(damage, instigator);
+            target.TakeDamage(damage, damageType, instigator);
 
             if (stats != null && stats.LifestealPercent > 0f && PlayerContext.Health != null)
             {
