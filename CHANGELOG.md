@@ -7,6 +7,29 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Playtest fixes — set-effect UX + burst-hit performance (2026-07-07)
+
+Feedback from the first 3C playtest.
+
+- **Fixed all six set names showing on the HUD from run start**: `ElementSets`' static
+  state defaulted to "tier I active" for every element until the first recompute, and the
+  HUD could enable before the run initialized the service. Tiers now default to inactive,
+  re-initialization notifies subscribers, and unconfigured sets can never render.
+- **Set state moved off the combat HUD** to where picks are decided: each offer card's
+  set progress ("WILDFIRE SET — unlocks: Burns last 30% longer" / "2/3 — at 3: …") renders
+  **below the card** so long descriptions never overflow it, the offer panel bottom lists
+  active tiers with effects, and the pause build panel gained a SET BONUSES section
+  (pieces, active effect, next threshold). Element colors consolidated into `ElementPalette`.
+- **Offer panel got a context title and a taller layout**: "LEVEL UP!" normally,
+  "MINIBOSS KILLED!" for the guaranteed-lucky reward offer, so players know where the
+  popup came from; the panel background expanded vertically (980×760) to hold the title,
+  cards, below-card set lines, and the set summary.
+- **Fixed frame hitches when piercing volleys hit/kill crowds**: the damage-number pool
+  grew by instantiating popup canvases mid-frame and then destroyed the overflow on
+  release — every burst paid an instantiate + destroy storm. Damage numbers now use a
+  no-grow `TryGet` (overflow numbers are dropped, capped at 48 concurrent) and the death
+  VFX pool keeps burst instances instead of destroy-churning (24 prewarmed / 96 kept).
+
 ### Combat 2.0 — Elemental set effects (Phase 3C) (2026-07-07)
 
 Committing to an element now grants escalating set bonuses (TODO #19) — the payoff

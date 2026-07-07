@@ -43,6 +43,12 @@ namespace SurveHive.Core
             return _pools[poolId].Get(position, rotation);
         }
 
+        /// <summary>No-grow variant for droppable cosmetics; false when the pool is saturated.</summary>
+        public bool TryGet(int poolId, Vector3 position, Quaternion rotation, out GameObject instance)
+        {
+            return _pools[poolId].TryGet(position, rotation, out instance);
+        }
+
         public void Release(int poolId, GameObject instance)
         {
             _pools[poolId].Release(instance);

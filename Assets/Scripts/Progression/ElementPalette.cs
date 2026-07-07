@@ -8,6 +8,27 @@ namespace SurveHive.Progression
     /// </summary>
     public static class ElementPalette
     {
+        // Rich-text forms ("#F56129"), cached once so hot-ish UI rebuilds never
+        // re-format colors.
+        private static readonly string[] _hex = BuildHexTable();
+
+        /// <summary>TMP rich-text hex ("#RRGGBB") for the element's color.</summary>
+        public static string GetHex(SkillElement element)
+        {
+            return _hex[(int)element];
+        }
+
+        private static string[] BuildHexTable()
+        {
+            var table = new string[6];
+            for (int i = 0; i < table.Length; i++)
+            {
+                table[i] = "#" + ColorUtility.ToHtmlStringRGB(GetColor((SkillElement)i));
+            }
+
+            return table;
+        }
+
         public static Color GetColor(SkillElement element)
         {
             switch (element)

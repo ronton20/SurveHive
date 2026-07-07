@@ -141,6 +141,20 @@ above are locked so new content drops into a stable framework rather than a movi
 
 ---
 
+## Release & polish wishlist *(added 2026-07-07 after the Phase 3 playtest)*
+25. **Complete UI overhaul** — fit to PC, enlarge text, smoother animations, click sounds, health bars, etc.
+26. **Status effect visual modifiers** — tint enemies in color based on their active status effect. *(A basic priority tint exists in `StatusEffectReceiver`; this wants a proper, readable pass.)*
+27. **Enhance status-effect set bonuses** — richer per-element set effects beyond the current potency/duration scaling (e.g. spread-on-death burns, shatter on frozen kills).
+28. **Enhance meta shop** — way more modifiers to buy: EXP gain, ability power, cooldown reduction, crit rate/damage, **power-up rerolls** (max 5 per run; each reroll replaces 1 offered card, not all 3), item drop rate, and any other bonuses that fit.
+29. **Asset generation list (ElevenLabs)** — a document listing every asset that needs generating, including sizes, pixel density, colors, usage context — ideally an accurate generation prompt per asset.
+30. **Working stage difficulty** — easy / normal / hard / extreme: scales enemy HP and damage but increases honey gain; with per-difficulty icons (ties into #29). *(The difficulty dropdown seam from Phase 4B exists but is fixed to Normal.)*
+31. **Premium currency** — earnable in very small amounts through gameplay; spent on cosmetics/revives.
+32. **Character customization** — colors (5 basic), hats, stinger skins, etc.
+33. **Achievements system** — including Steam achievements; unlocks cosmetics and rewards premium currency.
+34. **Rotating cosmetics shop** — daily rotating cosmetics for purchase.
+35. **Codex** — all info on power-ups / set effects / enemies / items / etc. that the player has encountered or picked up.
+36. **Enhanced options** — toggles for enemy HP bars, damage numbers, and similar feedback layers.
+
 ## Suggestions / additions to consider
 - ~~**Pause & settings menu** — in-run pause (audio/vibration/quality toggles); useful early for testing and expected on mobile.~~ *(done in Phase 4C: ESC/HUD-button pause with resume/settings/abandon; settings shared with the main menu, applied live and saved.)*
 - ~~**Run stats / results screen** — on death or stage clear, show time survived, kills, level, currency earned (feeds naturally into meta progression).~~ *(done in Phase 3: results block on both death and victory screens; currency banks on both paths.)*

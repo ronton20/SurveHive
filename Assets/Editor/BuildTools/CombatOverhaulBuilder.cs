@@ -1087,8 +1087,8 @@ namespace SurveHive.BuildTools
             EditorUtility.SetDirty(db);
             AssetDatabase.SaveAssets();
 
-            // HUD indicator: a left-anchored rich-text line under the top-left
-            // meters, driven by SetTierHUD off ElementSets.OnChanged.
+            // Set-tier summary lives on the level-up offer panel — set state only
+            // matters when choosing picks, so it must not sit on the combat HUD.
             EditorSceneManager.OpenScene(BeehiveScenePath, OpenSceneMode.Single);
             GameObject canvasGo = GameObject.Find("Canvas");
             if (canvasGo == null)
@@ -1097,15 +1097,70 @@ namespace SurveHive.BuildTools
                 return;
             }
 
+            // Drop the earlier HUD-mounted variant if a previous pass created it.
+            Transform staleIndicator = canvasGo.transform.Find("SetTierIndicator");
+            if (staleIndicator != null)
+            {
+                Object.DestroyImmediate(staleIndicator.gameObject);
+            }
+
+            Transform levelUpPanel = canvasGo.transform.Find("LevelUpPanel");
+            if (levelUpPanel == null)
+            {
+                Debug.LogError("Phase 3C: LevelUpPanel not found under Canvas.");
+                return;
+            }
+
             var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
-            GameObject indicatorGo = FindOrCreateChild(canvasGo.transform, "SetTierIndicator");
+
+            // Taller panel: title on top, cards shifted up, per-card set lines
+            // below the cards, active-set summary along the bottom.
+            var panelRect = (RectTransform)levelUpPanel;
+            panelRect.sizeDelta = new Vector2(980f, 760f);
+
+            GameObject titleGo = FindOrCreateChild(levelUpPanel, "OfferTitle");
+            var titleRect = (RectTransform)titleGo.transform;
+            titleRect.anchorMin = new Vector2(0.5f, 1f);
+            titleRect.anchorMax = new Vector2(0.5f, 1f);
+            titleRect.pivot = new Vector2(0.5f, 1f);
+            titleRect.anchoredPosition = new Vector2(0f, -28f);
+            titleRect.sizeDelta = new Vector2(760f, 70f);
+            TMP_Text titleText = EnsureTmp(titleGo, font, 52f, HoneyGoldC, TextAlignmentOptions.Center);
+            titleText.text = "LEVEL UP!";
+
+            var setLines = new TMP_Text[ChoiceCount];
+            for (int i = 0; i < ChoiceCount; i++)
+            {
+                Transform choice = levelUpPanel.Find($"Choice{i}");
+                if (choice == null)
+                {
+                    Debug.LogError($"Phase 3C: Choice{i} not found — run the 1A banner pass first.");
+                    return;
+                }
+
+                var choiceRect = (RectTransform)choice;
+                choiceRect.anchoredPosition = new Vector2(choiceRect.anchoredPosition.x, 55f);
+
+                // Below the card (child, so it follows the card): the set line.
+                GameObject setLineGo = FindOrCreateChild(choice, "SetLine");
+                var setLineRect = (RectTransform)setLineGo.transform;
+                setLineRect.anchorMin = new Vector2(0.5f, 0f);
+                setLineRect.anchorMax = new Vector2(0.5f, 0f);
+                setLineRect.pivot = new Vector2(0.5f, 1f);
+                setLineRect.anchoredPosition = new Vector2(0f, -10f);
+                setLineRect.sizeDelta = new Vector2(285f, 95f);
+                setLines[i] = EnsureTmp(setLineGo, font, 20f, Color.white, TextAlignmentOptions.Top);
+                setLines[i].text = string.Empty;
+            }
+
+            GameObject indicatorGo = FindOrCreateChild(levelUpPanel, "SetTierIndicator");
             var rect = (RectTransform)indicatorGo.transform;
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(24f, -235f);
-            rect.sizeDelta = new Vector2(640f, 44f);
-            TMP_Text text = EnsureTmp(indicatorGo, font, 30f, Color.white, TextAlignmentOptions.TopLeft);
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, 18f);
+            rect.sizeDelta = new Vector2(900f, 110f);
+            TMP_Text text = EnsureTmp(indicatorGo, font, 26f, Color.white, TextAlignmentOptions.Top);
             text.text = string.Empty;
 
             if (!indicatorGo.TryGetComponent(out SetTierHUD hud))
@@ -1118,8 +1173,15 @@ namespace SurveHive.BuildTools
             hudSerialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(hud);
 
+            var controller = levelUpPanel.GetComponent<LevelUpUIController>();
+            var controllerSerialized = new SerializedObject(controller);
+            WireArray(controllerSerialized, "_choiceSetTexts", setLines);
+            controllerSerialized.FindProperty("_titleText").objectReferenceValue = titleText;
+            controllerSerialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(controller);
+
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
-            Debug.Log("Phase 3C: elemental set bonuses authored + HUD indicator wired.");
+            Debug.Log("Phase 3C: set bonuses + offer-panel layout (title, set lines, summary) wired.");
         }
 
         private static SetBonusSO EnsureSetBonus(

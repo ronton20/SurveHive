@@ -41,6 +41,23 @@ namespace SurveHive.Spawning
             return instance;
         }
 
+        /// <summary>
+        /// Get only when a pooled instance is already available — never grows the
+        /// pool. For droppable cosmetics (damage numbers): a big pierce volley
+        /// must not pay an Instantiate storm mid-frame just to show more numbers.
+        /// </summary>
+        public bool TryGet(Vector3 position, Quaternion rotation, out GameObject instance)
+        {
+            if (_pool.CountInactive == 0)
+            {
+                instance = null;
+                return false;
+            }
+
+            instance = Get(position, rotation);
+            return true;
+        }
+
         public void Release(GameObject instance)
         {
             _pool.Release(instance);

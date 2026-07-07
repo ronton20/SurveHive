@@ -26,8 +26,15 @@ namespace SurveHive.Combat
                 return;
             }
 
+            // No-grow get: when a pierce volley hits dozens of enemies in one
+            // frame, dropping the overflow numbers is invisible — instantiating
+            // (and later destroying) a burst of popup canvases is a visible hitch.
             Vector3 popupPosition = worldPosition + (Vector3.up * 0.6f);
-            GameObject popupObj = PoolManager.Instance.Get(PoolIds.DamageNumber, popupPosition, Quaternion.identity);
+            if (!PoolManager.Instance.TryGet(PoolIds.DamageNumber, popupPosition, Quaternion.identity, out GameObject popupObj))
+            {
+                return;
+            }
+
             if (popupObj.TryGetComponent(out DamageNumberPopup popup))
             {
                 popup.Show(amount, color, sizeMultiplier);

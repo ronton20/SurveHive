@@ -24,6 +24,14 @@ namespace SurveHive.Progression
         private static readonly float[] _durationMultiplier = new float[ElementCount];
         private static float _attackDamageMultiplier = 1f;
 
+        // A HUD/consumer can run before LevelUpUIController.Awake initializes us
+        // (Unity gives no cross-object Awake/OnEnable ordering) — without this the
+        // default all-zero _tierIndex would read as "tier I active on everything".
+        static ElementSets()
+        {
+            RecomputeMultipliers();
+        }
+
         /// <summary>Raised whenever any element's piece count changes (drives the HUD).</summary>
         public static event Action OnChanged;
 
@@ -55,6 +63,9 @@ namespace SurveHive.Progression
             }
 
             RecomputeMultipliers();
+            // Consumers that subscribed before this ran (enable-order is
+            // arbitrary) must drop any stale previous-run display.
+            OnChanged?.Invoke();
         }
 
         /// <summary>

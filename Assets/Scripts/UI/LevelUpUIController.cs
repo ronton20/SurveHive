@@ -33,6 +33,11 @@ namespace SurveHive.UI
         // Shows the lane's owned/cap (e.g. "2/5") so players can see how much room
         // a lane has left before committing a pick (Combat 2.0 1F).
         [SerializeField] private TMP_Text[] _choiceLaneCounters;
+        // Set-progress line rendered BELOW each card (3C UX — kept out of the card
+        // so long descriptions never overflow it).
+        [SerializeField] private TMP_Text[] _choiceSetTexts;
+        // Offer context: "LEVEL UP!" vs "MINIBOSS KILLED!" (the forced-lucky beat).
+        [SerializeField] private TMP_Text _titleText;
 
         // Move speed is intentionally excluded here — it grows only through power-ups
         // (the Swift Wings skill), keeping it a rarer, more meaningful stat.
@@ -165,6 +170,11 @@ namespace SurveHive.UI
             // Phase 2B: a miniboss reward makes this whole offer guaranteed-lucky.
             bool forceLucky = _playerExperience.ConsumeForcedLucky();
 
+            if (_titleText != null)
+            {
+                _titleText.text = forceLucky ? "MINIBOSS KILLED!" : "LEVEL UP!";
+            }
+
             int eligibleCount = BuildEligibleBuffer();
             int choiceCount = SkillOfferSelector.Select(
                 _indexBuffer, _weightBuffer, eligibleCount, _choiceButtons.Length,
@@ -210,6 +220,11 @@ namespace SurveHive.UI
                 }
 
                 ApplyCardTaxonomy(i, skill);
+
+                if (_choiceSetTexts != null && i < _choiceSetTexts.Length && _choiceSetTexts[i] != null)
+                {
+                    _choiceSetTexts[i].text = BuildSetLine(skill, _skillLevels[dbIndex]);
+                }
 
                 _choiceButtons[i].gameObject.SetActive(true);
             }
@@ -446,6 +461,58 @@ namespace SurveHive.UI
                 int applications = Mathf.Max(1, targetLevel - currentLevel);
                 SkillStatPreview.AppendUpgradeLines(
                     _descriptionBuilder, skill, currentLevel, applications, _playerStats, skill.MaxLevel);
+            }
+
+            return _descriptionBuilder.ToString();
+        }
+
+        // The below-card set line: what taking this card does for its element's
+        // set — the tier it unlocks, or progress toward the next threshold and
+        // what that will grant. Empty for passives, configless elements, and
+        // owned cards (leveling never adds a set piece). Runs on the paused
+        // offer screen, so the ToString is fine.
+        private string BuildSetLine(SkillDefinitionSO skill, int currentLevel)
+        {
+            if (currentLevel > 0 || skill.Lane == PowerUpLane.Passive)
+            {
+                return string.Empty;
+            }
+
+            SetBonusSO bonus = ElementSets.GetBonus(skill.Element);
+            if (bonus == null)
+            {
+                return string.Empty;
+            }
+
+            int piecesAfter = ElementSets.GetPieces(skill.Element) + 1;
+            int tierAfter = bonus.GetTierIndex(piecesAfter);
+
+            _descriptionBuilder.Clear();
+            _descriptionBuilder.Append("<color=");
+            _descriptionBuilder.Append(ElementPalette.GetHex(skill.Element));
+            _descriptionBuilder.Append('>');
+            _descriptionBuilder.Append(bonus.SetName);
+            _descriptionBuilder.Append(" SET</color> ");
+
+            if (tierAfter > ElementSets.GetTierIndex(skill.Element))
+            {
+                _descriptionBuilder.Append("— unlocks: ");
+                _descriptionBuilder.Append(bonus.GetTier(tierAfter).Description);
+            }
+            else if (tierAfter + 1 < bonus.TierCount)
+            {
+                SetBonusTier next = bonus.GetTier(tierAfter + 1);
+                _descriptionBuilder.Append(piecesAfter);
+                _descriptionBuilder.Append('/');
+                _descriptionBuilder.Append(next.PiecesRequired);
+                _descriptionBuilder.Append(" — at ");
+                _descriptionBuilder.Append(next.PiecesRequired);
+                _descriptionBuilder.Append(": ");
+                _descriptionBuilder.Append(next.Description);
+            }
+            else
+            {
+                _descriptionBuilder.Append("— maxed");
             }
 
             return _descriptionBuilder.ToString();

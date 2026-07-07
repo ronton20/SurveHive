@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using SurveHive.Data;
 using SurveHive.Progression;
 using TMPro;
 using UnityEngine;
@@ -37,6 +38,7 @@ namespace SurveHive.UI
             AppendLane("PASSIVES", PassiveHex, PowerUpLane.Passive);
             AppendLane("ENHANCEMENTS", EnhancementHex, PowerUpLane.Enhancement);
             AppendLane("ABILITIES", AbilityHex, PowerUpLane.Ability);
+            AppendSets();
 
             if (_builder.Length == 0)
             {
@@ -78,20 +80,47 @@ namespace SurveHive.UI
 
         private static string ElementHex(SkillElement element)
         {
-            switch (element)
+            return ElementPalette.GetHex(element);
+        }
+
+        // Phase 3C: every element the player has pieces in, with the active tier's
+        // grant and the next threshold — the strategic view of the set system.
+        private void AppendSets()
+        {
+            bool any = false;
+            for (int i = 0; i < ElementSets.ElementCount; i++)
             {
-                case SkillElement.Fire:
-                    return "#F56129";
-                case SkillElement.Poison:
-                    return "#7DB517";
-                case SkillElement.Electric:
-                    return "#FFE34A";
-                case SkillElement.Frost:
-                    return "#5AC7E8";
-                case SkillElement.Honey:
-                    return "#FFC20A";
-                default:
-                    return "#E8D8A0";
+                var element = (SkillElement)i;
+                int pieces = ElementSets.GetPieces(element);
+                SetBonusSO bonus = ElementSets.GetBonus(element);
+                if (pieces <= 0 || bonus == null)
+                {
+                    continue;
+                }
+
+                if (!any)
+                {
+                    any = true;
+                    _builder.Append("<b><color=#C9A227>SET BONUSES</color></b>\n");
+                }
+
+                int tier = bonus.GetTierIndex(pieces);
+                _builder.Append("  <color=").Append(ElementHex(element)).Append('>');
+                _builder.Append(bonus.SetName).Append("</color>  <color=#9C8B6E>").Append(pieces).Append(" pc</color>");
+
+                if (tier >= 0)
+                {
+                    _builder.Append("  ").Append(bonus.GetTier(tier).Description);
+                }
+
+                if (tier + 1 < bonus.TierCount)
+                {
+                    SetBonusTier next = bonus.GetTier(tier + 1);
+                    _builder.Append("  <color=#9C8B6E>(at ").Append(next.PiecesRequired)
+                        .Append(": ").Append(next.Description).Append(")</color>");
+                }
+
+                _builder.Append('\n');
             }
         }
     }

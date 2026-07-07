@@ -769,11 +769,31 @@ namespace SurveHive.BuildTools
                 ok &= Check(setsOk, "SkillDatabase carries 6 valid element set bonuses (tiers from 2 pieces, all granting)");
             }
 
-            // Phase 3C: HUD set-tier indicator wired.
-            Transform setIndicator = canvasGo != null ? canvasGo.transform.Find("SetTierIndicator") : null;
+            // Phase 3C: set-tier summary lives on the offer panel, never on the
+            // combat HUD (canvas root).
+            ok &= Check(canvasGo == null || canvasGo.transform.Find("SetTierIndicator") == null,
+                "No set-tier indicator on the combat HUD");
+            GameObject offerPanelGo = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, "LevelUpPanel") : null;
+            Transform setIndicator = offerPanelGo != null ? offerPanelGo.transform.Find("SetTierIndicator") : null;
             ok &= Check(setIndicator != null && setIndicator.TryGetComponent(out UI.SetTierHUD setHud) &&
                 new SerializedObject(setHud).FindProperty("_text").objectReferenceValue != null,
-                "SetTierIndicator on HUD with SetTierHUD._text wired");
+                "SetTierIndicator on LevelUpPanel with SetTierHUD._text wired");
+
+            // Offer-panel context title + below-card set lines wired to the controller.
+            if (offerPanelGo != null && offerPanelGo.TryGetComponent(out UI.LevelUpUIController offerController))
+            {
+                var offerSo = new SerializedObject(offerController);
+                ok &= Check(offerSo.FindProperty("_titleText").objectReferenceValue != null,
+                    "LevelUpUIController._titleText wired (offer context title)");
+                SerializedProperty setTexts = offerSo.FindProperty("_choiceSetTexts");
+                bool setTextsOk = setTexts.arraySize == 3;
+                for (int i = 0; setTextsOk && i < setTexts.arraySize; i++)
+                {
+                    setTextsOk &= setTexts.GetArrayElementAtIndex(i).objectReferenceValue != null;
+                }
+
+                ok &= Check(setTextsOk, "LevelUpUIController._choiceSetTexts wired (3 below-card set lines)");
+            }
 
             // Active skill assets: 5-level tables with sane growth.
             ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/StingerBarrage.asset");

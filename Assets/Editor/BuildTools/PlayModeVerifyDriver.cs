@@ -140,23 +140,58 @@ namespace SurveHive.BuildTools
                     _stage++;
                     break;
 
+                // 3C UX: the reworked offer panel — context title, below-card
+                // set lines, bottom set summary on the taller background.
+                case 13 when elapsed > 20.0:
+                    ForceLevelUp();
+                    _stage++;
+                    break;
+
+                case 14 when elapsed > 21.5:
+                    Capture("shot8_levelup_offer_layout.png");
+                    _stage++;
+                    break;
+
+                case 15 when elapsed > 22.5:
+                    ClickFirstLevelUpChoice();
+                    _stage++;
+                    break;
+
                 // Kill the player: the death results screen must show the new
                 // RETRY / HIVE buttons.
-                case 13 when elapsed > 20.0:
+                case 16 when elapsed > 24.0:
                     KillPlayer();
                     _stage++;
                     break;
 
-                case 14 when elapsed > 22.0:
+                case 17 when elapsed > 26.0:
                     Capture("shot7_death_results_buttons.png");
                     _stage++;
                     break;
 
-                case 15 when elapsed > 23.5:
+                case 18 when elapsed > 27.5:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
+            }
+        }
+
+        // Dismisses the offer through the real button path (also unpauses).
+        private static void ClickFirstLevelUpChoice()
+        {
+            GameObject panel = GameObject.Find("LevelUpPanel");
+            if (panel == null)
+            {
+                Debug.LogError("VerifyDriver: LevelUpPanel not found to click.");
+                return;
+            }
+
+            var buttons = panel.GetComponentsInChildren<UnityEngine.UI.Button>(false);
+            if (buttons.Length > 0)
+            {
+                buttons[0].onClick.Invoke();
+                Debug.Log("VerifyDriver: clicked first level-up choice.");
             }
         }
 
