@@ -7,6 +7,56 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 4B/4C — Enemy variety: Bomber Bee + Swarmlings (2026-07-07)
+
+Phase 4 (TODO #22) complete — all three behavior archetypes shipped.
+
+- **New enemy rank: the Bomber Bee** (4B) — a hot-orange rusher (rank 1, unlocks 2:30,
+  weight 0.25, fast at 3.3 u/s). Inside 1.6u it stops and lights a **fuse** — a rapid
+  orange pulse for 0.55s — then detonates a 2.2u AoE blast for 2.5× its run-scaled
+  contact damage, with a pack explosion VFX (`BomberBlast` pooled wrapper). **Dying
+  detonates it too** (`BomberAttack` subscribes to `OnDied`), so point-blank kills stay
+  dangerous; ranged kills and knockback (resistance 0.7 — it shoves easily) are the
+  counter-play. Stuns hold the fuse timer rather than defusing it, and the blast
+  consumes the bomber through the normal health pipeline (EXP/loot still drop).
+- **New enemy rank: the Swarmling** (4C) — a tiny (0.6 scale), fast, 8-HP pale-blue rank
+  that arrives in **packs of 6**: `WaveSpawnerConfigSO.WaveEntry` gained a `packSize`
+  field (legacy assets hold 0 — `ClampPackSize` reads 0/1 as single, unit-tested) and
+  the spawner now spawns the whole pack clustered around the pick point. Each swarmling
+  weaves a perpendicular sine wobble with a per-instance phase (`SwarmMovement`), so the
+  cluster fans out into a living cloud instead of a stacked column. Unlocks at 1:00,
+  weight 0.3 — early pressure by numbers, not stats.
+- **Pipeline**: `EnemyVarietyBuilder` extended additively (shared trash-prefab helper +
+  per-rank behavior wiring, `BomberBee`/`SwarmlingBee`/`BomberBlastVfx` pools, wave
+  entries); validator's Phase 4 block now covers all three ranks via a shared
+  per-prefab check (rig, status receiver, health bar, behavior wiring, pools,
+  pack sizes).
+
+### Phase 4A — Enemy variety: ranged Spitter Bee (2026-07-07)
+
+First of the three Phase 4 archetypes (TODO #22) — enemies stop being uniformly
+chase-and-touch.
+
+- **New enemy rank: the Spitter Bee** — a venom-green ranged bee (rank 1, unlocks at
+  1:30, spawn weight 0.3) that **kites to a firing band** instead of chasing to touch
+  range: it flees when the player closes inside 4.5u, chases when they escape past 7.5u,
+  and orbits sideways in between. On a 2.5s cycle it stops, pulses a pink telegraph
+  (0.6s, matching the hostile stinger color), and fires one pooled `EnemyProjectile`
+  stinger at the player.
+- **Behavior architecture**: `RangedAttack` component (pooled-safe zero-alloc state
+  machine mirroring `ChargeAttack`) + `RangedSteering`, a pure static flee/hold/chase
+  decision on squared distances, unit-tested in EditMode. Firing respects stuns
+  (`IsAttackDisabled`) and only winds up when the shot can actually reach.
+- **Projectile damage now scales with the run**: `EnemyController` exposes
+  `ScaledContactDamage` (contact damage × the run's damage curve) so spitter shots — and
+  any future secondary attacks — grow like touches do.
+- **3B interleave**: the Spitter carries a small **magic shield** (15) — physical builds
+  pop it on touch, magic builds must chew through the shield first. Weak melee (6 contact)
+  makes diving it the counter-play.
+- **Pipeline**: new additive `EnemyVarietyBuilder` pass (shared bee rig in venom tint,
+  health bar, status receiver, stats asset, wave-table entry, `SpitterBee` pool);
+  validator grew a Phase 4A block (stats/rig/wiring/pool/wave checks).
+
 ### Playtest fixes — set-effect UX + burst-hit performance (2026-07-07)
 
 Feedback from the first 3C playtest.

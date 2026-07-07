@@ -24,13 +24,13 @@ The game is structured into distinct **Worlds**, each a themed run environment w
 
 | World | Theme | Example enemies |
 |---|---|---|
-| Beehive | Escaping the corrupted colony | Worker bees, warrior bees, queen's guard, queen's royal guard (miniboss), Queen Bee (boss) |
+| Beehive | Escaping the corrupted colony | Worker bees, swarmlings (packs), warrior bees, spitter bees (ranged), bomber bees (suicide AoE), queen's guard, queen's royal guard (miniboss), Queen Bee (boss) |
 | Garden | Fleeing into the wider world | Corrupted insects |
 | Woods | Deeper into corrupted nature | Corrupted animals |
 | City | Civilization has fallen too | TBD |
 | Alien Ship | Confronting the source | Aliens |
 
-Each world's enemy roster is organized into **ranks** — common trash mobs scale up to tougher variants, then minibosses, then a world-ending boss (e.g. Beehive: worker bee → warrior bee → queen's guard → queen's royal guard → Queen Bee).
+Each world's enemy roster is organized into **ranks** — common trash mobs scale up to tougher variants, then minibosses, then a world-ending boss (e.g. Beehive: worker bee → warrior bee → spitter bee → queen's guard → queen's royal guard → Queen Bee). Beyond raw stats, ranks vary in **behavior** — chasers, swarming packs, ranged attackers that keep their distance, and suicide bombers that fuse and explode.
 
 ### Core Loop (per run)
 
@@ -80,7 +80,11 @@ The target look is **2D top-down pixel art** in the Vampire Survivors mould: sid
 
 What exists now:
 - Core architecture: input abstraction (WASD, click-to-move, and simulated on-screen joystick behind one interface), zero-GC nearest-enemy auto-targeting, pooled enemies/pickups/projectiles/VFX, EXP/leveling with a 3-choice skill pick-up screen, a run currency wallet, and a `IMetaProgressionStore` seam backed by the persistent save (Phase 4A).
-- One world, the **Beehive**, with three data-driven enemy ranks (Worker Bee, Warrior Bee, Queen's Guard — same `EnemyController` script and shared bee rig, different `EnemyStatsSO` data driving tint/scale/stats) spawned by an escalating wave spawner.
+- One world, the **Beehive**, with six data-driven trash/elite enemy ranks (Worker Bee, Swarmling, Warrior Bee, Spitter Bee, Bomber Bee, Queen's Guard — same `EnemyController` script and shared bee rig, different `EnemyStatsSO` data driving tint/scale/stats) spawned by an escalating wave spawner.
+- **Enemy variety** (Phase 4) — enemies stop being uniformly chase-and-touch; each archetype is one small behavior component layered on the shared controller:
+  - **Spitter Bee** (4A, venom green, unlocks 1:30): **kites to a firing band** — fleeing when the player closes in, chasing when they escape, orbiting in between (`RangedAttack` + the pure `RangedSteering` decision) — then stops, pulses a pink telegraph, and fires a hostile stinger from the shared `EnemyProjectile` pool; shot damage rides the run's contact-damage scaling. Carries a small **magic shield** (the 3B interleave) and is weak in melee — diving it is the counter-play.
+  - **Bomber Bee** (4B, hot orange, unlocks 2:30): **rushes fast, fuses, explodes** — inside trigger range it stops and pulses a rapid orange fuse for half a second, then detonates an AoE blast (2.5× its scaled contact damage) with the pack explosion VFX. **Dying also detonates it**, so melee-range kills stay dangerous and ranged kills (or knockback — it's easy to shove) are the counter-play. Stuns hold the fuse rather than defusing it.
+  - **Swarmling** (4C, pale blue, unlocks 1:00): a tiny, fast, 8-HP rank that spawns in **packs of 6** (the wave table's new `packSize`) and weaves a per-instance sine wobble (`SwarmMovement`) so the pack fans out into a living cloud that pressures by numbers, not stats.
 - **Real pixel art & animation** (Phase 1): player and enemies use the PixelFantasy animated bee rig (idle/run/attack/hit/die clips via a shared Animator + SpriteLibrary/SpriteResolver skinning), rendered through a URP Pixel Perfect Camera at PPU 16 with a 320×180 reference resolution. Sprites flip to face movement/targets.
 - **Game feel** (Phase 1): white hit-flash on damage (custom `SurveHive/SpriteFlash` URP shader driven by MaterialPropertyBlock), projectile knockback with per-rank resistance, camera shake on player damage, micro hit-stop on elite kills (deferring to the central `GamePause`), enemy **death animations** (the rig's Death frames play on an inert corpse via `DeathAnimation` driving the SpriteResolver directly, then the pooled instance self-releases) plus a one-shot particle death-poof (the VFX pack's legacy materials were bulk-converted to URP).
 - **Hive-themed UI** (Phase 1): DEVNIK pixel UI kit (auto-sliced from its unsplit sheet by scanning pixel regions) tinted in a honey palette, all text on the BoldPixels TMP font (legacy UI.Text fully removed), skill-choice cards with icons, HUD health/EXP bars, currency counter with honey-drop icon, kill counter, and a run timer.

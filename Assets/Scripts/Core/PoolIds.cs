@@ -36,5 +36,11 @@ namespace SurveHive.Core
         // Combat 2.0 1E — distinct ability gameplay.
         public const int BallLightningOrb = 24;
         public const int NovaWave = 25;
+
+        // Phase 4 — enemy variety.
+        public const int SpitterBee = 26;
+        public const int BomberBee = 27;
+        public const int SwarmlingBee = 28;
+        public const int BomberBlastVfx = 29;
     }
 }

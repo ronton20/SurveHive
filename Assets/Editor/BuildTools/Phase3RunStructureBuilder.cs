@@ -968,7 +968,7 @@ namespace SurveHive.BuildTools
             return null;
         }
 
-        private static void EnsurePoolEntry(SerializedProperty pools, int poolId, GameObject prefab, int prewarm, int maxSize)
+        internal static void EnsurePoolEntry(SerializedProperty pools, int poolId, GameObject prefab, int prewarm, int maxSize)
         {
             for (int i = 0; i < pools.arraySize; i++)
             {

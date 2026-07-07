@@ -12,6 +12,14 @@ namespace SurveHive.Data
             public EnemyStatsSO enemyStats;
             public float spawnWeight;
             public float unlockTimeSeconds;
+            // How many spawn per pick (swarm ranks); 0 on pre-4C assets = 1.
+            public int packSize;
+        }
+
+        /// <summary>Entries serialized before packSize existed hold 0 — both mean a single spawn.</summary>
+        public static int ClampPackSize(int rawPackSize)
+        {
+            return rawPackSize < 1 ? 1 : rawPackSize;
         }
 
         [SerializeField] private WaveEntry[] _entries;

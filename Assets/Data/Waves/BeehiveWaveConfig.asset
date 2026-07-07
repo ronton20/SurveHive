@@ -16,12 +16,27 @@ MonoBehaviour:
   - enemyStats: {fileID: 11400000, guid: 576e6cce5c98a414ebd0ac82862b21a1, type: 2}
     spawnWeight: 1
     unlockTimeSeconds: 0
+    packSize: 0
   - enemyStats: {fileID: 11400000, guid: aabdff4ac4a494abe81387f694ed3255, type: 2}
     spawnWeight: 0.4
     unlockTimeSeconds: 45
+    packSize: 0
   - enemyStats: {fileID: 11400000, guid: 987bb9496325544a39792450d4f7b32f, type: 2}
     spawnWeight: 0.2
     unlockTimeSeconds: 120
+    packSize: 0
+  - enemyStats: {fileID: 11400000, guid: 508a87f6f2eb8401aa7cc4d2b95b3559, type: 2}
+    spawnWeight: 0.3
+    unlockTimeSeconds: 90
+    packSize: 1
+  - enemyStats: {fileID: 11400000, guid: cdb1be65947dc4776801ba54970e63ea, type: 2}
+    spawnWeight: 0.25
+    unlockTimeSeconds: 150
+    packSize: 1
+  - enemyStats: {fileID: 11400000, guid: 6a0d1fbd8dcbb424b87bb7cb20054ada, type: 2}
+    spawnWeight: 0.3
+    unlockTimeSeconds: 60
+    packSize: 6
   _initialSpawnInterval: 1.5
   _minSpawnInterval: 0.25
   _intervalRampPerMinute: 0.2

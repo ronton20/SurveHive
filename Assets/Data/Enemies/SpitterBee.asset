@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7b30d0eaebd4f858646395a8fa5403, type: 3}
+  m_Name: SpitterBee
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.EnemyStatsSO
+  _displayName: Spitter Bee
+  _rank: 1
+  _maxHealth: 30
+  _armorPercent: 0
+  _physicalShield: 0
+  _magicShield: 15
+  _moveSpeed: 2.3
+  _contactDamage: 6
+  _contactDamageInterval: 1
+  _expReward: 8
+  _currencyDropChance: 0.25
+  _currencyDropMin: 1
+  _currencyDropMax: 2
+  _itemDropChance: 0.02
+  _spriteTint: {r: 0.55, g: 0.95, b: 0.45, a: 1}
+  _scale: 1
+  _knockbackResistance: 1
+  _deathHitStopSeconds: 0
+  _prefab: {fileID: 7559816014773411256, guid: d8f6c0c8771a947da8e15ff899e9e9cc, type: 3}
+  _poolId: 26

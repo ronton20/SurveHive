@@ -14,9 +14,9 @@ namespace SurveHive.BuildTools
     /// Verification driver: plays through the current change under test and
     /// captures game-view screenshots, then quits the editor. The staged
     /// switch below is rewritten per verification target — currently the
-    /// Phase 4B menu flow: home → shop (with honey banked into a redirected
-    /// temp save) → world select → run start → death results with the new
-    /// RETRY/HIVE buttons. Run from the CLI:
+    /// Phase 4B/4C enemies: start a run, spawn a swarmling pack (wobbling
+    /// cluster) and bombers, and capture the pack closing in, the bomber
+    /// fuse pulse, and the AoE blast. Run from the CLI:
     /// <c>Unity -projectPath . -executeMethod SurveHive.BuildTools.PlayModeVerifyDriver.Run</c>
     /// (no -batchmode: the game view must render). Screenshots land in
     /// <c>VerifyShots/</c> under the project root.
@@ -28,6 +28,7 @@ namespace SurveHive.BuildTools
         private const string OutputDir = "VerifyShots";
 
         private static double _playStartTime = -1;
+        private static double _stageStartTime = -1;
         private static int _stage;
 
         static PlayModeVerifyDriver()
@@ -57,14 +58,28 @@ namespace SurveHive.BuildTools
             if (_playStartTime < 0)
             {
                 _playStartTime = EditorApplication.timeSinceStartup;
+                _stageStartTime = _playStartTime;
             }
 
-            double elapsed = EditorApplication.timeSinceStartup - _playStartTime;
+            // Per-stage clock: a slow scene load or shader-compile hitch must
+            // not eat the whole budget and fire every remaining stage (and the
+            // editor exit) on back-to-back updates — async screenshot writes
+            // need real frames between captures to flush.
+            double elapsed = EditorApplication.timeSinceStartup - _stageStartTime;
 
             // At timeScale 0 (level-up pause) the game view stops repainting and
             // ScreenCapture would grab a stale pre-pause framebuffer — keep the
             // player loop ticking so captures reflect the current UI state.
             EditorApplication.QueuePlayerLoopUpdate();
+
+            // Kills during the staged spawns level the player; the offer pause
+            // (timeScale 0) would freeze every enemy mid-capture. Click it away
+            // like the PlayMode smoke test does. (Only in-run: stage 2+.)
+            if (_stage >= 2 && Mathf.Approximately(Time.timeScale, 0f))
+            {
+                ClickFirstLevelUpChoice();
+                return;
+            }
 
             switch (_stage)
             {
@@ -74,107 +89,64 @@ namespace SurveHive.BuildTools
                 case 0 when elapsed > 1.0:
                     Persistence.SaveFileStore.SetPathOverride(
                         System.IO.Path.Combine(Application.temporaryCachePath, "verify_driver_save.json"));
-                    _stage++;
-                    break;
-
-                case 1 when elapsed > 2.0:
-                    Capture("shot1_menu_home.png");
-                    _stage++;
-                    break;
-
-                // Bank honey so the shop shows enabled buy buttons, open it.
-                case 2 when elapsed > 3.0:
-                    BankHoneyAndOpenShop(300);
-                    _stage++;
-                    break;
-
-                case 3 when elapsed > 4.5:
-                    Capture("shot2_menu_shop.png");
-                    _stage++;
-                    break;
-
-                case 4 when elapsed > 5.5:
-                    ShowWorldSelect();
-                    _stage++;
-                    break;
-
-                case 5 when elapsed > 7.0:
-                    Capture("shot3_menu_world_select.png");
-                    _stage++;
+                    AdvanceStage();
                     break;
 
                 // Start the run through the real button path.
-                case 6 when elapsed > 8.0:
+                case 1 when elapsed > 1.0:
                     ClickWorldSelectBeehive();
-                    _stage++;
+                    AdvanceStage();
                     break;
 
-                case 7 when elapsed > 13.0:
-                    Capture("shot4_run_started_from_menu.png");
-                    _stage++;
+                // Swarmling pack from one side — the wobble should fan the
+                // cluster out as it closes.
+                case 2 when elapsed > 5.0:
+                    SpawnEnemyCluster("Assets/Data/Enemies/SwarmlingBee.asset", 8, 7f);
+                    AdvanceStage();
                     break;
 
-                // 4C: pause menu + its settings panel.
-                case 8 when elapsed > 14.0:
-                    OpenPauseMenu();
-                    _stage++;
+                case 3 when elapsed > 1.2:
+                    Capture("shot1_swarm_pack_closing.png");
+                    AdvanceStage();
                     break;
 
-                case 9 when elapsed > 15.5:
-                    Capture("shot5_pause_menu.png");
-                    _stage++;
+                // Bombers rush at 3.3 u/s from 5u: fuse (~1s in, 0.55s pulse),
+                // blast at ~1.6s.
+                case 4 when elapsed > 0.5:
+                    SpawnEnemyRing("Assets/Data/Enemies/BomberBee.asset", 3, 5f);
+                    AdvanceStage();
                     break;
 
-                case 10 when elapsed > 16.5:
-                    OpenPauseSettings();
-                    _stage++;
+                // Captures ≥1s apart: the batch-launched game view repaints at
+                // a few fps, and a second pending screenshot inside one frame
+                // drops the first.
+                case 5 when elapsed > 1.2:
+                    Capture("shot2_bomber_fuse.png");
+                    AdvanceStage();
                     break;
 
-                case 11 when elapsed > 18.0:
-                    Capture("shot6_pause_settings.png");
-                    _stage++;
+                case 6 when elapsed > 1.0:
+                    Capture("shot3_bomber_blast.png");
+                    AdvanceStage();
                     break;
 
-                case 12 when elapsed > 19.0:
-                    ClosePauseMenu();
-                    _stage++;
+                case 7 when elapsed > 1.5:
+                    Capture("shot4_aftermath.png");
+                    AdvanceStage();
                     break;
 
-                // 3C UX: the reworked offer panel — context title, below-card
-                // set lines, bottom set summary on the taller background.
-                case 13 when elapsed > 20.0:
-                    ForceLevelUp();
-                    _stage++;
-                    break;
-
-                case 14 when elapsed > 21.5:
-                    Capture("shot8_levelup_offer_layout.png");
-                    _stage++;
-                    break;
-
-                case 15 when elapsed > 22.5:
-                    ClickFirstLevelUpChoice();
-                    _stage++;
-                    break;
-
-                // Kill the player: the death results screen must show the new
-                // RETRY / HIVE buttons.
-                case 16 when elapsed > 24.0:
-                    KillPlayer();
-                    _stage++;
-                    break;
-
-                case 17 when elapsed > 26.0:
-                    Capture("shot7_death_results_buttons.png");
-                    _stage++;
-                    break;
-
-                case 18 when elapsed > 27.5:
+                case 8 when elapsed > 2.0:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
             }
+        }
+
+        private static void AdvanceStage()
+        {
+            _stage++;
+            _stageStartTime = EditorApplication.timeSinceStartup;
         }
 
         // Dismisses the offer through the real button path (also unpauses).
@@ -275,6 +247,51 @@ namespace SurveHive.BuildTools
                 controller.StartBeehiveRun();
                 Debug.Log("VerifyDriver: Beehive run started from menu.");
             }
+        }
+
+        // Ring-spawns a given rank around the player so its behavior is on
+        // screen within seconds.
+        private static void SpawnEnemyRing(string statsPath, int count, float radius)
+        {
+            var spawner = Object.FindAnyObjectByType<Spawning.EnemySpawner>();
+            var stats = AssetDatabase.LoadAssetAtPath<EnemyStatsSO>(statsPath);
+            if (spawner == null || stats == null)
+            {
+                Debug.LogError($"VerifyDriver: spawner or stats missing ({statsPath}).");
+                return;
+            }
+
+            Transform player = spawner.Player;
+            float step = 360f / count;
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 direction = Quaternion.Euler(0f, 0f, step * i + 20f) * Vector2.right;
+                spawner.SpawnAt(stats, player.position + (Vector3)(direction * radius));
+            }
+
+            Debug.Log($"VerifyDriver: spawned {count}x {stats.DisplayName}.");
+        }
+
+        // Spawns a tight cluster to the player's right — how the wave table's
+        // packSize delivers swarms.
+        private static void SpawnEnemyCluster(string statsPath, int count, float distance)
+        {
+            var spawner = Object.FindAnyObjectByType<Spawning.EnemySpawner>();
+            var stats = AssetDatabase.LoadAssetAtPath<EnemyStatsSO>(statsPath);
+            if (spawner == null || stats == null)
+            {
+                Debug.LogError($"VerifyDriver: spawner or stats missing ({statsPath}).");
+                return;
+            }
+
+            Vector3 center = spawner.Player.position + new Vector3(distance, 0f, 0f);
+            for (int i = 0; i < count; i++)
+            {
+                Vector3 offset = Random.insideUnitCircle * 1.2f;
+                spawner.SpawnAt(stats, center + offset);
+            }
+
+            Debug.Log($"VerifyDriver: spawned cluster of {count}x {stats.DisplayName}.");
         }
 
         private static void KillPlayer()

@@ -157,9 +157,9 @@ element tags from Phase 1A.
 
 Independent of Phase 3; cheapest big *feel* win among the remaining backlog. Interleaves well
 (e.g. a magic-shielded ranged bee once 3A/3B exist).
-- **4A — Ranged** enemy (keeps distance, fires via the `EnemyProjectile` pool). ☐
-- **4B — Suicide bomber** (rushes, explodes AoE on contact/death). ☐
-- **4C — Swarm** rank (packs of weak/fast/low-HP enemies). ☐
+- **4A — Ranged** enemy (keeps distance, fires via the `EnemyProjectile` pool). ✅
+- **4B — Suicide bomber** (rushes, explodes AoE on contact/death). ✅
+- **4C — Swarm** rank (packs of weak/fast/low-HP enemies). ✅
 - Each = a new behavior component + `EnemyStatsSO` rank slotted into the wave/stage tables.
 - **Touch:** `Enemies/` (new behaviors), `Data/EnemyStatsSO.cs`, `Data/StageConfigSO`/wave tables.
 

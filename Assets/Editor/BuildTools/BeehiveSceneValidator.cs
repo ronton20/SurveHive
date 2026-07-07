@@ -177,6 +177,7 @@ namespace SurveHive.BuildTools
             ok &= ValidatePhase2CombatDepth(player, canvasGo);
             ok &= ValidatePhase3RunStructure(canvasGo);
             ok &= ValidatePhase4MetaAndMenus(player);
+            ok &= ValidateEnemyVariety();
 
             Debug.Log(ok ? "SurveHive Beehive scene validation PASSED." : "SurveHive Beehive scene validation FAILED - see errors above.");
         }
@@ -1139,6 +1140,125 @@ namespace SurveHive.BuildTools
             }
 
             return ok;
+        }
+
+        // --- PLAN Phase 4 (enemy variety): 4A ranged / 4B bomber / 4C swarm ---
+        private static bool ValidateEnemyVariety()
+        {
+            bool ok = true;
+
+            // 4A — Spitter Bee.
+            var spitter = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/SpitterBee.asset");
+            ok &= Check(spitter != null && spitter.Rank == 1 && spitter.Prefab != null
+                && spitter.PoolId == PoolIds.SpitterBee,
+                "SpitterBee stats asset exists (rank 1, prefab + pool id wired)");
+            ok &= Check(spitter != null && spitter.MagicShield > 0f,
+                "SpitterBee carries a magic shield (3B/4A interleave)");
+            ok &= ValidateVarietyEnemyPrefab<Enemies.RangedAttack>(
+                "Assets/Prefabs/Enemies/SpitterBee.prefab", "SpitterBee", "RangedAttack", requireRenderer: true);
+
+            var spitterPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/SpitterBee.prefab");
+            if (spitterPrefab != null && spitterPrefab.TryGetComponent(out Enemies.RangedAttack ranged))
+            {
+                var so = new SerializedObject(ranged);
+                ok &= Check(so.FindProperty("_projectilePoolId").intValue == PoolIds.EnemyStinger,
+                    "SpitterBee RangedAttack fires via the EnemyStinger pool");
+            }
+
+            // 4B — Bomber Bee.
+            var bomber = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/BomberBee.asset");
+            ok &= Check(bomber != null && bomber.Rank == 1 && bomber.Prefab != null
+                && bomber.PoolId == PoolIds.BomberBee,
+                "BomberBee stats asset exists (rank 1, prefab + pool id wired)");
+            ok &= ValidateVarietyEnemyPrefab<Enemies.BomberAttack>(
+                "Assets/Prefabs/Enemies/BomberBee.prefab", "BomberBee", "BomberAttack", requireRenderer: true);
+
+            var bomberPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/BomberBee.prefab");
+            if (bomberPrefab != null && bomberPrefab.TryGetComponent(out Enemies.BomberAttack bomberAttack))
+            {
+                var so = new SerializedObject(bomberAttack);
+                ok &= Check(so.FindProperty("_blastVfxPoolId").intValue == PoolIds.BomberBlastVfx,
+                    "BomberBee BomberAttack uses the BomberBlast VFX pool");
+            }
+
+            var blastVfx = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/BomberBlast.prefab");
+            ok &= Check(blastVfx != null, "BomberBlast VFX prefab exists");
+
+            // 4C — Swarmling.
+            var swarmling = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/SwarmlingBee.asset");
+            ok &= Check(swarmling != null && swarmling.Rank == 0 && swarmling.Prefab != null
+                && swarmling.PoolId == PoolIds.SwarmlingBee,
+                "SwarmlingBee stats asset exists (rank 0, prefab + pool id wired)");
+            ok &= ValidateVarietyEnemyPrefab<Enemies.SwarmMovement>(
+                "Assets/Prefabs/Enemies/SwarmlingBee.prefab", "SwarmlingBee", "SwarmMovement", requireRenderer: false);
+
+            // Pools.
+            var bootstrapGo = GameObject.Find("GameBootstrap");
+            if (bootstrapGo != null && bootstrapGo.TryGetComponent(out GameBootstrap gb))
+            {
+                var so = new SerializedObject(gb);
+                var pools = so.FindProperty("_pools");
+                ok &= Check(HasPoolEntry(pools, PoolIds.SpitterBee), "Pool: SpitterBee registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.BomberBee), "Pool: BomberBee registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.SwarmlingBee), "Pool: SwarmlingBee registered");
+                ok &= Check(HasPoolEntry(pools, PoolIds.BomberBlastVfx), "Pool: BomberBlastVfx registered");
+            }
+
+            // Wave table entries (swarmlings must arrive as a pack).
+            ok &= Check(WaveEntryPackSize(spitter) == 1, "Wave config: SpitterBee entry (single)");
+            ok &= Check(WaveEntryPackSize(bomber) == 1, "Wave config: BomberBee entry (single)");
+            ok &= Check(WaveEntryPackSize(swarmling) > 1, "Wave config: SwarmlingBee entry (pack > 1)");
+
+            return ok;
+        }
+
+        // Shared per-prefab checks for the Phase 4 ranks: rig, status receiver,
+        // health bar, and the behavior component with its base wiring.
+        private static bool ValidateVarietyEnemyPrefab<TBehavior>(
+            string prefabPath, string label, string behaviorName, bool requireRenderer)
+            where TBehavior : Component
+        {
+            bool ok = true;
+            ok &= ValidateEnemyRigPrefab(prefabPath);
+            ok &= ValidateEnemyStatusReceiver(prefabPath);
+            ok &= ValidateEnemyHealthBar(prefabPath);
+
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+            var behavior = prefab != null ? prefab.GetComponent<TBehavior>() : null;
+            ok &= Check(behavior != null, $"{label} has {behaviorName}");
+            if (behavior != null)
+            {
+                var so = new SerializedObject(behavior);
+                bool wired = so.FindProperty("_enemyController").objectReferenceValue != null
+                    && so.FindProperty("_health").objectReferenceValue != null
+                    && (!requireRenderer || so.FindProperty("_renderer").objectReferenceValue != null);
+                ok &= Check(wired, $"{label} {behaviorName} wired");
+            }
+
+            return ok;
+        }
+
+        // Pack size of the wave entry referencing the given stats; -1 = no entry.
+        private static int WaveEntryPackSize(Data.EnemyStatsSO stats)
+        {
+            var waveConfig = AssetDatabase.LoadAssetAtPath<Data.WaveSpawnerConfigSO>("Assets/Data/Waves/BeehiveWaveConfig.asset");
+            if (waveConfig == null || stats == null)
+            {
+                return -1;
+            }
+
+            var so = new SerializedObject(waveConfig);
+            var entries = so.FindProperty("_entries");
+            for (int i = 0; i < entries.arraySize; i++)
+            {
+                var entry = entries.GetArrayElementAtIndex(i);
+                if (entry.FindPropertyRelative("enemyStats").objectReferenceValue == stats)
+                {
+                    return Data.WaveSpawnerConfigSO.ClampPackSize(entry.FindPropertyRelative("packSize").intValue);
+                }
+            }
+
+            return -1;
         }
 
         private static bool ValidateEnemyStatusReceiver(string prefabPath)

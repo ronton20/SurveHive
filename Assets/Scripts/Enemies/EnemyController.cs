@@ -37,6 +37,10 @@ namespace SurveHive.Enemies
 
         public Transform Target => _playerTransform;
 
+        // Contact damage with the run's damage curve applied — the source of
+        // truth for secondary attacks (projectiles) so they scale like touches.
+        public float ScaledContactDamage { get; private set; }
+
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
@@ -96,7 +100,8 @@ namespace SurveHive.Enemies
                 stats.MagicShield * healthMultiplier,
                 stats.ArmorPercent);
             _health.Initialize(stats.MaxHealth * healthMultiplier);
-            _damageOnContact.Configure(stats.ContactDamage * damageMultiplier, stats.ContactDamageInterval);
+            ScaledContactDamage = stats.ContactDamage * damageMultiplier;
+            _damageOnContact.Configure(ScaledContactDamage, stats.ContactDamageInterval);
             transform.localScale = Vector3.one * stats.Scale;
 
             if (_spriteRenderer != null)

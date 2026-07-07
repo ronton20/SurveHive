@@ -64,8 +64,8 @@ namespace SurveHive.Spawning
 
         private void SpawnOne()
         {
-            EnemyStatsSO stats = PickWeightedEnemy();
-            if (stats == null)
+            WaveSpawnerConfigSO.WaveEntry entry = PickWeightedEnemy();
+            if (entry.enemyStats == null)
             {
                 return;
             }
@@ -73,7 +73,15 @@ namespace SurveHive.Spawning
             Vector2 randomDirection = Random.insideUnitCircle.normalized;
             float radius = Random.Range(_config.SpawnRadiusMin, _config.SpawnRadiusMax);
             Vector3 spawnPosition = _player.position + (Vector3)(randomDirection * radius);
-            SpawnAt(stats, spawnPosition);
+
+            // Swarm ranks (PLAN 4C) arrive as a cluster around the pick point.
+            int packSize = WaveSpawnerConfigSO.ClampPackSize(entry.packSize);
+            SpawnAt(entry.enemyStats, spawnPosition);
+            for (int i = 1; i < packSize; i++)
+            {
+                Vector3 offset = Random.insideUnitCircle * 1.2f;
+                SpawnAt(entry.enemyStats, spawnPosition + offset);
+            }
         }
 
         /// <summary>
@@ -108,7 +116,7 @@ namespace SurveHive.Spawning
 
         public Transform Player => _player;
 
-        private EnemyStatsSO PickWeightedEnemy()
+        private WaveSpawnerConfigSO.WaveEntry PickWeightedEnemy()
         {
             WaveSpawnerConfigSO.WaveEntry[] entries = _config.Entries;
             float totalWeight = 0f;
@@ -123,7 +131,7 @@ namespace SurveHive.Spawning
 
             if (totalWeight <= 0f)
             {
-                return null;
+                return default;
             }
 
             float roll = Random.Range(0f, totalWeight);
@@ -139,11 +147,11 @@ namespace SurveHive.Spawning
                 cumulative += entries[i].spawnWeight;
                 if (roll <= cumulative)
                 {
-                    return entries[i].enemyStats;
+                    return entries[i];
                 }
             }
 
-            return entries[entries.Length - 1].enemyStats;
+            return entries[entries.Length - 1];
         }
     }
 }

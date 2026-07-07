@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a7b30d0eaebd4f858646395a8fa5403, type: 3}
+  m_Name: BomberBee
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.EnemyStatsSO
+  _displayName: Bomber Bee
+  _rank: 1
+  _maxHealth: 25
+  _armorPercent: 0
+  _physicalShield: 0
+  _magicShield: 0
+  _moveSpeed: 3.3
+  _contactDamage: 6
+  _contactDamageInterval: 1
+  _expReward: 10
+  _currencyDropChance: 0.25
+  _currencyDropMin: 1
+  _currencyDropMax: 2
+  _itemDropChance: 0.02
+  _spriteTint: {r: 1, g: 0.5, b: 0.2, a: 1}
+  _scale: 0.95
+  _knockbackResistance: 0.7
+  _deathHitStopSeconds: 0
+  _prefab: {fileID: 6091530853131248646, guid: 8edc470ab7d52487a8dc5bae4be2d998, type: 3}
+  _poolId: 27
