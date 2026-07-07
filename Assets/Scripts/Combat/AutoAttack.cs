@@ -74,6 +74,9 @@ namespace SurveHive.Combat
             float perProjectileDamage = CombatMath.MultishotPerProjectileDamage(_stats.EffectiveAttackDamage, projectileCount);
             // Level-based pierce penalty (1.0 when no pierce, so always safe to apply).
             perProjectileDamage *= _stats.PierceDamageMultiplier;
+            // Physical set bonus (Phase 3C): committing to physical picks sharpens
+            // the basic attack itself. 1.0 while the set is inactive.
+            perProjectileDamage *= Progression.ElementSets.AttackDamageMultiplier;
             float range = pierce > 0 ? _stats.AttackRange * _pierceRangeMultiplier : _stats.AttackRange;
 
             var payload = new BasicAttackPayload

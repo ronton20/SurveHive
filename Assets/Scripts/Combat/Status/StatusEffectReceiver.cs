@@ -1,4 +1,5 @@
 using SurveHive.Health;
+using SurveHive.Progression;
 using UnityEngine;
 
 namespace SurveHive.Combat.Status
@@ -62,7 +63,12 @@ namespace SurveHive.Combat.Status
                 return;
             }
 
-            _buffer.Apply(type, potency, duration);
+            // Elemental set bonuses (Phase 3C) amplify the owning element's
+            // status here — the single choke point every applier flows through.
+            _buffer.Apply(
+                type,
+                potency * ElementSets.GetStatusPotencyMultiplier(type),
+                duration * ElementSets.GetStatusDurationMultiplier(type));
         }
 
         private void HandleDamaged(float amount)

@@ -143,11 +143,11 @@ element tags from Phase 1A.
 - Every damage application carries a `DamageType { Physical, Magic }`. Auto-attack/stingers/enhancements = Physical; magic abilities (honey/pollen/ember/static) = Magic. `DamageService` and status DoTs stamp the type.
 - **Touch:** `Combat/DamageService.cs`, `Health/IDamageable.cs`/`HealthComponent.cs`, `Combat/Status/*` DoT, all damage call-sites.
 
-### 3B — Enemy defenses beyond HP — TODO #23 ☐
+### 3B — Enemy defenses beyond HP — TODO #23 ✅
 - Ordered mitigation pipeline on the enemy: **shield → armor → HP**, reading incoming `DamageType` (physical shield vs magic shield; armor reduces physical). Show state via tint/overlay bar.
 - **Touch:** `Enemies/EnemyController.cs`, `Health/HealthComponent.cs`, `Data/EnemyStatsSO.cs`, `UI/EnemyHealthBarUI.cs`.
 
-### 3C — Elemental set effects — TODO #19 ☐
+### 3C — Elemental set effects — TODO #19 ✅
 - Owning 2 / 3 / 4+ enhancements+abilities of the same element grants escalating set bonuses. Data-driven `SetBonusSO` per element; track owned counts per element on the player; show active tiers on the HUD.
 - **Touch:** new `Data/SetBonusSO.cs`, `Progression/` element-count tracking, HUD set-tier indicator.
 

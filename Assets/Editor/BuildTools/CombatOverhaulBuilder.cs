@@ -1022,5 +1022,141 @@ namespace SurveHive.BuildTools
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
             Debug.Log("Phase 2B: miniboss reward wired.");
         }
+
+        // ------------------------------------------------------------------
+        // Phase 3C: elemental set bonuses. Creates one SetBonusSO per element
+        // (find-or-create, re-authoring values on re-run), registers them on the
+        // SkillDatabase, and adds the HUD set-tier indicator. Idempotent.
+        // ------------------------------------------------------------------
+        private const string SetBonusFolder = "Assets/Data/SetBonuses";
+
+        [MenuItem("SurveHive/Combat 2.0/3C - Elemental Set Bonuses")]
+        public static void ApplySetBonuses()
+        {
+            if (!AssetDatabase.IsValidFolder(SetBonusFolder))
+            {
+                AssetDatabase.CreateFolder("Assets/Data", "SetBonuses");
+            }
+
+            // Elemental sets share one shape: tier 1 lengthens the element's
+            // status, tier 2 also strengthens it, tier 3 doubles down on both.
+            // Electric's stun has no potency knob, so it rides duration alone;
+            // Physical (no status) sharpens the basic attack instead.
+            var bonuses = new SetBonusSO[6];
+            bonuses[0] = EnsureSetBonus("PhysicalSet", Progression.SkillElement.Physical, "SHARP STINGERS", new[]
+            {
+                AttackTier(2, 6f, "Basic attack damage +6%"),
+                AttackTier(3, 12f, "Basic attack damage +12%"),
+                AttackTier(4, 20f, "Basic attack damage +20%"),
+            });
+            bonuses[1] = EnsureSetBonus("FireSet", Progression.SkillElement.Fire, "WILDFIRE", new[]
+            {
+                StatusTier(2, 0f, 30f, "Burns last 30% longer"),
+                StatusTier(3, 30f, 30f, "Burns tick 30% harder and last 30% longer"),
+                StatusTier(4, 60f, 60f, "Burns tick 60% harder and last 60% longer"),
+            });
+            bonuses[2] = EnsureSetBonus("PoisonSet", Progression.SkillElement.Poison, "VIRULENCE", new[]
+            {
+                StatusTier(2, 0f, 30f, "Poisons last 30% longer"),
+                StatusTier(3, 30f, 30f, "Poisons tick 30% harder and last 30% longer"),
+                StatusTier(4, 60f, 60f, "Poisons tick 60% harder and last 60% longer"),
+            });
+            bonuses[3] = EnsureSetBonus("ElectricSet", Progression.SkillElement.Electric, "OVERCHARGE", new[]
+            {
+                StatusTier(2, 0f, 30f, "Stuns last 30% longer"),
+                StatusTier(3, 0f, 60f, "Stuns last 60% longer"),
+                StatusTier(4, 0f, 100f, "Stuns last twice as long"),
+            });
+            bonuses[4] = EnsureSetBonus("FrostSet", Progression.SkillElement.Frost, "DEEP CHILL", new[]
+            {
+                StatusTier(2, 0f, 30f, "Freeze and chill last 30% longer"),
+                StatusTier(3, 30f, 30f, "Freezes are 30% sturdier, chills 30% stronger and longer"),
+                StatusTier(4, 60f, 60f, "Freezes are 60% sturdier, chills 60% stronger and longer"),
+            });
+            bonuses[5] = EnsureSetBonus("HoneySet", Progression.SkillElement.Honey, "STICKY SWEET", new[]
+            {
+                StatusTier(2, 0f, 30f, "Slows last 30% longer"),
+                StatusTier(3, 30f, 30f, "Slows are 30% stickier and last 30% longer"),
+                StatusTier(4, 60f, 60f, "Slows are 60% stickier and last 60% longer"),
+            });
+
+            var db = AssetDatabase.LoadAssetAtPath<SkillDatabaseSO>(DatabasePath);
+            var dbSerialized = new SerializedObject(db);
+            WireArray(dbSerialized, "_setBonuses", bonuses);
+            dbSerialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(db);
+            AssetDatabase.SaveAssets();
+
+            // HUD indicator: a left-anchored rich-text line under the top-left
+            // meters, driven by SetTierHUD off ElementSets.OnChanged.
+            EditorSceneManager.OpenScene(BeehiveScenePath, OpenSceneMode.Single);
+            GameObject canvasGo = GameObject.Find("Canvas");
+            if (canvasGo == null)
+            {
+                Debug.LogError("Phase 3C: Canvas not found in Beehive.unity.");
+                return;
+            }
+
+            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
+            GameObject indicatorGo = FindOrCreateChild(canvasGo.transform, "SetTierIndicator");
+            var rect = (RectTransform)indicatorGo.transform;
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = new Vector2(24f, -235f);
+            rect.sizeDelta = new Vector2(640f, 44f);
+            TMP_Text text = EnsureTmp(indicatorGo, font, 30f, Color.white, TextAlignmentOptions.TopLeft);
+            text.text = string.Empty;
+
+            if (!indicatorGo.TryGetComponent(out SetTierHUD hud))
+            {
+                hud = indicatorGo.AddComponent<SetTierHUD>();
+            }
+
+            var hudSerialized = new SerializedObject(hud);
+            hudSerialized.FindProperty("_text").objectReferenceValue = text;
+            hudSerialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(hud);
+
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+            Debug.Log("Phase 3C: elemental set bonuses authored + HUD indicator wired.");
+        }
+
+        private static SetBonusSO EnsureSetBonus(
+            string fileName, Progression.SkillElement element, string setName, SetBonusTier[] tiers)
+        {
+            string path = SetBonusFolder + "/" + fileName + ".asset";
+            var asset = AssetDatabase.LoadAssetAtPath<SetBonusSO>(path);
+            if (asset == null)
+            {
+                asset = ScriptableObject.CreateInstance<SetBonusSO>();
+                AssetDatabase.CreateAsset(asset, path);
+            }
+
+            asset.Configure(element, setName, tiers);
+            EditorUtility.SetDirty(asset);
+            return asset;
+        }
+
+        private static SetBonusTier StatusTier(int pieces, float potencyPercent, float durationPercent, string description)
+        {
+            return new SetBonusTier
+            {
+                PiecesRequired = pieces,
+                StatusPotencyBonusPercent = potencyPercent,
+                StatusDurationBonusPercent = durationPercent,
+                Description = description,
+            };
+        }
+
+        private static SetBonusTier AttackTier(int pieces, float attackPercent, string description)
+        {
+            return new SetBonusTier
+            {
+                PiecesRequired = pieces,
+                AttackDamageBonusPercent = attackPercent,
+                Description = description,
+            };
+        }
     }
 }

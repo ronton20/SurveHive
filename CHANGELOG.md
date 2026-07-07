@@ -7,6 +7,49 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Combat 2.0 — Elemental set effects (Phase 3C) (2026-07-07)
+
+Committing to an element now grants escalating set bonuses (TODO #19) — the payoff
+layer on the 1A element tags, 3A typing, and 3B defenses.
+
+- One **`SetBonusSO` per element** with 2 / 3 / 4-piece tiers (values are totals at the
+  tier): Wildfire (fire), Virulence (poison), Overcharge (electric), Deep Chill (frost),
+  Sticky Sweet (honey) amplify their status's potency/duration; Sharp Stingers (physical)
+  adds +6/12/20% basic-attack damage. Authored by the idempotent `Combat 2.0/3C` builder
+  pass into `Assets/Data/SetBonuses/`, registered on the `SkillDatabaseSO`.
+- New run-scoped **`ElementSets`** static service: `LevelUpUIController` initializes it per
+  run and recounts owned distinct enhancements+abilities per element after every pick;
+  per-element multipliers are cached on change so hot-path queries stay zero-GC.
+- Bonuses apply at two seams only: `StatusEffectReceiver.ApplyEffect` (every status flows
+  through it; burn→fire, poison→poison, stun→electric, freeze+cold→frost, slow→honey) and
+  `AutoAttack` (physical set's damage multiplier).
+- **HUD set-tier line** (`SetTierHUD`): element-colored "WILDFIRE II · STICKY SWEET I",
+  rebuilt only when counts change; element colors unified into a shared `ElementPalette`.
+- 7 new EditMode tests (tier thresholds, status routing, multiplier math, change-event
+  discipline) + validator checks (6 valid sets covering all elements, HUD wiring).
+
+### Combat 2.0 — Enemy defenses beyond HP (Phase 3B) (2026-07-07)
+
+Elites and bosses now carry defensive layers that make the 3A damage typing matter
+(TODO #23): an ordered **shield → armor → HP** pipeline per enemy.
+
+- New pure-logic `EnemyDefense` (typed shield pools + armor) registered as both the
+  absorber and mitigator on every enemy's `HealthComponent`: a **physical shield** soaks
+  physical only (magic bypasses), a **magic shield** soaks magic only, **armor** %-reduces
+  physical damage that got past shields (magic ignores armor). Pools reset on pooled respawn.
+- The absorber/mitigator seams are now type-aware and support partial absorption:
+  `IDamageAbsorber.Absorb(amount, type) → remainder`, `IDamageMitigator.Mitigate(amount, type)`.
+  Player Wax Shield (whole-hit charges) and player armor (reduces both types) keep their
+  behavior on the new signatures.
+- Per-rank data on `EnemyStatsSO` (`_armorPercent` / `_physicalShield` / `_magicShield`,
+  shields scale with the run's health multiplier): Queen's Guard 15% armor + 30 magic
+  shield, Royal Guard 15% armor + 250 physical shield, Queen 20% armor + 400/400 shields.
+  Workers/warriors carry nothing — early-game hit counts unchanged.
+- Enemy health bar tints **steel-blue** while a physical shield holds, **violet** for a
+  magic shield, reverting when shields break; fully-soaked hits still flash the hit anim.
+- 8 new EditMode tests (type routing, partial absorb, pooled reset, full pipeline order
+  through a real `HealthComponent`) + validator checks on the per-rank defense data.
+
 ### Combat 2.0 — Damage typing (Phase 3A) (2026-07-06)
 
 Every damage application now carries a **physical/magic** `DamageType` (TODO #20) —

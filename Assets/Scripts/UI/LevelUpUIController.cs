@@ -70,6 +70,10 @@ namespace SurveHive.UI
         private int[] _skillMaxLevels;
         private readonly int[] _laneCaps = new int[3];
         private readonly int[] _ownedPerLane = new int[3];
+        // Phase 3C: per-skill element cache + scratch counts pushed to ElementSets
+        // after every pick (owned distinct enhancements+abilities per element).
+        private int[] _skillElements;
+        private readonly int[] _elementPieces = new int[ElementSets.ElementCount];
         private SkillDefinitionSO[] _currentChoices;
         private int[] _currentChoiceDbIndices;
         private bool[] _currentChoiceLucky;
@@ -89,13 +93,18 @@ namespace SurveHive.UI
 
             _skillLanes = new int[skillCount];
             _skillMaxLevels = new int[skillCount];
+            _skillElements = new int[skillCount];
             for (int i = 0; i < skillCount; i++)
             {
                 SkillDefinitionSO skill = _database.Skills[i];
                 _skillLanes[i] = (int)skill.Lane;
+                _skillElements[i] = (int)skill.Element;
                 // 0 = uncapped, matching LaneEligibility's convention.
                 _skillMaxLevels[i] = skill.HasLevelCap ? skill.MaxLevel : 0;
             }
+
+            // Fresh run: reset set counts and hand the per-element configs over.
+            ElementSets.Initialize(_database.SetBonuses);
             _selectedBuffer = new int[_choiceButtons.Length];
             _currentChoices = new SkillDefinitionSO[_choiceButtons.Length];
             _currentChoiceDbIndices = new int[_choiceButtons.Length];
@@ -290,22 +299,29 @@ namespace SurveHive.UI
 
         private static Color GetElementColor(SkillElement element)
         {
-            switch (element)
+            return ElementPalette.GetColor(element);
+        }
+
+        // Recounts owned distinct enhancements+abilities per element and pushes
+        // them to the ElementSets service (which no-ops when nothing changed).
+        private void RefreshElementSets()
+        {
+            for (int i = 0; i < _elementPieces.Length; i++)
             {
-                case SkillElement.Fire:
-                    return new Color(0.96f, 0.38f, 0.17f);
-                case SkillElement.Poison:
-                    return new Color(0.49f, 0.71f, 0.09f);
-                case SkillElement.Electric:
-                    return new Color(1f, 0.89f, 0.29f);
-                case SkillElement.Frost:
-                    return new Color(0.35f, 0.78f, 0.91f);
-                case SkillElement.Honey:
-                    return new Color(1f, 0.76f, 0.04f);
-                // Physical: neutral wax/silver.
-                default:
-                    return new Color(0.82f, 0.82f, 0.78f);
+                _elementPieces[i] = 0;
             }
+
+            for (int i = 0; i < _skillLevels.Length; i++)
+            {
+                if (_skillLevels[i] <= 0 || _skillLanes[i] == (int)PowerUpLane.Passive)
+                {
+                    continue;
+                }
+
+                _elementPieces[_skillElements[i]]++;
+            }
+
+            ElementSets.UpdateCounts(_elementPieces);
         }
 
         private void ApplyAutoLevelBonus()
@@ -452,6 +468,8 @@ namespace SurveHive.UI
                     SkillEffectApplier.Apply(chosen, _playerStats, _playerHealth, _activeSkillManager);
                     _skillLevels[dbIndex]++;
                 }
+
+                RefreshElementSets();
             }
 
             if (_playerExperience.TryDequeuePendingLevelUp(out int _))

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2942d04ea5a4a4c0980ef7d63fa90898, type: 3}
+  m_Name: FrostSet
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SetBonusSO
+  _element: 4
+  _setName: DEEP CHILL
+  _tiers:
+  - PiecesRequired: 2
+    StatusPotencyBonusPercent: 0
+    StatusDurationBonusPercent: 30
+    AttackDamageBonusPercent: 0
+    Description: Freeze and chill last 30% longer
+  - PiecesRequired: 3
+    StatusPotencyBonusPercent: 30
+    StatusDurationBonusPercent: 30
+    AttackDamageBonusPercent: 0
+    Description: Freezes are 30% sturdier, chills 30% stronger and longer
+  - PiecesRequired: 4
+    StatusPotencyBonusPercent: 60
+    StatusDurationBonusPercent: 60
+    AttackDamageBonusPercent: 0
+    Description: Freezes are 60% sturdier, chills 60% stronger and longer

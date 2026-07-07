@@ -732,7 +732,48 @@ namespace SurveHive.BuildTools
                 ok &= Check(activeCards >= 6, $"Database contains >=6 active skill cards (found {activeCards})");
                 ok &= Check(activeRefsOk, "Active skill cards reference ActiveSkillSO with matching level caps");
                 ok &= Check(damageTypesOk, "Ability damage types match card elements (physical ⇔ physical, elemental ⇔ magic)");
+
+                // Phase 3C: one set bonus per element, tiers ascending from 2 pieces,
+                // every tier actually granting something.
+                Data.SetBonusSO[] setBonuses = database.SetBonuses;
+                bool setsOk = setBonuses != null && setBonuses.Length == 6;
+                if (setsOk)
+                {
+                    int coveredElements = 0;
+                    for (int i = 0; i < setBonuses.Length; i++)
+                    {
+                        Data.SetBonusSO bonus = setBonuses[i];
+                        if (bonus == null || bonus.TierCount < 3)
+                        {
+                            setsOk = false;
+                            break;
+                        }
+
+                        coveredElements |= 1 << (int)bonus.Element;
+                        int previousPieces = 1;
+                        for (int t = 0; t < bonus.TierCount; t++)
+                        {
+                            Data.SetBonusTier tier = bonus.GetTier(t);
+                            setsOk &= tier.PiecesRequired > previousPieces;
+                            previousPieces = tier.PiecesRequired;
+                            setsOk &= tier.StatusPotencyBonusPercent > 0f || tier.StatusDurationBonusPercent > 0f ||
+                                tier.AttackDamageBonusPercent > 0f;
+                        }
+
+                        setsOk &= bonus.GetTier(0).PiecesRequired == 2;
+                    }
+
+                    setsOk &= coveredElements == 0b111111;
+                }
+
+                ok &= Check(setsOk, "SkillDatabase carries 6 valid element set bonuses (tiers from 2 pieces, all granting)");
             }
+
+            // Phase 3C: HUD set-tier indicator wired.
+            Transform setIndicator = canvasGo != null ? canvasGo.transform.Find("SetTierIndicator") : null;
+            ok &= Check(setIndicator != null && setIndicator.TryGetComponent(out UI.SetTierHUD setHud) &&
+                new SerializedObject(setHud).FindProperty("_text").objectReferenceValue != null,
+                "SetTierIndicator on HUD with SetTierHUD._text wired");
 
             // Active skill assets: 5-level tables with sane growth.
             ok &= ValidateActiveSkillGrowth("Assets/Data/Skills/Actives/StingerBarrage.asset");
@@ -877,6 +918,21 @@ namespace SurveHive.BuildTools
             ok &= Check(royalGuard != null && royalGuard.ItemDropChance >= 1f, "Royal Guard always drops an item");
             var queen = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/QueenBee.asset");
             ok &= Check(queen != null && queen.ItemDropChance >= 1f, "Queen always drops an item");
+
+            // Phase 3B enemy defenses: layers land on elites+ only — fodder ranks
+            // stay clean so early-game hit counts are untouched.
+            var workerStats = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/WorkerBee.asset");
+            var warriorStats = AssetDatabase.LoadAssetAtPath<Data.EnemyStatsSO>("Assets/Data/Enemies/WarriorBee.asset");
+            ok &= Check(workerStats != null && warriorStats != null &&
+                workerStats.ArmorPercent == 0f && workerStats.PhysicalShield == 0f && workerStats.MagicShield == 0f &&
+                warriorStats.ArmorPercent == 0f && warriorStats.PhysicalShield == 0f && warriorStats.MagicShield == 0f,
+                "Worker/Warrior carry no defense layers");
+            ok &= Check(queensGuard != null && queensGuard.MagicShield > 0f && queensGuard.ArmorPercent > 0f,
+                "QueensGuard elite has a magic shield + armor");
+            ok &= Check(royalGuard != null && royalGuard.PhysicalShield > 0f && royalGuard.ArmorPercent > 0f,
+                "Royal Guard miniboss has a physical shield + armor");
+            ok &= Check(queen != null && queen.PhysicalShield > 0f && queen.MagicShield > 0f && queen.ArmorPercent > 0f,
+                "Queen has both shields + armor");
 
             // Player shield.
             var player = GameObject.Find("Player");
