@@ -19,6 +19,7 @@ namespace SurveHive.Enemies
         private DamageOnContact _damageOnContact;
         private SpriteRenderer _spriteRenderer;
 
+        private readonly EnemyDefense _defense = new EnemyDefense();
         private EnemyStatsSO _stats;
         private Transform _playerTransform;
         private Vector2 _knockbackVelocity;
@@ -32,6 +33,8 @@ namespace SurveHive.Enemies
 
         public StatusEffectReceiver StatusReceiver => _statusReceiver;
 
+        public EnemyDefense Defense => _defense;
+
         public Transform Target => _playerTransform;
 
         private void Awake()
@@ -40,6 +43,8 @@ namespace SurveHive.Enemies
             _health = GetComponent<HealthComponent>();
             _damageOnContact = GetComponent<DamageOnContact>();
             _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+            _health.SetDamageAbsorber(_defense);
+            _health.SetDamageMitigator(_defense);
         }
 
         public void SetMovementOverride(Vector2 velocity)
@@ -59,6 +64,7 @@ namespace SurveHive.Enemies
             _hasMovementOverride = false;
             _health.OnDamaged += HandleDamaged;
             _health.OnDied += HandleDied;
+            _defense.OnShieldAbsorbed += HandleShieldAbsorbed;
 
             if (EnemyRegistry.Instance != null)
             {
@@ -70,6 +76,7 @@ namespace SurveHive.Enemies
         {
             _health.OnDamaged -= HandleDamaged;
             _health.OnDied -= HandleDied;
+            _defense.OnShieldAbsorbed -= HandleShieldAbsorbed;
 
             if (EnemyRegistry.Instance != null)
             {
@@ -81,6 +88,13 @@ namespace SurveHive.Enemies
         {
             _stats = stats;
             _playerTransform = playerTransform;
+            // Shields scale with the run's health curve so they stay meaningful
+            // late-game; armor is a flat % and doesn't scale. Configured before
+            // health so the bar's OnHealthChanged refresh reads fresh pools.
+            _defense.Configure(
+                stats.PhysicalShield * healthMultiplier,
+                stats.MagicShield * healthMultiplier,
+                stats.ArmorPercent);
             _health.Initialize(stats.MaxHealth * healthMultiplier);
             _damageOnContact.Configure(stats.ContactDamage * damageMultiplier, stats.ContactDamageInterval);
             transform.localScale = Vector3.one * stats.Scale;
@@ -117,6 +131,18 @@ namespace SurveHive.Enemies
             if (AudioService.Instance != null)
             {
                 AudioService.Instance.PlaySfx(SfxId.Hit);
+            }
+        }
+
+        // A shield ate part (or all) of a hit: still react so the player reads
+        // that the blow landed but was soaked. When the shield fully absorbed it
+        // (remainder 0) HealthComponent never raises OnDamaged, so this is the
+        // only feedback for that hit.
+        private void HandleShieldAbsorbed(float absorbed, float remainder)
+        {
+            if (remainder <= 0f && _characterAnimator != null)
+            {
+                _characterAnimator.PlayHit();
             }
         }
 

@@ -17,7 +17,9 @@ namespace SurveHive.Player
             _stats = stats;
         }
 
-        public float Mitigate(float amount)
+        // Player armor mitigates both damage types (Waxen Plating protects the
+        // bee itself) — only enemy armor is physical-only.
+        public float Mitigate(float amount, DamageType damageType)
         {
             return CombatMath.MitigateByArmor(amount, _stats.ArmorPercent);
         }

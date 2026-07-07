@@ -52,8 +52,6 @@ namespace SurveHive.Health
             _damageMitigator = mitigator;
         }
 
-        // damageType is carried but not yet consumed here — the PLAN 3B enemy
-        // mitigation pipeline (shield → armor → HP) reads it per incoming hit.
         public void TakeDamage(float amount, DamageType damageType, GameObject instigator)
         {
             if (_isDead || amount <= 0f || _invulnerable)
@@ -61,14 +59,20 @@ namespace SurveHive.Health
                 return;
             }
 
-            if (_damageAbsorber != null && _damageAbsorber.TryAbsorb(amount))
+            // Ordered mitigation pipeline: shield (absorber) → armor (mitigator)
+            // → HP, both reading the incoming damage type (PLAN 3B).
+            if (_damageAbsorber != null)
             {
-                return;
+                amount = _damageAbsorber.Absorb(amount, damageType);
+                if (amount <= 0f)
+                {
+                    return;
+                }
             }
 
             if (_damageMitigator != null)
             {
-                amount = _damageMitigator.Mitigate(amount);
+                amount = _damageMitigator.Mitigate(amount, damageType);
                 if (amount <= 0f)
                 {
                     return;

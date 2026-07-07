@@ -40,16 +40,17 @@ namespace SurveHive.Player
             RefreshVisual();
         }
 
-        public bool TryAbsorb(float amount)
+        // One charge eats a whole hit regardless of size or type.
+        public float Absorb(float amount, DamageType damageType)
         {
             if (_charges <= 0)
             {
-                return false;
+                return amount;
             }
 
             _charges--;
             RefreshVisual();
-            return true;
+            return 0f;
         }
 
         private void RefreshVisual()

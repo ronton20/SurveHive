@@ -15,6 +15,9 @@ MonoBehaviour:
   _displayName: Queen Bee
   _rank: 4
   _maxHealth: 3500
+  _armorPercent: 20
+  _physicalShield: 400
+  _magicShield: 400
   _moveSpeed: 1.6
   _contactDamage: 25
   _contactDamageInterval: 0.8

@@ -15,6 +15,9 @@ MonoBehaviour:
   _displayName: Queen's Royal Guard
   _rank: 3
   _maxHealth: 900
+  _armorPercent: 15
+  _physicalShield: 250
+  _magicShield: 0
   _moveSpeed: 2.6
   _contactDamage: 18
   _contactDamageInterval: 1

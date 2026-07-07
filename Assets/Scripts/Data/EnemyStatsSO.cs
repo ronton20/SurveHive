@@ -8,6 +8,13 @@ namespace SurveHive.Data
         [SerializeField] private string _displayName;
         [SerializeField] private int _rank;
         [SerializeField] private float _maxHealth = 20f;
+        // Defensive layers (PLAN 3B), applied shield → armor → HP by EnemyDefense.
+        // Shields are flat pools soaking only their own damage type and scale with
+        // the run's health multiplier; armor is a % reduction to physical hits
+        // that got past shields. 0s (the default) = no layer; elites+ carry these.
+        [SerializeField, Range(0f, 90f)] private float _armorPercent;
+        [SerializeField] private float _physicalShield;
+        [SerializeField] private float _magicShield;
         [SerializeField] private float _moveSpeed = 2f;
         [SerializeField] private float _contactDamage = 5f;
         [SerializeField] private float _contactDamageInterval = 1f;
@@ -34,6 +41,12 @@ namespace SurveHive.Data
         public int Rank => _rank;
 
         public float MaxHealth => _maxHealth;
+
+        public float ArmorPercent => _armorPercent;
+
+        public float PhysicalShield => _physicalShield;
+
+        public float MagicShield => _magicShield;
 
         public float MoveSpeed => _moveSpeed;
 
