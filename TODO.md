@@ -145,10 +145,10 @@ above are locked so new content drops into a stable framework rather than a movi
 25. **Complete UI overhaul** — fit to PC, enlarge text, smoother animations, click sounds, health bars, etc.
 26. **Status effect visual modifiers** — tint enemies in color based on their active status effect. *(A basic priority tint exists in `StatusEffectReceiver`; this wants a proper, readable pass.)*
 27. **Enhance status-effect set bonuses** — richer per-element set effects beyond the current potency/duration scaling (e.g. spread-on-death burns, shatter on frozen kills).
-28. **Enhance meta shop** — way more modifiers to buy: EXP gain, ability power, cooldown reduction, crit rate/damage, **power-up rerolls** (max 5 per run; each reroll replaces 1 offered card, not all 3), item drop rate, and any other bonuses that fit.
-29. **Asset generation list (ElevenLabs)** — a document listing every asset that needs generating, including sizes, pixel density, colors, usage context — ideally an accurate generation prompt per asset.
+28. **Enhance meta shop** — way more modifiers to buy: EXP gain, ability power, cooldown reduction, crit rate (+2%/rank, capped 40%), crit damage, **power-up rerolls** (max 3 per run; each reroll replaces 1 offered card, not all 3; steeply escalating cost — the feature is strong, gate it), item drop rate, and any other bonuses that fit.
+29. ~~**Asset generation list (ElevenLabs)** — a document listing every asset that needs generating, including sizes, pixel density, colors, usage context — ideally an accurate generation prompt per asset.~~ *(done: `ASSET_GENERATION.md` — surveyed every placeholder/missing asset across visuals and audio, with per-item spec + generation prompt; kept living per the `CLAUDE.md` doc policy.)*
 30. **Working stage difficulty** — easy / normal / hard / extreme: scales enemy HP and damage but increases honey gain; with per-difficulty icons (ties into #29). *(The difficulty dropdown seam from Phase 4B exists but is fixed to Normal.)*
-31. **Premium currency** — earnable in very small amounts through gameplay; spent on cosmetics/revives.
+31. **Premium currency — "Royal Jelly"** — earnable in very small amounts through gameplay; spent on cosmetics/revives. Named/iconed in `ASSET_GENERATION.md` §2.8 (a royal comb cell of jelly, distinct from the common Honey drop).
 32. **Character customization** — colors (5 basic), hats, stinger skins, etc.
 33. **Achievements system** — including Steam achievements; unlocks cosmetics and rewards premium currency.
 34. **Rotating cosmetics shop** — daily rotating cosmetics for purchase.

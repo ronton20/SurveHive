@@ -22,9 +22,9 @@ MonoBehaviour:
   _contactDamage: 8
   _contactDamageInterval: 1
   _expReward: 9
-  _currencyDropChance: 0.35
-  _currencyDropMin: 2
-  _currencyDropMax: 4
+  _currencyDropChance: 0.3
+  _currencyDropMin: 1
+  _currencyDropMax: 2
   _itemDropChance: 0.03
   _spriteTint: {r: 1, g: 0.5, b: 0.4, a: 1}
   _scale: 1.1

@@ -7,6 +7,30 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 1A (round 1) — Balance: honey economy + crit rework (2026-07-08)
+
+First tuning round of the new plan's balance pass, driven by playtest feedback (the
+meta shop maxed out in ~6–8 runs and crit was too freely available).
+
+- **Honey income cut ~60%** across every enemy drop table (chance and/or roll ranges):
+  Worker/Spitter/Bomber 25%×1–2 → 15%×1, Warrior 35%×2–4 → 30%×1–2, Swarmling 8% → 4%,
+  Queen's Guard 60%×2–5 → 40%×1–3, Royal Guard 8–15 → 3–6, Queen 40–60 → 15–25.
+  Maxing the current shop should now take roughly 2.5× as many runs; the 1C shop
+  expansion adds more sinks on top.
+- **Base crit chance 5% → 0%** (script default, scene value, and a new validator
+  assert) — all crit now comes from power-ups and, later, the 1C meta upgrade.
+- **Keen Eye reworked**: 6 levels × flat +5% → **5 levels totalling 5/10/15/20/30%**
+  (the last level jumps +10%). Implemented via an optional per-level magnitude table
+  on `SkillDefinitionSO` (`_magnitudePerLevel`, append-only field) threaded through
+  `SkillEffectApplier` (now takes the pre-application level) and `SkillStatPreview`,
+  so card previews keep showing the exact numbers. EditMode tests pin the curve.
+- **Spec locked for 1C** (PLAN/TODO updated): power-up rerolls capped at **3 per run**
+  with steeply escalating rank costs (~400 base, ~3.8× growth), and the crit-chance
+  meta upgrade set at **+2%/rank, 20 ranks, 40% cap**.
+- EXP curve, enemy HP/damage ramp, spawn curve, and boss HP deliberately untouched —
+  hand-tuned last round; re-evaluate against post-nerf playtests (1A stays ◐ until
+  the die-at-8–12-min / meta-clears-Queen targets are confirmed).
+
 ### Phase 4B/4C — Enemy variety: Bomber Bee + Swarmlings (2026-07-07)
 
 Phase 4 (TODO #22) complete — all three behavior archetypes shipped.

@@ -43,6 +43,16 @@ namespace SurveHive.BuildTools
                 ok &= Check(player.GetComponent<HealthComponent>() != null, "Player has HealthComponent");
                 ok &= Check(player.GetComponent<PlayerStats>() != null, "Player has PlayerStats");
 
+                var playerStats = player.GetComponent<PlayerStats>();
+                if (playerStats != null)
+                {
+                    // Phase 1A balance: crit starts at 0 — all crit chance comes
+                    // from Keen Eye / meta upgrades.
+                    var so = new SerializedObject(playerStats);
+                    ok &= Check(Mathf.Approximately(so.FindProperty("_critChancePercent").floatValue, 0f),
+                        "PlayerStats._critChancePercent == 0 (base crit removed in 1A)");
+                }
+
                 var pic = player.GetComponent<PlayerInputController>();
                 ok &= Check(pic != null, "Player has PlayerInputController");
                 if (pic != null)

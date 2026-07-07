@@ -31,84 +31,84 @@ namespace SurveHive.Progression
             {
                 case SkillEffectType.MoveSpeedPercent:
                     AppendLine(sb, "Move Speed", stats.MoveSpeed,
-                        CompoundUp(stats.MoveSpeed, skill.Magnitude, applications));
+                        CompoundUp(stats.MoveSpeed, skill, currentLevel, applications));
                     break;
                 case SkillEffectType.MaxHealthFlat:
                     AppendLine(sb, "Max HP", stats.MaxHealth,
-                        stats.MaxHealth + (skill.Magnitude * applications));
+                        stats.MaxHealth + SumMagnitude(skill, currentLevel, applications));
                     break;
                 case SkillEffectType.AttackRangePercent:
                     AppendLine(sb, "Attack Range", stats.AttackRange,
-                        CompoundUp(stats.AttackRange, skill.Magnitude, applications));
+                        CompoundUp(stats.AttackRange, skill, currentLevel, applications));
                     break;
                 case SkillEffectType.AttackDamagePercent:
                     AppendLine(sb, "Basic Attack DMG", Mathf.Round(stats.AttackDamage),
-                        Mathf.Round(CompoundUp(stats.AttackDamage, skill.Magnitude, applications)));
+                        Mathf.Round(CompoundUp(stats.AttackDamage, skill, currentLevel, applications)));
                     break;
                 case SkillEffectType.AttackCooldownPercent:
                     AppendLine(sb, "Attack Cooldown", stats.AttackCooldown,
-                        CompoundDown(stats.AttackCooldown, skill.Magnitude, applications, 0f));
+                        CompoundDown(stats.AttackCooldown, skill, currentLevel, applications, 0f));
                     break;
                 case SkillEffectType.AttackSpeedPercent:
                     AppendLine(sb, "Attack Speed", stats.AttackSpeed,
-                        CompoundUp(stats.AttackSpeed, skill.Magnitude, applications));
+                        CompoundUp(stats.AttackSpeed, skill, currentLevel, applications));
                     break;
                 case SkillEffectType.ProjectileCountFlat:
                     AppendLine(sb, "Projectiles", stats.ProjectileCount,
-                        Mathf.Min(stats.ProjectileCount + ((int)skill.Magnitude * applications), stats.MaxProjectileCount));
+                        Mathf.Min(stats.ProjectileCount + (int)SumMagnitude(skill, currentLevel, applications), stats.MaxProjectileCount));
                     break;
                 case SkillEffectType.MagnetRadiusPercent:
                     AppendPercentLine(sb, "Pickup Range", stats.MagnetRadiusMultiplier * 100f,
-                        CompoundUp(stats.MagnetRadiusMultiplier, skill.Magnitude, applications) * 100f);
+                        CompoundUp(stats.MagnetRadiusMultiplier, skill, currentLevel, applications) * 100f);
                     break;
                 case SkillEffectType.CritChanceFlat:
                     AppendPercentLine(sb, "Crit Chance", stats.CritChancePercent,
-                        Mathf.Min(100f, stats.CritChancePercent + (skill.Magnitude * applications)));
+                        Mathf.Min(100f, stats.CritChancePercent + SumMagnitude(skill, currentLevel, applications)));
                     break;
                 case SkillEffectType.CritDamagePercent:
                     AppendPercentLine(sb, "Crit DMG", stats.CritDamageMultiplier * 100f,
-                        (stats.CritDamageMultiplier + (skill.Magnitude / 100f * applications)) * 100f);
+                        (stats.CritDamageMultiplier + (SumMagnitude(skill, currentLevel, applications) / 100f)) * 100f);
                     break;
                 case SkillEffectType.LifestealFlat:
                     AppendPercentLine(sb, "Lifesteal", stats.LifestealPercent,
-                        Mathf.Min(100f, stats.LifestealPercent + (skill.Magnitude * applications)));
+                        Mathf.Min(100f, stats.LifestealPercent + SumMagnitude(skill, currentLevel, applications)));
                     break;
                 case SkillEffectType.ActiveCooldownPercent:
                     AppendPercentLine(sb, "Skill Cooldowns", stats.ActiveCooldownMultiplier * 100f,
                         Mathf.Max(stats.MinActiveCooldownMultiplier,
-                            CompoundDown(stats.ActiveCooldownMultiplier, skill.Magnitude, applications,
+                            CompoundDown(stats.ActiveCooldownMultiplier, skill, currentLevel, applications,
                                 stats.MinActiveCooldownMultiplier)) * 100f);
                     break;
                 case SkillEffectType.ArmorPercent:
                     AppendPercentLine(sb, "Armor", stats.ArmorPercent,
-                        Mathf.Min(stats.MaxArmorPercent, stats.ArmorPercent + (skill.Magnitude * applications)));
+                        Mathf.Min(stats.MaxArmorPercent, stats.ArmorPercent + SumMagnitude(skill, currentLevel, applications)));
                     break;
                 case SkillEffectType.AbilityPowerPercent:
                     AppendPercentLine(sb, "Ability Power", stats.AbilityPowerMultiplier * 100f,
-                        CompoundUp(stats.AbilityPowerMultiplier, skill.Magnitude, applications) * 100f);
+                        CompoundUp(stats.AbilityPowerMultiplier, skill, currentLevel, applications) * 100f);
                     break;
                 case SkillEffectType.BasicAttackPierceFlat:
                     AppendPierceLines(sb, skill, currentLevel, applications, stats);
                     break;
                 case SkillEffectType.IgniteChanceFlat:
                     AppendPercentLine(sb, "Burn Chance", stats.BurnStingerChance,
-                        Mathf.Min(100f, stats.BurnStingerChance + (skill.Magnitude * applications)));
+                        Mathf.Min(100f, stats.BurnStingerChance + SumMagnitude(skill, currentLevel, applications)));
                     AppendLine(sb, "Burn DMG/Tick", stats.BurnStingerDps,
                         stats.BurnStingerDps + (stats.BurnStingerDpsPerLevel * applications));
                     break;
                 case SkillEffectType.PoisonStingerChance:
                     AppendPercentLine(sb, "Poison Chance", stats.PoisonStingerChance,
-                        Mathf.Min(100f, stats.PoisonStingerChance + (skill.Magnitude * applications)));
+                        Mathf.Min(100f, stats.PoisonStingerChance + SumMagnitude(skill, currentLevel, applications)));
                     AppendLine(sb, "Poison DMG/Tick", stats.PoisonStingerDps,
                         stats.PoisonStingerDps + (stats.PoisonStingerDpsPerLevel * applications));
                     break;
                 case SkillEffectType.FrostStingerChance:
                     AppendPercentLine(sb, "Freeze Chance", stats.FrostStingerChance,
-                        Mathf.Min(100f, stats.FrostStingerChance + (skill.Magnitude * applications)));
+                        Mathf.Min(100f, stats.FrostStingerChance + SumMagnitude(skill, currentLevel, applications)));
                     break;
                 case SkillEffectType.ElectricStingerChance:
                     AppendPercentLine(sb, "Bounce Chance", stats.ShockStingerChance,
-                        Mathf.Min(100f, stats.ShockStingerChance + (skill.Magnitude * applications)));
+                        Mathf.Min(100f, stats.ShockStingerChance + SumMagnitude(skill, currentLevel, applications)));
                     AppendLine(sb, "Bounces", stats.ShockStingerBounces,
                         stats.ShockStingerBounces + applications);
                     break;
@@ -232,22 +232,35 @@ namespace SurveHive.Progression
             }
         }
 
+        // Total flat magnitude gained over the next `applications` levels,
+        // honoring a per-level magnitude table when the skill has one.
+        private static float SumMagnitude(SkillDefinitionSO skill, int currentLevel, int applications)
+        {
+            float total = 0f;
+            for (int i = 0; i < applications; i++)
+            {
+                total += skill.MagnitudeForLevel(currentLevel + i);
+            }
+
+            return total;
+        }
+
         // Mirrors PlayerStats: each application multiplies then rounds to 2dp.
-        private static float CompoundUp(float value, float percent, int applications)
+        private static float CompoundUp(float value, SkillDefinitionSO skill, int currentLevel, int applications)
         {
             for (int i = 0; i < applications; i++)
             {
-                value = Mathf.Round(value * (1f + percent / 100f) * 100f) / 100f;
+                value = Mathf.Round(value * (1f + skill.MagnitudeForLevel(currentLevel + i) / 100f) * 100f) / 100f;
             }
 
             return value;
         }
 
-        private static float CompoundDown(float value, float percent, int applications, float floor)
+        private static float CompoundDown(float value, SkillDefinitionSO skill, int currentLevel, int applications, float floor)
         {
             for (int i = 0; i < applications; i++)
             {
-                value = Mathf.Max(floor, Mathf.Round(value * (1f - percent / 100f) * 100f) / 100f);
+                value = Mathf.Max(floor, Mathf.Round(value * (1f - skill.MagnitudeForLevel(currentLevel + i) / 100f) * 100f) / 100f);
             }
 
             return value;

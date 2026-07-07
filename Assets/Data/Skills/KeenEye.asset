@@ -14,13 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SkillDefinitionSO
   _id: KeenEye
   _displayName: Keen Eye
-  _description: +5% chance to land a critical hit for bonus damage.
+  _description: Chance to land a critical hit for bonus damage (+5% per level, +10%
+    at max).
   _effectType: 8
   _lane: 0
   _element: 0
   _magnitude: 5
   _weight: 1
-  _maxLevel: 6
+  _maxLevel: 5
   _icon: {fileID: 21300000, guid: 53deff1195daf4699870ebbda5bc9c02, type: 3}
   _rarity: 1
   _activeSkill: {fileID: 0}
+  _magnitudePerLevel:
+  - 5
+  - 5
+  - 5
+  - 5
+  - 10

@@ -17,7 +17,9 @@ namespace SurveHive.Player
         [SerializeField] private int _maxProjectileCount = 5;
 
         [Header("Phase 2 Combat Stats")]
-        [SerializeField, Range(0f, 100f)] private float _critChancePercent = 5f;
+        // Base crit is 0: all crit chance comes from the Keen Eye power-up and
+        // (later) the meta-shop crit upgrade.
+        [SerializeField, Range(0f, 100f)] private float _critChancePercent;
         // Damage multiplier applied on a critical hit (1.5 = +50%).
         [SerializeField] private float _critDamageMultiplier = 1.5f;
         // Percent of damage dealt returned as healing.

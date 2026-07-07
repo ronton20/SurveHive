@@ -22,7 +22,7 @@ MonoBehaviour:
   _contactDamage: 3
   _contactDamageInterval: 0.8
   _expReward: 2
-  _currencyDropChance: 0.08
+  _currencyDropChance: 0.04
   _currencyDropMin: 1
   _currencyDropMax: 1
   _itemDropChance: 0

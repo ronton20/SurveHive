@@ -532,7 +532,7 @@ namespace SurveHive.UI
                         break;
                     }
 
-                    SkillEffectApplier.Apply(chosen, _playerStats, _playerHealth, _activeSkillManager);
+                    SkillEffectApplier.Apply(chosen, _skillLevels[dbIndex], _playerStats, _playerHealth, _activeSkillManager);
                     _skillLevels[dbIndex]++;
                 }
 

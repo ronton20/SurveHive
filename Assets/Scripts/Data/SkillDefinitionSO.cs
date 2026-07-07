@@ -26,6 +26,10 @@ namespace SurveHive.Data
         // Set when _effectType == ActiveSkill: the auto-firing weapon this card
         // unlocks/levels.
         [SerializeField] private ActiveSkillSO _activeSkill;
+        // Optional non-linear growth: entry N-1 is the magnitude applied when
+        // taking level N; levels past the end reuse the last entry. Empty =
+        // flat _magnitude every level.
+        [SerializeField] private float[] _magnitudePerLevel;
 
         public string Id => _id;
 
@@ -53,5 +57,20 @@ namespace SurveHive.Data
         public SkillRarity Rarity => _rarity;
 
         public ActiveSkillSO ActiveSkill => _activeSkill;
+
+        /// <summary>
+        /// Magnitude applied when leveling up from <paramref name="currentLevel"/>
+        /// (0 = first take). Falls back to the flat <see cref="Magnitude"/> when no
+        /// per-level table is authored.
+        /// </summary>
+        public float MagnitudeForLevel(int currentLevel)
+        {
+            if (_magnitudePerLevel == null || _magnitudePerLevel.Length == 0)
+            {
+                return _magnitude;
+            }
+
+            return _magnitudePerLevel[Mathf.Clamp(currentLevel, 0, _magnitudePerLevel.Length - 1)];
+        }
     }
 }

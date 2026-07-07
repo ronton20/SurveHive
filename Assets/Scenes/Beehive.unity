@@ -7434,7 +7434,7 @@ MonoBehaviour:
   _attackSpeed: 1
   _projectileCount: 1
   _maxProjectileCount: 5
-  _critChancePercent: 5
+  _critChancePercent: 0
   _critDamageMultiplier: 1.5
   _lifestealPercent: 0
   _activeCooldownMultiplier: 1

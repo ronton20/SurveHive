@@ -7,67 +7,73 @@ namespace SurveHive.Progression
 {
     public static class SkillEffectApplier
     {
-        public static void Apply(SkillDefinitionSO skill, PlayerStats stats, HealthComponent health, ActiveSkillManager activeSkills)
+        /// <summary>
+        /// Applies one level of <paramref name="skill"/>. <paramref name="currentLevel"/>
+        /// is the level owned *before* this application (0 = first take) so skills with
+        /// per-level magnitude tables resolve the right step.
+        /// </summary>
+        public static void Apply(SkillDefinitionSO skill, int currentLevel, PlayerStats stats, HealthComponent health, ActiveSkillManager activeSkills)
         {
+            float magnitude = skill.MagnitudeForLevel(currentLevel);
             switch (skill.EffectType)
             {
                 case SkillEffectType.MoveSpeedPercent:
-                    stats.IncreaseMoveSpeedPercent(skill.Magnitude);
+                    stats.IncreaseMoveSpeedPercent(magnitude);
                     break;
                 case SkillEffectType.MaxHealthFlat:
-                    stats.IncreaseMaxHealthFlat(skill.Magnitude);
-                    health.IncreaseMaxHealth(skill.Magnitude);
+                    stats.IncreaseMaxHealthFlat(magnitude);
+                    health.IncreaseMaxHealth(magnitude);
                     break;
                 case SkillEffectType.AttackRangePercent:
-                    stats.IncreaseAttackRangePercent(skill.Magnitude);
+                    stats.IncreaseAttackRangePercent(magnitude);
                     break;
                 case SkillEffectType.AttackDamagePercent:
-                    stats.IncreaseAttackDamagePercent(skill.Magnitude);
+                    stats.IncreaseAttackDamagePercent(magnitude);
                     break;
                 case SkillEffectType.AttackCooldownPercent:
-                    stats.DecreaseAttackCooldownPercent(skill.Magnitude);
+                    stats.DecreaseAttackCooldownPercent(magnitude);
                     break;
                 case SkillEffectType.AttackSpeedPercent:
-                    stats.IncreaseAttackSpeedPercent(skill.Magnitude);
+                    stats.IncreaseAttackSpeedPercent(magnitude);
                     break;
                 case SkillEffectType.ProjectileCountFlat:
-                    stats.IncreaseProjectileCountFlat((int)skill.Magnitude);
+                    stats.IncreaseProjectileCountFlat((int)magnitude);
                     break;
                 case SkillEffectType.MagnetRadiusPercent:
-                    stats.IncreaseMagnetRadiusPercent(skill.Magnitude);
+                    stats.IncreaseMagnetRadiusPercent(magnitude);
                     break;
                 case SkillEffectType.CritChanceFlat:
-                    stats.IncreaseCritChanceFlat(skill.Magnitude);
+                    stats.IncreaseCritChanceFlat(magnitude);
                     break;
                 case SkillEffectType.CritDamagePercent:
-                    stats.IncreaseCritDamagePercent(skill.Magnitude);
+                    stats.IncreaseCritDamagePercent(magnitude);
                     break;
                 case SkillEffectType.LifestealFlat:
-                    stats.IncreaseLifestealFlat(skill.Magnitude);
+                    stats.IncreaseLifestealFlat(magnitude);
                     break;
                 case SkillEffectType.ActiveCooldownPercent:
-                    stats.DecreaseActiveCooldownPercent(skill.Magnitude);
+                    stats.DecreaseActiveCooldownPercent(magnitude);
                     break;
                 case SkillEffectType.ArmorPercent:
-                    stats.IncreaseArmorPercent(skill.Magnitude);
+                    stats.IncreaseArmorPercent(magnitude);
                     break;
                 case SkillEffectType.AbilityPowerPercent:
-                    stats.IncreaseAbilityPowerPercent(skill.Magnitude);
+                    stats.IncreaseAbilityPowerPercent(magnitude);
                     break;
                 case SkillEffectType.BasicAttackPierceFlat:
                     stats.LevelUpPierce();
                     break;
                 case SkillEffectType.IgniteChanceFlat:
-                    stats.LevelUpBurnStinger(skill.Magnitude);
+                    stats.LevelUpBurnStinger(magnitude);
                     break;
                 case SkillEffectType.PoisonStingerChance:
-                    stats.LevelUpPoisonStinger(skill.Magnitude);
+                    stats.LevelUpPoisonStinger(magnitude);
                     break;
                 case SkillEffectType.FrostStingerChance:
-                    stats.LevelUpFrostStinger(skill.Magnitude);
+                    stats.LevelUpFrostStinger(magnitude);
                     break;
                 case SkillEffectType.ElectricStingerChance:
-                    stats.LevelUpShockStinger(skill.Magnitude);
+                    stats.LevelUpShockStinger(magnitude);
                     break;
                 case SkillEffectType.ActiveSkill:
                     if (activeSkills != null)
