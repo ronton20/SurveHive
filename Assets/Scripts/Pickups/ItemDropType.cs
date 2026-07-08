@@ -19,6 +19,19 @@ namespace SurveHive.Pickups
     {
         public const int TypeCount = 4;
 
+        /// <summary>
+        /// Meta-shop Item Drop Rate multiplier on every drop-table roll.
+        /// MetaUpgradeApplier resets it to 1 at every run start (a static must
+        /// not leak a previous run's rank across restarts), then applies the
+        /// bought rank.
+        /// </summary>
+        public static float DropChanceMultiplier { get; private set; } = 1f;
+
+        public static void SetDropChanceMultiplier(float multiplier)
+        {
+            DropChanceMultiplier = multiplier < 0f ? 0f : multiplier;
+        }
+
         public static int GetPoolId(ItemDropType type)
         {
             switch (type)

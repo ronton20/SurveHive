@@ -14,8 +14,9 @@ namespace SurveHive.BuildTools
     /// Verification driver: plays through the current change under test and
     /// captures game-view screenshots, then quits the editor. The staged
     /// switch below is rewritten per verification target — currently the
-    /// Phase 1B difficulty picker: open world select, pop the (formerly
-    /// locked) difficulty dropdown, pick EXTREME, and start a run on it.
+    /// Phase 1C shop expansion: bank honey, eyeball the 13-card scrollable
+    /// shop (top + scrolled), then start a run with 3 reroll charges and
+    /// exercise a per-card reroll on the level-up offer.
     /// Run from the CLI:
     /// <c>Unity -projectPath . -executeMethod SurveHive.BuildTools.PlayModeVerifyDriver.Run</c>
     /// (no -batchmode: the game view must render). Screenshots land in
@@ -72,15 +73,6 @@ namespace SurveHive.BuildTools
             // player loop ticking so captures reflect the current UI state.
             EditorApplication.QueuePlayerLoopUpdate();
 
-            // Kills during the staged spawns level the player; the offer pause
-            // (timeScale 0) would freeze every enemy mid-capture. Click it away
-            // like the PlayMode smoke test does. (Only in-run: stage 2+.)
-            if (_stage >= 2 && Mathf.Approximately(Time.timeScale, 0f))
-            {
-                ClickFirstLevelUpChoice();
-                return;
-            }
-
             switch (_stage)
             {
                 // Redirect the save to a temp file BEFORE anything banks or
@@ -92,9 +84,9 @@ namespace SurveHive.BuildTools
                     AdvanceStage();
                     break;
 
-                // World select — the difficulty picker lives here.
+                // Shop with money to spend: 13 cards in the new scroll grid.
                 case 1 when elapsed > 1.0:
-                    ShowWorldSelect();
+                    BankHoneyAndOpenShop(5000);
                     AdvanceStage();
                     break;
 
@@ -102,49 +94,92 @@ namespace SurveHive.BuildTools
                 // a few fps, and a second pending screenshot inside one frame
                 // drops the first.
                 case 2 when elapsed > 1.2:
-                    Capture("shot1_worldselect_dropdown.png");
+                    Capture("shot1_shop_top.png");
                     AdvanceStage();
                     break;
 
-                // Pop the dropdown list: 4 tier rows with icons.
-                case 3 when elapsed > 1.0:
-                    ShowDifficultyDropdown();
+                case 3 when elapsed > 0.5:
+                    ScrollShopToBottom();
                     AdvanceStage();
                     break;
 
                 case 4 when elapsed > 1.2:
-                    Capture("shot2_dropdown_open.png");
+                    Capture("shot2_shop_scrolled_new_cards.png");
                     AdvanceStage();
                     break;
 
-                // Select EXTREME through the real value-changed path (also
-                // persists to the redirected save).
+                // 3 reroll charges (as if Waggle Dance were maxed), then run.
                 case 5 when elapsed > 0.5:
-                    SelectDifficulty(3);
-                    AdvanceStage();
-                    break;
-
-                case 6 when elapsed > 1.2:
-                    Capture("shot3_extreme_selected.png");
-                    AdvanceStage();
-                    break;
-
-                // Run on Extreme — sanity that the scene boots with the tier.
-                case 7 when elapsed > 0.5:
+                    GrantRerollRank(3);
                     ClickWorldSelectBeehive();
                     AdvanceStage();
                     break;
 
-                case 8 when elapsed > 6.0:
-                    Capture("shot4_run_on_extreme.png");
+                case 6 when elapsed > 4.0:
+                    ForceLevelUp();
                     AdvanceStage();
                     break;
 
-                case 9 when elapsed > 2.0:
+                case 7 when elapsed > 1.5:
+                    Capture("shot3_offer_with_rerolls.png");
+                    AdvanceStage();
+                    break;
+
+                case 8 when elapsed > 0.5:
+                    ClickRerollOnFirstCard();
+                    AdvanceStage();
+                    break;
+
+                case 9 when elapsed > 1.2:
+                    Capture("shot4_after_reroll.png");
+                    AdvanceStage();
+                    break;
+
+                case 10 when elapsed > 2.0:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
+            }
+        }
+
+        private static void ScrollShopToBottom()
+        {
+            GameObject shopScroll = GameObject.Find("ShopScroll");
+            if (shopScroll != null && shopScroll.TryGetComponent(out UnityEngine.UI.ScrollRect scroll))
+            {
+                scroll.verticalNormalizedPosition = 0f;
+                Debug.Log("VerifyDriver: shop scrolled to bottom.");
+            }
+            else
+            {
+                Debug.LogError("VerifyDriver: ShopScroll not found.");
+            }
+        }
+
+        private static void GrantRerollRank(int rank)
+        {
+            var store = AssetDatabase.LoadAssetAtPath<PersistentMetaProgressionStoreSO>(
+                "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
+            if (store != null)
+            {
+                store.SetUpgradeRank("meta_rerolls", rank);
+                Debug.Log($"VerifyDriver: reroll rank set to {rank}.");
+            }
+        }
+
+        private static void ClickRerollOnFirstCard()
+        {
+            GameObject panel = GameObject.Find("LevelUpPanel");
+            Transform reroll = panel != null ? panel.transform.Find("Choice0/RerollButton") : null;
+            if (reroll != null && reroll.gameObject.activeInHierarchy)
+            {
+                reroll.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                Debug.Log("VerifyDriver: rerolled card 0.");
+            }
+            else
+            {
+                Debug.LogError("VerifyDriver: Choice0/RerollButton not found or inactive.");
             }
         }
 

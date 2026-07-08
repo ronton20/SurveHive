@@ -81,8 +81,15 @@ Turn the Phase-4B dropdown seam (currently fixed to Normal) into a real system.
 - **Done when:** all four tiers are selectable, visibly change enemy toughness and honey
   income, and survive a restart.
 
-### 1C — Meta shop expansion — TODO #28 ☐
+### 1C — Meta shop expansion — TODO #28 ✅
 Way more modifiers to buy; gives the honey from 1B somewhere to go.
+- **Shipped 2026-07-08:** 7 new upgrades (EXP gain, ability power, cooldown cut, crit chance
+  +2%/rank ×20 = 40% cap, crit damage, item drop rate, **Waggle Dance** rerolls at
+  400/1,520/5,776) via the additive `MetaShopExpansionBuilder`; shop panel converted to a
+  scrollable 2-column 13-card grid; rerolls are per-card REROLL buttons + remaining count on
+  the offer screen (hidden until a rank is owned), re-picking one card and never duplicating a
+  shown one. Existing 6 upgrade costs left as-is — the cross-shop cost rebalance folds into
+  1A round 2 once post-nerf playtest income data exists.
 - New purchasable upgrades: **EXP gain, ability power, cooldown reduction, crit chance, crit
   damage, item drop rate**, and **power-up rerolls** — each is a `MetaUpgradeSO` +
   `MetaStatType` entry (append-only enum) + an application in `MetaUpgradeApplier`.

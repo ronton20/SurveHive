@@ -13,6 +13,8 @@ namespace SurveHive.Progression
         private int _currentLevel = 1;
         private float _currentExp;
         private float _expToNextLevel;
+        // Meta-shop EXP Gain multiplier, set once at run start.
+        private float _gainMultiplier = 1f;
         private readonly Queue<int> _pendingLevelUps = new Queue<int>(4);
         // When set, the next level-up offer is shown as a guaranteed lucky (+2) pick
         // (Phase 2B miniboss reward). Consumed by the level-up controller.
@@ -24,6 +26,13 @@ namespace SurveHive.Progression
         public int CurrentLevel => _currentLevel;
 
         public float AutoStatBonusPercentPerLevel => _autoStatBonusPercentPerLevel;
+
+        public float GainMultiplier => _gainMultiplier;
+
+        public void AddGainPercent(float percent)
+        {
+            _gainMultiplier += percent / 100f;
+        }
 
         private void Awake()
         {
@@ -37,7 +46,7 @@ namespace SurveHive.Progression
                 return;
             }
 
-            _currentExp += amount;
+            _currentExp += amount * _gainMultiplier;
 
             while (_currentExp >= _expToNextLevel)
             {
@@ -69,7 +78,7 @@ namespace SurveHive.Progression
             _pendingLevelUps.Enqueue(_currentLevel);
 
             // Burst of EXP on top may grant further (normal) levels.
-            _currentExp += Mathf.Max(0f, bonusExp);
+            _currentExp += Mathf.Max(0f, bonusExp) * _gainMultiplier;
             while (_currentExp >= _expToNextLevel)
             {
                 _currentExp -= _expToNextLevel;

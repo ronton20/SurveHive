@@ -43,10 +43,13 @@ namespace SurveHive.Data
         public float EffectPerRank => _effectPerRank;
 
         /// <summary>
-        /// Percent-based stats show a "+N%" effect; MaxHealth and AttackDamage are
-        /// flat "+N" bonuses. Must match how <c>MetaUpgradeApplier</c> applies each.
+        /// Percent-based stats show a "+N%" effect; MaxHealth, AttackDamage, and
+        /// Rerolls are flat "+N" bonuses. Must match how <c>MetaUpgradeApplier</c>
+        /// (or, for Rerolls, <c>LevelUpUIController</c>) applies each.
         /// </summary>
-        public bool IsPercent => _statType != MetaStatType.MaxHealth && _statType != MetaStatType.AttackDamage;
+        public bool IsPercent => _statType != MetaStatType.MaxHealth
+            && _statType != MetaStatType.AttackDamage
+            && _statType != MetaStatType.Rerolls;
 
         public int CostForRank(int currentRank)
         {

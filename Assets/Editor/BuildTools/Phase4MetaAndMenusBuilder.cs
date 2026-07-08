@@ -437,8 +437,9 @@ namespace SurveHive.BuildTools
 
         // One shop grid card (vertical: name / description / value change / rank /
         // cost / BUY). Its MetaShopRowUI keeps the generic name for the shared
-        // component; the layout is a card, not a row.
-        private static MetaShopRowUI CreateShopCard(
+        // component; the layout is a card, not a row. Internal: the 1C shop
+        // expansion pass builds its added cards through the same factory.
+        internal static MetaShopRowUI CreateShopCard(
             Transform parent, MetaUpgradeSO upgrade, Vector2 centerOffset, Vector2 size,
             TMP_FontAsset font, Sprite panelSprite, Sprite buttonSprite)
         {
@@ -699,7 +700,8 @@ namespace SurveHive.BuildTools
             settingsPanel.SetActive(false);
         }
 
-        private static Sprite LoadUiKitSprite(string spriteName)
+        // Internal: shared with the 1C shop-expansion pass.
+        internal static Sprite LoadUiKitSprite(string spriteName)
         {
             Object[] subAssets = AssetDatabase.LoadAllAssetsAtPath(UiKitTexturePath);
             for (int i = 0; i < subAssets.Length; i++)

@@ -7,6 +7,34 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 1C — Meta shop expansion: 7 new upgrades + power-up rerolls (2026-07-08)
+
+TODO #28: the honey from 1B gets somewhere to go — the Hive Upgrades shop grows from
+6 to **13 permanent upgrades**, including the run-changing reroll mechanic.
+
+- **Six new stat upgrades** (each a `MetaUpgradeSO` + append-only `MetaStatType` entry,
+  applied at run start by `MetaUpgradeApplier`): **Wisdom of the Hive** (EXP gain +5%/rank ×8),
+  **Queen's Blessing** (ability damage +4%/rank ×8), **Efficient Glands** (active-skill
+  cooldowns −3%/rank ×6, floored by the existing 0.4× cap), **Killer Instinct** (crit chance
+  **+2%/rank ×20 = 40% cap** on the 1A 0% base — with Keen Eye's 30% a full build hits 70%),
+  **Barbed Stingers** (crit damage +5%/rank ×10), and **Forager's Instinct** (item drop rolls
+  +10%/rank ×5, multiplying the drop table in `EnemyLoot` via a run-reset static).
+- **Power-up rerolls — "Waggle Dance"**: bought rank = per-run stock (max 3), refilled every
+  run. On the level-up screen each card gets a REROLL button (plus a remaining-count readout,
+  both hidden until a rank is owned); a reroll replaces **that one card** with a fresh
+  eligible pick that's never a duplicate of anything on screen, keeps the offer's forced-lucky
+  state, and refuses to waste a charge when the pool has nothing else. Cost-gated hard per the
+  design mandate: **400 / 1,520 / 5,776** honey (3.8× growth). Pure pick logic lives in
+  `RerollLogic` (EditMode-tested).
+- **Scrollable shop**: the 2×3 card grid becomes a 2-column, 13-card grid inside a vertical
+  `ScrollRect` (drag/wheel), title/balance/back staying fixed. Built additively by
+  `MetaShopExpansionBuilder` — existing cards are reparented, not rebuilt.
+- Existing six upgrade costs untouched: the cross-shop rebalance folds into 1A round 2 once
+  post-nerf income data exists.
+- EditMode tests (reroll stock/exclusion/exhaustion semantics, every new stat applying
+  through the real applier, drop-rate static resetting between runs) + validator asserts for
+  the 13-card shop, the crit/reroll gates, and the reroll UI wiring.
+
 ### Phase 1B — Working stage difficulty (2026-07-08)
 
 TODO #30: the Phase-4B difficulty dropdown seam (fixed to Normal) is now a real,

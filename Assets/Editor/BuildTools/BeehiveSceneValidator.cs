@@ -175,6 +175,22 @@ namespace SurveHive.BuildTools
                     ok &= Check(banners.arraySize == 3, $"LevelUpUIController._choiceBanners has 3 entries (found {banners.arraySize})");
                     var laneCounters = so.FindProperty("_choiceLaneCounters");
                     ok &= Check(laneCounters.arraySize == 3, $"LevelUpUIController._choiceLaneCounters has 3 entries (found {laneCounters.arraySize})");
+                    // 1C rerolls: store + upgrade + per-card buttons + count text.
+                    ok &= Check(so.FindProperty("_metaStore").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                        "LevelUpUIController._metaStore wired to the persistent store");
+                    ok &= Check(so.FindProperty("_rerollUpgrade").objectReferenceValue != null,
+                        "LevelUpUIController._rerollUpgrade wired");
+                    var rerollButtons = so.FindProperty("_rerollButtons");
+                    ok &= Check(rerollButtons.arraySize == 3,
+                        $"LevelUpUIController._rerollButtons has 3 entries (found {rerollButtons.arraySize})");
+                    for (int i = 0; i < rerollButtons.arraySize; i++)
+                    {
+                        ok &= Check(rerollButtons.GetArrayElementAtIndex(i).objectReferenceValue != null,
+                            $"LevelUpUIController._rerollButtons[{i}] wired");
+                    }
+
+                    ok &= Check(so.FindProperty("_rerollCountText").objectReferenceValue != null,
+                        "LevelUpUIController._rerollCountText wired");
                 }
             }
 
@@ -205,7 +221,7 @@ namespace SurveHive.BuildTools
                 "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
             ok &= Check(store != null, "PersistentMetaProgressionStore asset exists");
 
-            // 4A: the six flat-stat shop upgrades, unique ids/stats, escalating costs.
+            // 4A + 1C: all thirteen shop upgrades, unique ids/stats, escalating costs.
             string[] upgradePaths =
             {
                 "Assets/Data/Meta/MaxHealth.asset",
@@ -214,6 +230,13 @@ namespace SurveHive.BuildTools
                 "Assets/Data/Meta/AttackSpeed.asset",
                 "Assets/Data/Meta/Magnet.asset",
                 "Assets/Data/Meta/CurrencyGain.asset",
+                "Assets/Data/Meta/ExpGain.asset",
+                "Assets/Data/Meta/AbilityPower.asset",
+                "Assets/Data/Meta/CooldownReduction.asset",
+                "Assets/Data/Meta/CritChance.asset",
+                "Assets/Data/Meta/CritDamage.asset",
+                "Assets/Data/Meta/ItemDropRate.asset",
+                "Assets/Data/Meta/Rerolls.asset",
             };
 
             var upgradeIds = new System.Collections.Generic.HashSet<string>();
@@ -236,6 +259,14 @@ namespace SurveHive.BuildTools
                 ok &= Check(upgrade.CostGrowth > 1f, $"{path} cost growth > 1 (escalating)");
                 ok &= Check(upgrade.EffectPerRank > 0f, $"{path} effect per rank > 0");
             }
+
+            // 1C: the user-mandated crit and reroll gates.
+            var critChance = AssetDatabase.LoadAssetAtPath<Data.MetaUpgradeSO>("Assets/Data/Meta/CritChance.asset");
+            ok &= Check(critChance != null && critChance.MaxRank * critChance.EffectPerRank == 40f,
+                "meta crit chance caps at exactly +40%");
+            var rerolls = AssetDatabase.LoadAssetAtPath<Data.MetaUpgradeSO>("Assets/Data/Meta/Rerolls.asset");
+            ok &= Check(rerolls != null && rerolls.MaxRank == 3 && rerolls.BaseCost >= 400
+                && rerolls.CostGrowth >= 3.5f, "rerolls capped at 3/run and cost-gated hard");
 
             // 4A: RunSession banks into the persistent store and knows the level source.
             var sessionGo = GameObject.Find("GameBootstrap");
@@ -289,14 +320,21 @@ namespace SurveHive.BuildTools
                 ok &= Check(so.FindProperty("_stats").objectReferenceValue != null, "MetaUpgradeApplier._stats wired");
                 ok &= Check(so.FindProperty("_health").objectReferenceValue != null, "MetaUpgradeApplier._health wired");
                 ok &= Check(so.FindProperty("_wallet").objectReferenceValue != null, "MetaUpgradeApplier._wallet wired");
+                // 1C: every upgrade except Rerolls (applied by the level-up
+                // controller instead), plus the EXP-gain target.
                 var upgradesProp = so.FindProperty("_upgrades");
-                ok &= Check(upgradesProp.arraySize == upgradePaths.Length,
-                    $"MetaUpgradeApplier._upgrades has {upgradePaths.Length} entries (found {upgradesProp.arraySize})");
+                ok &= Check(upgradesProp.arraySize == upgradePaths.Length - 1,
+                    $"MetaUpgradeApplier._upgrades has {upgradePaths.Length - 1} entries (found {upgradesProp.arraySize})");
                 for (int i = 0; i < upgradesProp.arraySize; i++)
                 {
-                    ok &= Check(upgradesProp.GetArrayElementAtIndex(i).objectReferenceValue != null,
-                        $"MetaUpgradeApplier._upgrades[{i}] wired");
+                    var wired = upgradesProp.GetArrayElementAtIndex(i).objectReferenceValue as Data.MetaUpgradeSO;
+                    ok &= Check(wired != null, $"MetaUpgradeApplier._upgrades[{i}] wired");
+                    ok &= Check(wired == null || wired.StatType != Data.MetaStatType.Rerolls,
+                        $"MetaUpgradeApplier._upgrades[{i}] is not the reroll upgrade");
                 }
+
+                ok &= Check(so.FindProperty("_experience").objectReferenceValue != null,
+                    "MetaUpgradeApplier._experience wired");
             }
 
             // 4B: results screens route to retry / menu.
@@ -536,8 +574,20 @@ namespace SurveHive.BuildTools
                     ok &= Check(shopSo.FindProperty("_balanceText").objectReferenceValue != null,
                         "MetaShopUI._balanceText wired");
 
+                    // 1C: the shop scrolls — cards live under ShopScroll/Viewport/Content.
+                    Transform shopScroll = shopPanel.transform.Find("ShopScroll");
+                    ok &= Check(shopScroll != null, "ShopPanel has ShopScroll");
+                    if (shopScroll != null)
+                    {
+                        var scroll = shopScroll.GetComponent<UnityEngine.UI.ScrollRect>();
+                        ok &= Check(scroll != null && scroll.content != null && scroll.viewport != null,
+                            "ShopScroll ScrollRect wired (content + viewport)");
+                        ok &= Check(scroll != null && scroll.vertical && !scroll.horizontal,
+                            "ShopScroll scrolls vertically only");
+                    }
+
                     var rowsProp = shopSo.FindProperty("_rows");
-                    ok &= Check(rowsProp.arraySize == 6, $"MetaShopUI._rows has 6 entries (found {rowsProp.arraySize})");
+                    ok &= Check(rowsProp.arraySize == 13, $"MetaShopUI._rows has 13 entries (found {rowsProp.arraySize})");
                     for (int i = 0; i < rowsProp.arraySize; i++)
                     {
                         var row = rowsProp.GetArrayElementAtIndex(i).objectReferenceValue as MetaShopRowUI;

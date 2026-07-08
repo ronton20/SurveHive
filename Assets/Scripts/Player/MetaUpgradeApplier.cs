@@ -1,6 +1,8 @@
 using SurveHive.Currency;
 using SurveHive.Data;
 using SurveHive.Health;
+using SurveHive.Pickups;
+using SurveHive.Progression;
 using UnityEngine;
 
 namespace SurveHive.Player
@@ -17,9 +19,14 @@ namespace SurveHive.Player
         [SerializeField] private PlayerStats _stats;
         [SerializeField] private HealthComponent _health;
         [SerializeField] private RunCurrencyWallet _wallet;
+        [SerializeField] private PlayerExperience _experience;
 
         private void Awake()
         {
+            // The drop-rate multiplier lives on a static — reset every run so a
+            // restart (or a missing rank) never inherits the previous value.
+            ItemDrops.SetDropChanceMultiplier(1f);
+
             if (_store == null || _upgrades == null)
             {
                 return;
@@ -70,6 +77,32 @@ namespace SurveHive.Player
                     }
 
                     break;
+                case MetaStatType.ExpGain:
+                    if (_experience != null)
+                    {
+                        _experience.AddGainPercent(totalEffect);
+                    }
+
+                    break;
+                case MetaStatType.AbilityPower:
+                    _stats.IncreaseAbilityPowerPercent(totalEffect);
+                    break;
+                case MetaStatType.CooldownReduction:
+                    _stats.DecreaseActiveCooldownPercent(totalEffect);
+                    break;
+                case MetaStatType.CritChance:
+                    // Percent points on the 0% base (1A) — the 40% cap is the
+                    // upgrade's maxRank * effectPerRank, not a code clamp.
+                    _stats.IncreaseCritChanceFlat(totalEffect);
+                    break;
+                case MetaStatType.CritDamage:
+                    _stats.IncreaseCritDamagePercent(totalEffect);
+                    break;
+                case MetaStatType.ItemDropRate:
+                    ItemDrops.SetDropChanceMultiplier(1f + totalEffect / 100f);
+                    break;
+                // MetaStatType.Rerolls is deliberately absent: per-run reroll
+                // stock is read by LevelUpUIController straight from the store.
             }
         }
     }

@@ -59,7 +59,7 @@ namespace SurveHive.Tests
             var shop = Object.FindAnyObjectByType<MetaShopUI>();
             Assert.IsNotNull(shop, "MetaShopUI present on the shop panel");
             var rows = shop.GetComponentsInChildren<MetaShopRowUI>();
-            Assert.AreEqual(6, rows.Length, "six shop rows");
+            Assert.AreEqual(13, rows.Length, "thirteen shop rows (Phase 1C expansion)");
             foreach (MetaShopRowUI row in rows)
             {
                 Assert.IsFalse(row.BuyButton.interactable, $"{row.name} buy disabled at zero balance");

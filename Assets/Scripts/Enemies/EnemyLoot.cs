@@ -95,7 +95,8 @@ namespace SurveHive.Enemies
 
             // World item drops (elites/bosses; PLAN §5.3). Uniform type roll,
             // offset slightly so the item doesn't hide under the EXP mote.
-            if (Random.value <= stats.ItemDropChance)
+            // The meta-shop drop-rate upgrade multiplies the table roll (1C).
+            if (Random.value <= stats.ItemDropChance * ItemDrops.DropChanceMultiplier)
             {
                 ItemDropType dropType = ItemDrops.RollType(Random.value);
                 int dropPoolId = ItemDrops.GetPoolId(dropType);

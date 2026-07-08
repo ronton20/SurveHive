@@ -39,6 +39,16 @@ namespace SurveHive.UI
         // Offer context: "LEVEL UP!" vs "MINIBOSS KILLED!" (the forced-lucky beat).
         [SerializeField] private TMP_Text _titleText;
 
+        // Phase 1C rerolls (optional — guarded so the controller runs before the
+        // builder pass wires them): one button per card replaces just that card;
+        // stock = the bought meta rank, spent per use, refilled each run.
+        [Header("Power-Up Rerolls (1C)")]
+        [SerializeField] private MetaProgressionStoreSO _metaStore;
+        [SerializeField] private MetaUpgradeSO _rerollUpgrade;
+        [SerializeField] private Button[] _rerollButtons;
+        [SerializeField] private TMP_Text _rerollCountText;
+        [SerializeField] private int _maxRerollsPerRun = 3;
+
         // Move speed is intentionally excluded here — it grows only through power-ups
         // (the Swift Wings skill), keeping it a rarer, more meaningful stat.
         [Header("Automatic Per-Level Stat Bonuses")]
@@ -82,6 +92,10 @@ namespace SurveHive.UI
         private SkillDefinitionSO[] _currentChoices;
         private int[] _currentChoiceDbIndices;
         private bool[] _currentChoiceLucky;
+        private int _currentChoiceCount;
+        private bool _currentOfferForceLucky;
+        private int _rerollStock;
+        private readonly int[] _rerollResultScratch = new int[1];
         private Image[] _choiceBackgrounds;
         private CanvasGroup _canvasGroup;
         private readonly StringBuilder _descriptionBuilder = new StringBuilder(96);
@@ -121,6 +135,13 @@ namespace SurveHive.UI
                 _choiceBackgrounds[i] = _choiceButtons[i].GetComponent<Image>();
             }
 
+            // Per-run reroll stock from the bought meta rank (1C).
+            _rerollStock = RerollLogic.StockFromRank(
+                _metaStore != null && _rerollUpgrade != null
+                    ? _metaStore.GetUpgradeRank(_rerollUpgrade.UpgradeId)
+                    : 0,
+                _maxRerollsPerRun);
+
             // The panel is kept active so this controller keeps running and stays
             // subscribed to level-up events; visibility is driven by a CanvasGroup
             // instead of SetActive (which would deactivate this very component).
@@ -141,6 +162,15 @@ namespace SurveHive.UI
                 int choiceIndex = i;
                 _choiceButtons[i].onClick.AddListener(() => HandleChoiceSelected(choiceIndex));
             }
+
+            if (_rerollButtons != null)
+            {
+                for (int i = 0; i < _rerollButtons.Length; i++)
+                {
+                    int choiceIndex = i;
+                    _rerollButtons[i].onClick.AddListener(() => HandleReroll(choiceIndex));
+                }
+            }
         }
 
         private void OnDisable()
@@ -150,6 +180,14 @@ namespace SurveHive.UI
             for (int i = 0; i < _choiceButtons.Length; i++)
             {
                 _choiceButtons[i].onClick.RemoveAllListeners();
+            }
+
+            if (_rerollButtons != null)
+            {
+                for (int i = 0; i < _rerollButtons.Length; i++)
+                {
+                    _rerollButtons[i].onClick.RemoveAllListeners();
+                }
             }
         }
 
@@ -168,11 +206,12 @@ namespace SurveHive.UI
             ApplyAutoLevelBonus();
 
             // Phase 2B: a miniboss reward makes this whole offer guaranteed-lucky.
-            bool forceLucky = _playerExperience.ConsumeForcedLucky();
+            // Remembered for the offer's lifetime so rerolled cards stay lucky.
+            _currentOfferForceLucky = _playerExperience.ConsumeForcedLucky();
 
             if (_titleText != null)
             {
-                _titleText.text = forceLucky ? "MINIBOSS KILLED!" : "LEVEL UP!";
+                _titleText.text = _currentOfferForceLucky ? "MINIBOSS KILLED!" : "LEVEL UP!";
             }
 
             int eligibleCount = BuildEligibleBuffer();
@@ -194,38 +233,10 @@ namespace SurveHive.UI
                 return;
             }
 
+            _currentChoiceCount = choiceCount;
             for (int i = 0; i < choiceCount; i++)
             {
-                int dbIndex = _selectedBuffer[i];
-                SkillDefinitionSO skill = _database.Skills[dbIndex];
-                _currentChoices[i] = skill;
-                _currentChoiceDbIndices[i] = dbIndex;
-
-                // Lucky only matters when the skill has 2+ levels of headroom.
-                bool canDoubleLevel = !skill.HasLevelCap || _skillLevels[dbIndex] + 2 <= skill.MaxLevel;
-                _currentChoiceLucky[i] = canDoubleLevel && (forceLucky || _rng.NextDouble() < _luckyChance);
-
-                _choiceNameTexts[i].text = skill.DisplayName;
-                _choiceDescriptionTexts[i].text = BuildDescription(skill, _skillLevels[dbIndex], _currentChoiceLucky[i]);
-
-                if (_choiceBackgrounds[i] != null)
-                {
-                    _choiceBackgrounds[i].color = _currentChoiceLucky[i] ? _luckyCardColor : GetRarityColor(skill.Rarity);
-                }
-
-                if (_choiceIcons != null && i < _choiceIcons.Length && _choiceIcons[i] != null)
-                {
-                    _choiceIcons[i].sprite = skill.Icon;
-                    _choiceIcons[i].enabled = skill.Icon != null;
-                }
-
-                ApplyCardTaxonomy(i, skill);
-
-                if (_choiceSetTexts != null && i < _choiceSetTexts.Length && _choiceSetTexts[i] != null)
-                {
-                    _choiceSetTexts[i].text = BuildSetLine(skill, _skillLevels[dbIndex]);
-                }
-
+                BindChoice(i, _selectedBuffer[i]);
                 _choiceButtons[i].gameObject.SetActive(true);
             }
 
@@ -234,8 +245,103 @@ namespace SurveHive.UI
                 _choiceButtons[i].gameObject.SetActive(false);
             }
 
+            RefreshRerollUI();
             Show();
             GamePause.SetPaused(true);
+        }
+
+        // Fills card slot i with a skill — shared by the initial offer and by
+        // rerolls, so a replaced card re-rolls its lucky chance and re-renders
+        // rarity/banner/set exactly like a fresh one.
+        private void BindChoice(int i, int dbIndex)
+        {
+            SkillDefinitionSO skill = _database.Skills[dbIndex];
+            _currentChoices[i] = skill;
+            _currentChoiceDbIndices[i] = dbIndex;
+
+            // Lucky only matters when the skill has 2+ levels of headroom.
+            bool canDoubleLevel = !skill.HasLevelCap || _skillLevels[dbIndex] + 2 <= skill.MaxLevel;
+            _currentChoiceLucky[i] = canDoubleLevel && (_currentOfferForceLucky || _rng.NextDouble() < _luckyChance);
+
+            _choiceNameTexts[i].text = skill.DisplayName;
+            _choiceDescriptionTexts[i].text = BuildDescription(skill, _skillLevels[dbIndex], _currentChoiceLucky[i]);
+
+            if (_choiceBackgrounds[i] != null)
+            {
+                _choiceBackgrounds[i].color = _currentChoiceLucky[i] ? _luckyCardColor : GetRarityColor(skill.Rarity);
+            }
+
+            if (_choiceIcons != null && i < _choiceIcons.Length && _choiceIcons[i] != null)
+            {
+                _choiceIcons[i].sprite = skill.Icon;
+                _choiceIcons[i].enabled = skill.Icon != null;
+            }
+
+            ApplyCardTaxonomy(i, skill);
+
+            if (_choiceSetTexts != null && i < _choiceSetTexts.Length && _choiceSetTexts[i] != null)
+            {
+                _choiceSetTexts[i].text = BuildSetLine(skill, _skillLevels[dbIndex]);
+            }
+        }
+
+        // Spends one reroll to replace card i with a fresh eligible pick that
+        // isn't already on screen. Keeps the stock when nothing else is
+        // offerable (the pool is that thin — don't waste the charge).
+        private void HandleReroll(int choiceIndex)
+        {
+            if (_rerollStock <= 0 || choiceIndex >= _currentChoiceCount || _currentChoices[choiceIndex] == null)
+            {
+                return;
+            }
+
+            int eligibleCount = BuildEligibleBuffer();
+            int replacement = RerollLogic.PickReplacement(
+                _indexBuffer, _weightBuffer, eligibleCount,
+                _currentChoiceDbIndices, _currentChoiceCount,
+                _rerollResultScratch, _weightScratch, _rng);
+            if (replacement < 0)
+            {
+                return;
+            }
+
+            _rerollStock--;
+            BindChoice(choiceIndex, replacement);
+            RefreshRerollUI();
+        }
+
+        // Reroll controls: hidden entirely at zero stock at run start (no rank
+        // bought), otherwise per-card buttons + the remaining count, greying
+        // out once the stock is spent.
+        private void RefreshRerollUI()
+        {
+            if (_rerollButtons == null || _rerollButtons.Length == 0)
+            {
+                return;
+            }
+
+            bool anyStockThisRun = _rerollStock > 0 || HasRerollRank();
+            for (int i = 0; i < _rerollButtons.Length; i++)
+            {
+                bool visible = anyStockThisRun && i < _currentChoiceCount;
+                _rerollButtons[i].gameObject.SetActive(visible);
+                _rerollButtons[i].interactable = _rerollStock > 0;
+            }
+
+            if (_rerollCountText != null)
+            {
+                _rerollCountText.gameObject.SetActive(anyStockThisRun);
+                _counterBuilder.Clear();
+                _counterBuilder.Append("REROLLS: ");
+                _counterBuilder.Append(_rerollStock);
+                _rerollCountText.text = _counterBuilder.ToString();
+            }
+        }
+
+        private bool HasRerollRank()
+        {
+            return _metaStore != null && _rerollUpgrade != null
+                && _metaStore.GetUpgradeRank(_rerollUpgrade.UpgradeId) > 0;
         }
 
         private Color GetRarityColor(SkillRarity rarity)
