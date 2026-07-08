@@ -7,6 +7,29 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Playtest fixes — shop scrolling + difficulty unlock gating (2026-07-08)
+
+Same-day feedback round on Phases 1B/1C.
+
+- **Shop actually scrolls now**: the 1C ScrollRect had no raycast surface of its own, so
+  wheel/drag input over the shop never reached it. The viewport gained an invisible
+  full-area input surface plus a **visible scrollbar** down the right edge (drag handle +
+  "there's more below" cue); sensitivity bumped for mouse wheels.
+- **Difficulty tiers are now earned**: Easy/Normal always open; **Hard** unlocks after
+  clearing The Beehive on Normal; **Extreme** unlocks after clearing it on Hard **plus**
+  clearing the next stage (the Garden) on Normal — so Extreme stays visibly locked until
+  more worlds ship. Gates are data on the `DifficultySO` rows (append-only
+  `unlockRequirements`); victories record per-stage/per-tier clear flags via
+  `RunSession` → the save (v3, migrating v2 saves to an empty clear record).
+- **Locked-tier UX**: locked rows read "— LOCKED" in the dropdown; picking one bounces
+  back to the previous tier and pins a **tooltip listing the unlock tasks** — met tasks
+  green, checked (`[X]`) and struck through, open ones plain `[ ]` — the same tooltip
+  hover shows on any locked row. Saves pointing at a now-locked tier fall back to the
+  highest unlocked one.
+- EditMode tests: gate logic per tier, stage-clear save round-trip, v2→v3 migration,
+  mismatched-array sanitizing; validator asserts for the gate data, tooltip/hover wiring,
+  scroll surface, and scrollbar.
+
 ### Phase 1C — Meta shop expansion: 7 new upgrades + power-up rerolls (2026-07-08)
 
 TODO #28: the honey from 1B gets somewhere to go — the Hive Upgrades shop grows from

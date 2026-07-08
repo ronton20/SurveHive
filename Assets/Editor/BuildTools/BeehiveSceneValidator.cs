@@ -283,6 +283,8 @@ namespace SurveHive.BuildTools
                 // 1B: difficulty tier table feeding the honey-gain multiplier.
                 ok &= Check(so.FindProperty("_difficulty").objectReferenceValue is Data.DifficultySO,
                     "RunSession._difficulty wired to the tier table");
+                ok &= Check(!string.IsNullOrEmpty(so.FindProperty("_stageId").stringValue),
+                    "RunSession._stageId set (stage-clear record key)");
             }
 
             // 1B: the difficulty tier table itself — 4 sane rows in tier order.
@@ -307,6 +309,21 @@ namespace SurveHive.BuildTools
                 Data.DifficultySO.TierSettings normal = difficulty.GetSettings(Data.DifficultyTier.Normal);
                 ok &= Check(normal.enemyHealthMultiplier == 1f && normal.enemyDamageMultiplier == 1f
                     && normal.honeyGainMultiplier == 1f, "Normal tier is the identity baseline");
+
+                // Unlock gating: Easy/Normal open, Hard gated on a Normal
+                // clear, Extreme on a Hard clear + the next stage on Normal.
+                ok &= Check(RequirementCount(difficulty, Data.DifficultyTier.Easy) == 0, "Easy has no unlock gate");
+                ok &= Check(RequirementCount(difficulty, Data.DifficultyTier.Normal) == 0, "Normal has no unlock gate");
+                ok &= Check(RequirementCount(difficulty, Data.DifficultyTier.Hard) == 1, "Hard has 1 unlock task");
+                ok &= Check(RequirementCount(difficulty, Data.DifficultyTier.Extreme) == 2, "Extreme has 2 unlock tasks");
+                Data.DifficultySO.TierSettings hard = difficulty.GetSettings(Data.DifficultyTier.Hard);
+                if (hard.unlockRequirements != null && hard.unlockRequirements.Length == 1)
+                {
+                    ok &= Check(hard.unlockRequirements[0].stageId == "Beehive"
+                        && hard.unlockRequirements[0].clearTier == Data.DifficultyTier.Normal
+                        && !string.IsNullOrEmpty(hard.unlockRequirements[0].stageName),
+                        "Hard gate = clear Beehive on Normal");
+                }
             }
 
             // 4A: player applies purchased ranks at run start.
@@ -558,6 +575,16 @@ namespace SurveHive.BuildTools
                             ok &= Check(
                                 selectSo.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
                                 "DifficultySelectUI._store wired to the persistent store");
+                            // Unlock gating UI: tooltip + per-row hover relay.
+                            ok &= Check(selectSo.FindProperty("_tooltipPanel").objectReferenceValue != null,
+                                "DifficultySelectUI._tooltipPanel wired");
+                            ok &= Check(selectSo.FindProperty("_tooltipText").objectReferenceValue != null,
+                                "DifficultySelectUI._tooltipText wired");
+                            GameObject tooltip = FindChildIncludingInactive(worldPanel.transform, "DifficultyTooltip");
+                            ok &= Check(tooltip != null && !tooltip.activeSelf, "DifficultyTooltip present, hidden at rest");
+                            Transform templateItem = dropdownGo.transform.Find("Template/Viewport/Content/Item");
+                            ok &= Check(templateItem != null && templateItem.GetComponent<DifficultyItemHover>() != null,
+                                "dropdown item template has DifficultyItemHover");
                         }
                     }
                 }
@@ -584,6 +611,17 @@ namespace SurveHive.BuildTools
                             "ShopScroll ScrollRect wired (content + viewport)");
                         ok &= Check(scroll != null && scroll.vertical && !scroll.horizontal,
                             "ShopScroll scrolls vertically only");
+                        // Playtest fix: wheel/drag only reach the ScrollRect
+                        // through its own raycast surface, and the scrollbar is
+                        // both a handle and the "more below" cue.
+                        var surface = scroll != null && scroll.viewport != null
+                            ? scroll.viewport.GetComponent<UnityEngine.UI.Image>()
+                            : null;
+                        ok &= Check(surface != null && surface.raycastTarget,
+                            "ShopScroll viewport has a raycast surface (scroll input works everywhere)");
+                        ok &= Check(scroll != null && scroll.verticalScrollbar != null
+                            && scroll.verticalScrollbar.handleRect != null,
+                            "ShopScroll has a wired vertical scrollbar");
                     }
 
                     var rowsProp = shopSo.FindProperty("_rows");
@@ -1591,6 +1629,12 @@ namespace SurveHive.BuildTools
             }
 
             return ok;
+        }
+
+        private static int RequirementCount(Data.DifficultySO difficulty, Data.DifficultyTier tier)
+        {
+            Data.DifficultySO.UnlockRequirement[] requirements = difficulty.GetSettings(tier).unlockRequirements;
+            return requirements != null ? requirements.Length : 0;
         }
 
         private static bool Check(bool condition, string label)

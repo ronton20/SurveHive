@@ -47,5 +47,15 @@ namespace SurveHive.Data
         {
             _ranks.SetRank(upgradeId, rank);
         }
+
+        public override void RecordStageClear(string stageId, int difficulty)
+        {
+            _ranks.RecordStageClear(stageId, difficulty);
+        }
+
+        public override bool HasStageClear(string stageId, int difficulty)
+        {
+            return _ranks.HasStageClear(stageId, difficulty);
+        }
     }
 }

@@ -128,6 +128,9 @@ above are locked so new content drops into a stable framework rather than a movi
 
 ## Mobile UI Overhaul
 *(from Device Simulator testing 2026-07-04 — PC-first for now, tackle alongside the Phase 5 mobile sanity pass)*
+> **⚠ Superseded 2026-07-08:** the UI overhaul (#25) now includes a **PC-only pivot — mobile
+> support is being abandoned**. Items #14–17 and #24 below stay for reference but should be
+> struck rather than built when #25 lands.
 14. **Safe area support** — the notch/punch-hole hides HUD meters (health/EXP bars, timer); all HUD anchors must respect `Screen.safeArea`.
 15. **UI scale pass for small screens** — HUD bars, counters, damage numbers, and card text are all too small at phone DPI; likely a `CanvasScaler` reference-resolution/match rework plus per-element size bumps.
 16. **Skill cards relayout for portrait/mobile** — cards should be oriented horizontally (icon left, name/description right) and stacked vertically instead of the current three tall side-by-side columns.
@@ -142,7 +145,10 @@ above are locked so new content drops into a stable framework rather than a movi
 ---
 
 ## Release & polish wishlist *(added 2026-07-07 after the Phase 3 playtest)*
-25. **Complete UI overhaul** — fit to PC, enlarge text, smoother animations, click sounds, health bars, etc.
+25. **Complete UI overhaul** — fit to PC, enlarge text, smoother animations, click sounds, health bars, etc. *(Scope additions 2026-07-08:)*
+    - **PC-only pivot — abandoning mobile support.** Remove mobile support entirely; fit UI and controls for PC only. *(Supersedes the whole "Mobile UI Overhaul" section — #14–17, #24 — and PLAN.md Phase 4 "Mobile readiness"; strike those when this lands.)*
+    - **Meta shop UI rework** — category **tabs on the left**: **Combat / Survival / Utility** (settled 2026-07-08; maps the current 13 upgrades as Combat = Damage, Attack Speed, Crit Chance, Crit Damage, Ability DMG, Cooldown Cut · Survival = Max HP, Move Speed, Pickup Range · Utility = Honey Gain, EXP Gain, Item Drop Rate, Rerolls); the rest of the screen: **top half** shows the selected upgrade's info (icon, name, description, current rank / max rank, upgrade cost, current stat value, etc.), **bottom half** is a grid of just the upgrade icons for the current category with `[current level]/[max level]` under each icon.
+    - **Owned power-ups menu rework** — separate **power-ups** and **set effects** clearly; each entry shows only its name and `[current level]/[max level]`, with the description + concrete values appearing on mouse hover — the same treatment for both power-ups and set effects.
 26. **Status effect visual modifiers** — tint enemies in color based on their active status effect. *(A basic priority tint exists in `StatusEffectReceiver`; this wants a proper, readable pass.)*
 27. **Enhance status-effect set bonuses** — richer per-element set effects beyond the current potency/duration scaling (e.g. spread-on-death burns, shatter on frozen kills).
 28. ~~**Enhance meta shop** — way more modifiers to buy: EXP gain, ability power, cooldown reduction, crit rate (+2%/rank, capped 40%), crit damage, **power-up rerolls** (max 3 per run; each reroll replaces 1 offered card, not all 3; steeply escalating cost — the feature is strong, gate it), item drop rate, and any other bonuses that fit.~~ *(done in Phase 1C, 2026-07-08: all seven shipped — 13-upgrade scrollable shop, per-card in-run rerolls at 400/3.8× growth; cross-shop cost rebalance deferred to the 1A round-2 playtest pass.)*

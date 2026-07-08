@@ -27,10 +27,13 @@ namespace SurveHive.BuildTools
         private const string RunScenePath = "Assets/Scenes/Beehive.unity";
         private const string IconFolder = "Assets/ThirdParty/IconsTemp/Icons/PictoIcon_128";
 
+        private const string FontAssetPath = "Assets/ThirdParty/Fonts/BoldPixels/Assets/font/BoldPixels SDF.asset";
+
         // Menu palette, matching Phase4MetaAndMenusBuilder.
         private static readonly Color HoneyGold = new Color(1f, 0.765f, 0.043f);
         private static readonly Color CombBrown = new Color(0.549f, 0.353f, 0.169f);
         private static readonly Color DeepBrown = new Color(0.227f, 0.141f, 0.086f);
+        private static readonly Color Wax = new Color(0.91f, 0.847f, 0.627f);
 
         [MenuItem("SurveHive/Apply Difficulty (Phase 1B)")]
         public static void Apply()
@@ -76,6 +79,59 @@ namespace SurveHive.BuildTools
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(difficulty);
             }
+
+            EnsureUnlockRequirements(so, difficulty);
+        }
+
+        // Gating (playtest feedback 2026-07-08): Easy/Normal always open; Hard
+        // needs a Normal clear of this stage; Extreme needs a Hard clear plus
+        // the NEXT stage (Garden) cleared on Normal — so it stays locked until
+        // more worlds exist. Only written when a row has no requirements yet,
+        // so hand-edits survive re-runs.
+        private static void EnsureUnlockRequirements(SerializedObject so, DifficultySO difficulty)
+        {
+            so.Update();
+            SerializedProperty tiers = so.FindProperty("_tiers");
+            bool changed = false;
+
+            for (int i = 0; i < tiers.arraySize; i++)
+            {
+                SerializedProperty row = tiers.GetArrayElementAtIndex(i);
+                var tier = (DifficultyTier)row.FindPropertyRelative("tier").intValue;
+                SerializedProperty requirements = row.FindPropertyRelative("unlockRequirements");
+                if (requirements.arraySize > 0)
+                {
+                    continue;
+                }
+
+                if (tier == DifficultyTier.Hard)
+                {
+                    requirements.arraySize = 1;
+                    WriteRequirement(requirements.GetArrayElementAtIndex(0), "Beehive", "The Beehive", DifficultyTier.Normal);
+                    changed = true;
+                }
+                else if (tier == DifficultyTier.Extreme)
+                {
+                    requirements.arraySize = 2;
+                    WriteRequirement(requirements.GetArrayElementAtIndex(0), "Beehive", "The Beehive", DifficultyTier.Hard);
+                    WriteRequirement(requirements.GetArrayElementAtIndex(1), "Garden", "the Garden", DifficultyTier.Normal);
+                    changed = true;
+                }
+            }
+
+            if (changed)
+            {
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(difficulty);
+            }
+        }
+
+        private static void WriteRequirement(
+            SerializedProperty requirement, string stageId, string stageName, DifficultyTier clearTier)
+        {
+            requirement.FindPropertyRelative("stageId").stringValue = stageId;
+            requirement.FindPropertyRelative("stageName").stringValue = stageName;
+            requirement.FindPropertyRelative("clearTier").intValue = (int)clearTier;
         }
 
         private static void WriteTier(
@@ -140,11 +196,22 @@ namespace SurveHive.BuildTools
                 select = worldPanel.gameObject.AddComponent<DifficultySelectUI>();
             }
 
+            // Unlock-task tooltip (locked tiers) + the hover relay on the
+            // dropdown's item template so every cloned row reports itself.
+            TMPro.TMP_Text tooltipText = EnsureUnlockTooltip(worldPanel, out GameObject tooltipPanel);
+            GameObject templateItem = dropdown.transform.Find("Template/Viewport/Content/Item").gameObject;
+            if (!templateItem.TryGetComponent(out DifficultyItemHover _))
+            {
+                templateItem.AddComponent<DifficultyItemHover>();
+            }
+
             var store = AssetDatabase.LoadAssetAtPath<PersistentMetaProgressionStoreSO>(PersistentStorePath);
             var selectSo = new SerializedObject(select);
             selectSo.FindProperty("_dropdown").objectReferenceValue = dropdown;
             selectSo.FindProperty("_difficulty").objectReferenceValue = difficulty;
             selectSo.FindProperty("_store").objectReferenceValue = store;
+            selectSo.FindProperty("_tooltipPanel").objectReferenceValue = tooltipPanel;
+            selectSo.FindProperty("_tooltipText").objectReferenceValue = tooltipText;
             selectSo.ApplyModifiedPropertiesWithoutUndo();
 
             dropdown.RefreshShownValue();
@@ -185,6 +252,53 @@ namespace SurveHive.BuildTools
 
             var captionLabel = (RectTransform)dropdown.transform.Find("Label");
             captionLabel.offsetMin = new Vector2(84f, captionLabel.offsetMin.y);
+        }
+
+        // Task panel floating just right of the menu panel, level with the
+        // dropdown (plenty of off-panel room on PC's landscape canvas).
+        private static TMPro.TMP_Text EnsureUnlockTooltip(Transform worldPanel, out GameObject panel)
+        {
+            Transform existing = worldPanel.Find("DifficultyTooltip");
+            if (existing != null)
+            {
+                panel = existing.gameObject;
+                return existing.GetComponentInChildren<TMPro.TMP_Text>(true);
+            }
+
+            panel = new GameObject("DifficultyTooltip", typeof(RectTransform), typeof(Image));
+            var rect = (RectTransform)panel.transform;
+            rect.SetParent(worldPanel, false);
+            rect.anchorMin = new Vector2(1f, 0.5f);
+            rect.anchorMax = new Vector2(1f, 0.5f);
+            rect.pivot = new Vector2(0f, 0.5f);
+            rect.anchoredPosition = new Vector2(16f, -300f);
+            rect.sizeDelta = new Vector2(560f, 200f);
+
+            var image = panel.GetComponent<Image>();
+            image.sprite = Phase4MetaAndMenusBuilder.LoadUiKitSprite("PixelPanel");
+            image.type = Image.Type.Sliced;
+            image.pixelsPerUnitMultiplier = 2f;
+            image.color = DeepBrown;
+            image.raycastTarget = false;
+
+            var textGo = new GameObject("Text", typeof(RectTransform));
+            var textRect = (RectTransform)textGo.transform;
+            textRect.SetParent(rect, false);
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = new Vector2(20f, 16f);
+            textRect.offsetMax = new Vector2(-20f, -16f);
+
+            var text = textGo.AddComponent<TMPro.TextMeshProUGUI>();
+            text.font = AssetDatabase.LoadAssetAtPath<TMPro.TMP_FontAsset>(FontAssetPath);
+            text.fontSize = 26f;
+            text.color = Wax;
+            text.alignment = TMPro.TextAlignmentOptions.TopLeft;
+            text.textWrappingMode = TMPro.TextWrappingModes.Normal;
+            text.raycastTarget = false;
+
+            panel.SetActive(false);
+            return text;
         }
 
         private static RectTransform EnsureIconSlot(RectTransform parent, string name, Vector2 anchoredPosition)

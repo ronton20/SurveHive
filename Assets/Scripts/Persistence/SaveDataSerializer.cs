@@ -82,6 +82,31 @@ namespace SurveHive.Persistence
 
             data.selectedDifficulty = Mathf.Clamp(
                 data.selectedDifficulty, (int)Data.DifficultyTier.Easy, (int)Data.DifficultyTier.Extreme);
+
+            if (data.stageClearIds == null)
+            {
+                data.stageClearIds = new string[0];
+            }
+
+            if (data.stageClearMasks == null)
+            {
+                data.stageClearMasks = new int[0];
+            }
+
+            if (data.stageClearIds.Length != data.stageClearMasks.Length)
+            {
+                int count = Mathf.Min(data.stageClearIds.Length, data.stageClearMasks.Length);
+                Array.Resize(ref data.stageClearIds, count);
+                Array.Resize(ref data.stageClearMasks, count);
+            }
+
+            for (int i = 0; i < data.stageClearMasks.Length; i++)
+            {
+                if (data.stageClearMasks[i] < 0)
+                {
+                    data.stageClearMasks[i] = 0;
+                }
+            }
         }
 
         private static void Migrate(SaveData data)

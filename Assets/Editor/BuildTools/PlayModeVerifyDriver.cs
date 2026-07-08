@@ -14,9 +14,9 @@ namespace SurveHive.BuildTools
     /// Verification driver: plays through the current change under test and
     /// captures game-view screenshots, then quits the editor. The staged
     /// switch below is rewritten per verification target — currently the
-    /// Phase 1C shop expansion: bank honey, eyeball the 13-card scrollable
-    /// shop (top + scrolled), then start a run with 3 reroll charges and
-    /// exercise a per-card reroll on the level-up offer.
+    /// 1B/1C playtest fixes: difficulty unlock gating (locked rows, the
+    /// rejected-pick tooltip with checked/struck tasks, picking an unlocked
+    /// Hard) and the shop's visible scrollbar.
     /// Run from the CLI:
     /// <c>Unity -projectPath . -executeMethod SurveHive.BuildTools.PlayModeVerifyDriver.Run</c>
     /// (no -batchmode: the game view must render). Screenshots land in
@@ -84,9 +84,12 @@ namespace SurveHive.BuildTools
                     AdvanceStage();
                     break;
 
-                // Shop with money to spend: 13 cards in the new scroll grid.
+                // Simulate progress: Beehive cleared on Normal AND Hard, so
+                // Hard is open while Extreme stays locked with one task done.
                 case 1 when elapsed > 1.0:
-                    BankHoneyAndOpenShop(5000);
+                    GrantStageClear("Beehive", 1);
+                    GrantStageClear("Beehive", 2);
+                    ShowWorldSelect();
                     AdvanceStage();
                     break;
 
@@ -94,48 +97,61 @@ namespace SurveHive.BuildTools
                 // a few fps, and a second pending screenshot inside one frame
                 // drops the first.
                 case 2 when elapsed > 1.2:
-                    Capture("shot1_shop_top.png");
+                    ShowDifficultyDropdown();
                     AdvanceStage();
                     break;
 
-                case 3 when elapsed > 0.5:
-                    ScrollShopToBottom();
+                case 3 when elapsed > 1.2:
+                    Capture("shot1_dropdown_extreme_locked.png");
                     AdvanceStage();
                     break;
 
-                case 4 when elapsed > 1.2:
-                    Capture("shot2_shop_scrolled_new_cards.png");
+                // Picking locked EXTREME bounces + pins the task tooltip
+                // ([X] struck Hard clear, [ ] open Garden task).
+                case 4 when elapsed > 0.5:
+                    SelectDifficulty(3);
                     AdvanceStage();
                     break;
 
-                // 3 reroll charges (as if Waggle Dance were maxed), then run.
-                case 5 when elapsed > 0.5:
-                    GrantRerollRank(3);
-                    ClickWorldSelectBeehive();
+                case 5 when elapsed > 1.2:
+                    Capture("shot2_locked_pick_tooltip.png");
                     AdvanceStage();
                     break;
 
-                case 6 when elapsed > 4.0:
-                    ForceLevelUp();
+                // Hard is genuinely unlocked — the pick sticks.
+                case 6 when elapsed > 0.5:
+                    SelectDifficulty(2);
                     AdvanceStage();
                     break;
 
-                case 7 when elapsed > 1.5:
-                    Capture("shot3_offer_with_rerolls.png");
+                case 7 when elapsed > 1.2:
+                    Capture("shot3_hard_selected.png");
                     AdvanceStage();
                     break;
 
+                // Shop: the scrollbar is visible and programmatic scrolling
+                // still reaches the bottom rows.
                 case 8 when elapsed > 0.5:
-                    ClickRerollOnFirstCard();
+                    BankHoneyAndOpenShop(3000);
                     AdvanceStage();
                     break;
 
                 case 9 when elapsed > 1.2:
-                    Capture("shot4_after_reroll.png");
+                    Capture("shot4_shop_scrollbar.png");
                     AdvanceStage();
                     break;
 
-                case 10 when elapsed > 2.0:
+                case 10 when elapsed > 0.5:
+                    ScrollShopToBottom();
+                    AdvanceStage();
+                    break;
+
+                case 11 when elapsed > 1.2:
+                    Capture("shot5_shop_scrolled.png");
+                    AdvanceStage();
+                    break;
+
+                case 12 when elapsed > 2.0:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
@@ -154,6 +170,17 @@ namespace SurveHive.BuildTools
             else
             {
                 Debug.LogError("VerifyDriver: ShopScroll not found.");
+            }
+        }
+
+        private static void GrantStageClear(string stageId, int difficulty)
+        {
+            var store = AssetDatabase.LoadAssetAtPath<PersistentMetaProgressionStoreSO>(
+                "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
+            if (store != null)
+            {
+                store.RecordStageClear(stageId, difficulty);
+                Debug.Log($"VerifyDriver: recorded {stageId} clear on tier {difficulty}.");
             }
         }
 

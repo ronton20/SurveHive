@@ -132,6 +132,24 @@ namespace SurveHive.Data
             Persist();
         }
 
+        public override void RecordStageClear(string stageId, int difficulty)
+        {
+            EnsureLoaded();
+            if (_state.HasStageClear(stageId, difficulty))
+            {
+                return;
+            }
+
+            _state.RecordStageClear(stageId, difficulty);
+            Persist();
+        }
+
+        public override bool HasStageClear(string stageId, int difficulty)
+        {
+            EnsureLoaded();
+            return _state.HasStageClear(stageId, difficulty);
+        }
+
         /// <summary>Persists settings edits made through <see cref="Settings"/>.</summary>
         public void SaveSettings()
         {

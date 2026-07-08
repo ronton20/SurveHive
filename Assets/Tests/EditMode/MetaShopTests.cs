@@ -38,6 +38,10 @@ namespace SurveHive.Tests
             public int GetUpgradeRank(string upgradeId) => _state.GetRank(upgradeId);
 
             public void SetUpgradeRank(string upgradeId, int rank) => _state.SetRank(upgradeId, rank);
+
+            public void RecordStageClear(string stageId, int difficulty) => _state.RecordStageClear(stageId, difficulty);
+
+            public bool HasStageClear(string stageId, int difficulty) => _state.HasStageClear(stageId, difficulty);
         }
 
         private static MetaUpgradeSO CreateUpgrade(

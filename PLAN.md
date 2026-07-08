@@ -202,6 +202,10 @@ Fit to PC, enlarge text, smoother animations, click sounds, health bars — the 
 
 ## Phase 4 — Mobile readiness (TODO #14–17, #24)
 
+> **⚠ Superseded 2026-07-08:** the game is pivoting **PC-only — mobile support is being
+> abandoned** (see TODO #25 scope additions). Do not build this phase; fold any still-useful
+> bits (e.g. general layout audit) into Phase 3's PC UI overhaul and drop the rest.
+
 The gap for "mobile-ready". Wants 3A/3B done first so it lays out the *final* text/UI, not
 text that's about to change. Verify each step in the Device Simulator (iPhone notch profile +
 a tall 19.5:9+ Android profile).

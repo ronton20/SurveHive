@@ -20,6 +20,9 @@ namespace SurveHive.Core
         [SerializeField] private MetaProgressionStoreSO _metaProgressionStore;
         [SerializeField] private PlayerExperience _playerExperience;
         [SerializeField] private DifficultySO _difficulty;
+        // Identifies this scene's stage in the save's clear record (difficulty
+        // unlocks). New worlds set their own id via their builder pass.
+        [SerializeField] private string _stageId = "Beehive";
 
         private int _killCount;
         private float _elapsedSeconds;
@@ -87,6 +90,13 @@ namespace SurveHive.Core
             int level = _playerExperience != null ? _playerExperience.CurrentLevel : 0;
             _metaProgressionStore.RecordRunResult(
                 Mathf.FloorToInt(_elapsedSeconds), _killCount, level, victory);
+
+            // A victory marks this stage cleared on the run's difficulty,
+            // feeding the Hard/Extreme unlock gates.
+            if (victory)
+            {
+                _metaProgressionStore.RecordStageClear(_stageId, (int)SelectedDifficulty);
+            }
         }
     }
 }

@@ -173,40 +173,60 @@ namespace SurveHive.BuildTools
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
         }
 
-        // Scroll area between the balance line and the back button. Vertical
-        // drag/wheel only — no scrollbar; the content peeking at the cut edge
-        // reads as "more below".
+        // Scroll area between the balance line and the back button. Idempotent
+        // in pieces so re-runs can retrofit an already-built scroll (the first
+        // 1C pass shipped without an input surface or scrollbar and didn't
+        // actually scroll under the pointer).
         private static RectTransform EnsureShopScroll(Transform shopPanel)
         {
             Transform existing = shopPanel.Find("ShopScroll");
+            GameObject scrollGo;
+            RectTransform viewport;
+            RectTransform content;
             if (existing != null)
             {
-                return (RectTransform)existing.Find("Viewport/Content");
+                scrollGo = existing.gameObject;
+                viewport = (RectTransform)existing.Find("Viewport");
+                content = (RectTransform)viewport.Find("Content");
+            }
+            else
+            {
+                scrollGo = new GameObject("ShopScroll", typeof(RectTransform), typeof(ScrollRect));
+                var scrollRect = (RectTransform)scrollGo.transform;
+                scrollRect.SetParent(shopPanel, false);
+                scrollRect.anchorMin = Vector2.zero;
+                scrollRect.anchorMax = Vector2.one;
+                scrollRect.offsetMin = new Vector2(20f, 170f);
+                scrollRect.offsetMax = new Vector2(-20f, -210f);
+
+                var viewportGo = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
+                viewport = (RectTransform)viewportGo.transform;
+                viewport.SetParent(scrollRect, false);
+                viewport.anchorMin = Vector2.zero;
+                viewport.anchorMax = Vector2.one;
+                viewport.offsetMin = Vector2.zero;
+                viewport.offsetMax = Vector2.zero;
+
+                var contentGo = new GameObject("Content", typeof(RectTransform));
+                content = (RectTransform)contentGo.transform;
+                content.SetParent(viewport, false);
+                content.anchorMin = new Vector2(0f, 1f);
+                content.anchorMax = new Vector2(1f, 1f);
+                content.pivot = new Vector2(0.5f, 1f);
+                content.anchoredPosition = Vector2.zero;
             }
 
-            var scrollGo = new GameObject("ShopScroll", typeof(RectTransform), typeof(ScrollRect));
-            var scrollRect = (RectTransform)scrollGo.transform;
-            scrollRect.SetParent(shopPanel, false);
-            scrollRect.anchorMin = Vector2.zero;
-            scrollRect.anchorMax = Vector2.one;
-            scrollRect.offsetMin = new Vector2(20f, 170f);
-            scrollRect.offsetMax = new Vector2(-20f, -210f);
+            // Wheel and drag events only reach the ScrollRect when the pointer
+            // is over one of ITS raycast targets — give the viewport an
+            // invisible full-size surface so the whole area scrolls, not just
+            // the exact pixels covered by card graphics.
+            if (!viewport.TryGetComponent(out Image surface))
+            {
+                surface = viewport.gameObject.AddComponent<Image>();
+            }
 
-            var viewportGo = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
-            var viewport = (RectTransform)viewportGo.transform;
-            viewport.SetParent(scrollRect, false);
-            viewport.anchorMin = Vector2.zero;
-            viewport.anchorMax = Vector2.one;
-            viewport.offsetMin = Vector2.zero;
-            viewport.offsetMax = Vector2.zero;
-
-            var contentGo = new GameObject("Content", typeof(RectTransform));
-            var content = (RectTransform)contentGo.transform;
-            content.SetParent(viewport, false);
-            content.anchorMin = new Vector2(0f, 1f);
-            content.anchorMax = new Vector2(1f, 1f);
-            content.pivot = new Vector2(0.5f, 1f);
-            content.anchoredPosition = Vector2.zero;
+            surface.color = Color.clear;
+            surface.raycastTarget = true;
 
             var scroll = scrollGo.GetComponent<ScrollRect>();
             scroll.viewport = viewport;
@@ -214,9 +234,63 @@ namespace SurveHive.BuildTools
             scroll.horizontal = false;
             scroll.vertical = true;
             scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 40f;
+            scroll.scrollSensitivity = 60f;
+            scroll.verticalScrollbar = EnsureShopScrollbar(scrollGo.transform);
+            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
 
             return content;
+        }
+
+        // Visible draggable scrollbar down the right edge — both a grab handle
+        // and the "there's more below" signal the cut-off grid alone didn't give.
+        private static Scrollbar EnsureShopScrollbar(Transform shopScroll)
+        {
+            Transform existing = shopScroll.Find("Scrollbar");
+            if (existing != null)
+            {
+                return existing.GetComponent<Scrollbar>();
+            }
+
+            var barGo = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
+            var barRect = (RectTransform)barGo.transform;
+            barRect.SetParent(shopScroll, false);
+            barRect.anchorMin = new Vector2(1f, 0f);
+            barRect.anchorMax = new Vector2(1f, 1f);
+            barRect.pivot = new Vector2(1f, 0.5f);
+            barRect.anchoredPosition = Vector2.zero;
+            barRect.sizeDelta = new Vector2(18f, 0f);
+
+            var background = barGo.GetComponent<Image>();
+            background.color = new Color(0.15f, 0.09f, 0.05f, 0.9f);
+
+            var areaGo = new GameObject("Sliding Area", typeof(RectTransform));
+            var area = (RectTransform)areaGo.transform;
+            area.SetParent(barRect, false);
+            area.anchorMin = Vector2.zero;
+            area.anchorMax = Vector2.one;
+            area.offsetMin = new Vector2(2f, 2f);
+            area.offsetMax = new Vector2(-2f, -2f);
+
+            var handleGo = new GameObject("Handle", typeof(RectTransform), typeof(Image));
+            var handle = (RectTransform)handleGo.transform;
+            handle.SetParent(area, false);
+            handle.anchorMin = Vector2.zero;
+            handle.anchorMax = Vector2.one;
+            handle.offsetMin = Vector2.zero;
+            handle.offsetMax = Vector2.zero;
+
+            var handleImage = handleGo.GetComponent<Image>();
+            handleImage.sprite = Phase4MetaAndMenusBuilder.LoadUiKitSprite("PixelButton");
+            handleImage.type = Image.Type.Sliced;
+            handleImage.pixelsPerUnitMultiplier = 2f;
+            handleImage.color = CombBrown;
+
+            var scrollbar = barGo.GetComponent<Scrollbar>();
+            scrollbar.handleRect = handle;
+            scrollbar.targetGraphic = handleImage;
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+
+            return scrollbar;
         }
 
         // Finds the card wherever it lives (panel root for pre-1C cards,

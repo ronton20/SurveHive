@@ -13,6 +13,16 @@ namespace SurveHive.Data
     [CreateAssetMenu(menuName = "SurveHive/Difficulty Settings", fileName = "DifficultySettings")]
     public sealed class DifficultySO : ScriptableObject
     {
+        /// <summary>One "clear stage X on difficulty Y" gate for a tier.</summary>
+        [Serializable]
+        public struct UnlockRequirement
+        {
+            // Save-record key (RunSession._stageId) + the player-facing name.
+            public string stageId;
+            public string stageName;
+            public DifficultyTier clearTier;
+        }
+
         [Serializable]
         public struct TierSettings
         {
@@ -23,6 +33,8 @@ namespace SurveHive.Data
             public float enemyDamageMultiplier;
             public float spawnRateMultiplier;
             public float honeyGainMultiplier;
+            // Append-only (serialized): empty/missing = always unlocked.
+            public UnlockRequirement[] unlockRequirements;
 
             public static TierSettings Identity => new TierSettings
             {
@@ -33,6 +45,7 @@ namespace SurveHive.Data
                 enemyDamageMultiplier = 1f,
                 spawnRateMultiplier = 1f,
                 honeyGainMultiplier = 1f,
+                unlockRequirements = null,
             };
         }
 

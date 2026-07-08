@@ -20,6 +20,7 @@ MonoBehaviour:
     enemyDamageMultiplier: 0.75
     spawnRateMultiplier: 1
     honeyGainMultiplier: 0.75
+    unlockRequirements: []
   - tier: 1
     displayName: NORMAL
     icon: {fileID: 21300000, guid: 251943870e5cb43f4bec2163205eebfe, type: 3}
@@ -27,6 +28,7 @@ MonoBehaviour:
     enemyDamageMultiplier: 1
     spawnRateMultiplier: 1
     honeyGainMultiplier: 1
+    unlockRequirements: []
   - tier: 2
     displayName: HARD
     icon: {fileID: 21300000, guid: 8cbf80c89e27142e2bb1a63828e9331d, type: 3}
@@ -34,6 +36,10 @@ MonoBehaviour:
     enemyDamageMultiplier: 1.4
     spawnRateMultiplier: 1.15
     honeyGainMultiplier: 1.5
+    unlockRequirements:
+    - stageId: Beehive
+      stageName: The Beehive
+      clearTier: 1
   - tier: 3
     displayName: EXTREME
     icon: {fileID: 21300000, guid: d8f351710b6024dafba77dcf4b97c118, type: 3}
@@ -41,3 +47,10 @@ MonoBehaviour:
     enemyDamageMultiplier: 1.9
     spawnRateMultiplier: 1.3
     honeyGainMultiplier: 2.25
+    unlockRequirements:
+    - stageId: Beehive
+      stageName: The Beehive
+      clearTier: 2
+    - stageId: Garden
+      stageName: the Garden
+      clearTier: 1

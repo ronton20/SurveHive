@@ -24,5 +24,16 @@ namespace SurveHive.Data
         public virtual void RecordRunResult(int timeSeconds, int kills, int level, bool victory)
         {
         }
+
+        /// <summary>Stage-victory record (difficulty unlocks); no-op by default.</summary>
+        public virtual void RecordStageClear(string stageId, int difficulty)
+        {
+        }
+
+        /// <summary>Whether the stage was cleared on a difficulty; false by default.</summary>
+        public virtual bool HasStageClear(string stageId, int difficulty)
+        {
+            return false;
+        }
     }
 }

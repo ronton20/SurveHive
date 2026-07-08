@@ -11,6 +11,8 @@ namespace SurveHive.Persistence
     public sealed class MetaProgressionState
     {
         private readonly Dictionary<string, int> _ranks = new Dictionary<string, int>();
+        // Per-stage cleared-difficulty bitmask (bit n = (int)DifficultyTier n).
+        private readonly Dictionary<string, int> _stageClearMasks = new Dictionary<string, int>();
         private int _bankedCurrency;
 
         public int BankedCurrency => _bankedCurrency;
@@ -53,14 +55,41 @@ namespace SurveHive.Persistence
             _ranks[upgradeId] = rank;
         }
 
+        public void RecordStageClear(string stageId, int difficulty)
+        {
+            if (string.IsNullOrEmpty(stageId) || difficulty < 0 || difficulty > 30)
+            {
+                return;
+            }
+
+            _stageClearMasks.TryGetValue(stageId, out int mask);
+            _stageClearMasks[stageId] = mask | (1 << difficulty);
+        }
+
+        public bool HasStageClear(string stageId, int difficulty)
+        {
+            return !string.IsNullOrEmpty(stageId) && difficulty >= 0 && difficulty <= 30
+                && _stageClearMasks.TryGetValue(stageId, out int mask)
+                && (mask & (1 << difficulty)) != 0;
+        }
+
         public void LoadFrom(SaveData data)
         {
             _ranks.Clear();
+            _stageClearMasks.Clear();
             _bankedCurrency = data.bankedCurrency;
 
             for (int i = 0; i < data.upgradeIds.Length; i++)
             {
                 SetRank(data.upgradeIds[i], data.upgradeRanks[i]);
+            }
+
+            for (int i = 0; i < data.stageClearIds.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(data.stageClearIds[i]) && data.stageClearMasks[i] > 0)
+                {
+                    _stageClearMasks[data.stageClearIds[i]] = data.stageClearMasks[i];
+                }
             }
         }
 
@@ -75,6 +104,17 @@ namespace SurveHive.Persistence
             {
                 data.upgradeIds[index] = pair.Key;
                 data.upgradeRanks[index] = pair.Value;
+                index++;
+            }
+
+            data.stageClearIds = new string[_stageClearMasks.Count];
+            data.stageClearMasks = new int[_stageClearMasks.Count];
+
+            index = 0;
+            foreach (KeyValuePair<string, int> pair in _stageClearMasks)
+            {
+                data.stageClearIds[index] = pair.Key;
+                data.stageClearMasks[index] = pair.Value;
                 index++;
             }
         }

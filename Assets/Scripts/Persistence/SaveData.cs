@@ -9,7 +9,7 @@ namespace SurveHive.Persistence
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public int version = CurrentVersion;
         public int bankedCurrency;
@@ -21,6 +21,11 @@ namespace SurveHive.Persistence
         // initializer doubles as the v1 migration — JsonUtility leaves missing
         // fields at their default, so old saves land on Normal.
         public int selectedDifficulty = (int)Data.DifficultyTier.Normal;
+        // v3: per-stage victory record as parallel id/bitmask arrays (bit n =
+        // cleared on (int)DifficultyTier n) — drives Hard/Extreme unlocks.
+        // Initializers double as the v2 migration (missing → no clears).
+        public string[] stageClearIds = new string[0];
+        public int[] stageClearMasks = new int[0];
     }
 
     [Serializable]
