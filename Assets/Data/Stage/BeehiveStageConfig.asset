@@ -20,7 +20,7 @@ MonoBehaviour:
       time: 0
       value: 1
       inSlope: 0
-      outSlope: 2.5
+      outSlope: 0.8
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -28,7 +28,7 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 3.5
-      inSlope: 2.5
+      inSlope: 5
       outSlope: 0
       tangentMode: 0
       weightedMode: 0
@@ -41,7 +41,7 @@ MonoBehaviour:
   - Type: 0
     NormalizedTime: 0.25
     EnemyStats: {fileID: 11400000, guid: aabdff4ac4a494abe81387f694ed3255, type: 2}
-    Count: 24
+    Count: 16
   - Type: 2
     NormalizedTime: 0.5
     EnemyStats: {fileID: 11400000, guid: 68d1891f2ee4346619ffae39a71a2377, type: 2}

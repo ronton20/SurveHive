@@ -60,6 +60,9 @@ namespace SurveHive.BuildTools
             {
                 _playStartTime = EditorApplication.timeSinceStartup;
                 _stageStartTime = _playStartTime;
+                // The drive runs with a GUI (no -batchmode), so the batch-mode
+                // audio mute doesn't apply — silence the capture run explicitly.
+                AudioListener.volume = 0f;
             }
 
             // Per-stage clock: a slow scene load or shader-compile hitch must

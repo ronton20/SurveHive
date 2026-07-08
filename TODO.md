@@ -86,9 +86,11 @@ ranged / bomber / swarm all reuse existing pools + components. Slot it in whenev
 interleaves well with chain A (e.g. a magic-shielded ranged bee once #20/#23 exist).
 
 **C. Final-polish leftovers** (the tail of the original build push — Phases 0–5A are done):
-5. **Difficulty / curve tuning pass** — wants chains A/B in place *and* real playtest
+5. ~~**Difficulty / curve tuning pass** — wants chains A/B in place *and* real playtest
    feedback, so it comes after the systems it balances exist. Target: a first-time player
-   dies around **minute 8–12**; a meta-invested player can **clear** the Queen.
+   dies around **minute 8–12**; a meta-invested player can **clear** the Queen.~~ *(done in
+   Phase 1A rounds 1–2, 2026-07-09: economy/crit nerfs, then a simulation-verified density +
+   curve retune and the Queen anti-stall enrage — see `CHANGELOG.md`; confirm feel next playtest.)*
 6. **Mobile UI overhaul (#14–17) + mobile sanity pass** — the gap for "mobile-ready";
    safe-area anchoring is the most urgent (the notch currently hides HUD meters).
 7. **Localization seam** — cheap now, only gets more expensive as UI/string count grows;
@@ -166,7 +168,7 @@ above are locked so new content drops into a stable framework rather than a movi
 - ~~**Run stats / results screen** — on death or stage clear, show time survived, kills, level, currency earned (feeds naturally into meta progression).~~ *(done in Phase 3: results block on both death and victory screens; currency banks on both paths.)*
 - ~~**Save/load** — persist meta-progression and settings (goes hand-in-hand with #12; decide on a serialization approach, e.g. JSON in `Application.persistentDataPath`).~~ *(done in Phase 4A: versioned JSON at `persistentDataPath`, safe-write, corrupt→fresh-start.)*
 - ~~**Object-pool coverage for new spawners** — keep bosses / strong-wave hordes / drops pooled to hold the zero-GC guarantee as counts grow.~~ *(done across Phases 2–3: 24 pool IDs cover both bosses, enemy projectiles, all four item drops, and every skill projectile/zone/VFX — all spawned via `PoolManager`.)*
-- **Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, spawn curve, drop rates, and boss HP. Target: a first-time player dies around **minute 8–12**; a meta-invested player can clear. Document what changed and why.
+- ~~**Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, spawn curve, drop rates, and boss HP. Target: a first-time player dies around **minute 8–12**; a meta-invested player can clear. Document what changed and why.~~ *(done in Phase 1A rounds 1–2, 2026-07-09: tuned via the new `BalanceRunTest` sim harness; both targets machine-verified, changes logged in `CHANGELOG.md`.)*
 - ~~**Audio pass** — SFX for hits/level-up/death/pickups and background music per world.~~ *(done in Phase 5A: pooled `AudioService` + CC0 SFX/music for every listed event, credits in `Assets/Audio/CREDITS.md`.)*
 - ~~**Damage feedback** — hit flash / knockback / screen shake to make combat feel impactful (cheap wins alongside status effects).~~ *(done in Phase 1: hit flash, knockback, screen shake, hit-stop on elite kills, death VFX.)*
 - **Localization seam** — if wider release is a goal, isolate user-facing strings early rather than retrofitting later: all user-facing strings flow through one string table/asset instead of hardcoded literals (actual translation deferred).

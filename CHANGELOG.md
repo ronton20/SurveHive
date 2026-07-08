@@ -7,6 +7,48 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 1A round 2 — simulation-verified balance pass + Queen enrage (2026-07-09)
+
+Closes the curve-tuning pass: both 1A targets are now machine-checked by a new balance
+harness, and the data was tuned against 12 simulation rounds (~40 full unattended runs).
+
+- **Balance harness**: `BalanceRunTest` — an `[Explicit]` PlayMode fixture that boots the
+  real Beehive scene and plays full runs at 6× time scale with a kiting bot standing in
+  for the player (injected through the existing `PlayerMovement.Initialize` seam; no
+  runtime changes). It kites under pressure, detours for item drops (heals/shields/nukes),
+  retreats when hurt and re-engages when healed, and answers level-up offers through the
+  real card buttons. Two statistical checks: fresh-save runs must die (median in a
+  calibrated band, ≤1 lucky clear in 3) and a maxed-meta account must clear the Queen
+  (≥1 of 2). Run via the new filter arg: `unity.sh test PlayMode SurveHive.Tests.BalanceRunTest`
+  (excluded from the normal suite). Per-minute survival telemetry (`[BALANCE]` log lines)
+  made the tuning evidence-driven.
+- **What the sims showed**: deaths were caused by mid-game *density*, not stat ramps — the
+  spawn drip hit its interval floor by minute 6 and pinned the arena at the 60-enemy cap,
+  turning late runs into surround-geometry coin flips that killed even maxed builds. And
+  the Queen was grindable by infinite patience at any power level: the timeline freeze
+  stops the drip during her fight while her summons feed the player heal drops (a fresh
+  bot cleared her after an 82-minute chip war).
+- **Density/ramp tuning** (`BeehiveWaveConfig`): spawn-interval ramp 0.2→0.12/min (floor
+  now reached ~minute 10, not 6), concurrent-enemy cap 60→48, swarmling packs 6→5, enemy
+  HP ramp +18%→+15%/min, damage ramp +10%→+6%/min. Stage curve (`BeehiveStageConfig`):
+  spawn-rate escalation reshaped to ease-in (same 1×→3.5× endpoints — calm mid, frantic
+  finish), minute-2:30 ring wave 24→16 warriors.
+- **Drip-rank contact damage −25%**: worker 4→3, warrior 8→6, swarmling 3→2,
+  spitter/bomber 6→5. Boss-rank damage untouched.
+- **The Queen is the wall now**: 3500→4500 HP, 25→36 contact damage (stingers scale at
+  0.6×), and a new **anti-stall enrage** on `QueenBossController` — after 60s of fight
+  time her damage ramps to 2.5× and her pattern interval tightens 5s→2s over the next
+  60s (serialized knobs, defaults need no prefab edits; pure ramp math EditMode-tested
+  in `QueenEnrageTests`). An invested build kills her before the enrage matters; a
+  patience war dies to it.
+- **Verified**: maxed-meta clears at ~12 min (level ~20, ~2k kills); fresh runs never
+  clear — they die in the mid-game crunch or fighting the Queen. The bot plays a rigid
+  melee-hover style worth ~2 minutes of human survival, so its crunch deaths at ~6 min
+  map to the design target of a first-timer dying around minute 8–12 — to be confirmed
+  against real playtest feel.
+- **Headless QoL**: automated runs are now silent — `HeadlessAudioMute` zeroes the audio
+  listener under `-batchmode`, and `PlayModeVerifyDriver` mutes its GUI capture runs.
+
 ### Playtest fixes — shop scrolling + difficulty unlock gating (2026-07-08)
 
 Same-day feedback round on Phases 1B/1C.

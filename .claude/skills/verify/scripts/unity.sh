@@ -8,7 +8,8 @@
 #   unity.sh build <BuilderClass>        # -executeMethod SurveHive.BuildTools.<Builder>.Apply  (batch)
 #   unity.sh method <Fully.Qualified.Method>   # arbitrary -executeMethod (batch)
 #   unity.sh validate                    # BeehiveSceneValidator.Validate + grep verdict (batch)
-#   unity.sh test <EditMode|PlayMode>    # -runTests, parses the results XML (batch)
+#   unity.sh test <EditMode|PlayMode> [filter]   # -runTests, parses the results XML (batch);
+#                                        # optional filter → -testFilter (also runs [Explicit] tests)
 #   unity.sh drive [Method]              # PlayModeVerifyDriver.Run — NO -batchmode (opens GUI ~1min)
 #   unity.sh lock                        # report editor/lock state, then exit
 #
@@ -80,9 +81,11 @@ case "$cmd" in
     exit $rc ;;
 
   test)
-    plat="${1:?usage: unity.sh test <EditMode|PlayMode>}"; guard_batch
+    plat="${1:?usage: unity.sh test <EditMode|PlayMode> [filter]}"; filter="${2:-}"; guard_batch
     xml="$LOGDIR/tests-$plat.xml"; log="$LOGDIR/tests-$plat.log"
-    run_unity "$log" -runTests -batchmode -projectPath "$PROJECT" -testPlatform "$plat" -testResults "$xml"
+    extra=(); [[ -n "$filter" ]] && extra=(-testFilter "$filter")
+    run_unity "$log" -runTests -batchmode -projectPath "$PROJECT" -testPlatform "$plat" -testResults "$xml" \
+      ${extra[@]+"${extra[@]}"}
     rc=$?  # rc==2 means test failures; parse the XML either way
     echo "exit=$rc"
     if [[ -f "$xml" ]]; then

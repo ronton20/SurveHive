@@ -33,16 +33,27 @@ All the systems the balance pass was waiting on (lanes, defenses, sets, enemy va
 exist. Tune the baseline first, then build the difficulty tiers on top of it, then expand the
 meta shop — meta upgrades shift the curve, so they land last and get folded into the numbers.
 
-### 1A — Difficulty / curve tuning pass ◐
+### 1A — Difficulty / curve tuning pass ✅
 The dedicated balance pass the whole backlog has been deferring to.
 - **Round 1 shipped (2026-07-08, playtest feedback):** honey income cut ~60% across every
   enemy drop table (the shop maxed out in ~6–8 runs — far too fast); base crit chance 5% → **0%**
   (all crit now comes from Keen Eye / future meta upgrade); **Keen Eye** reworked to 5 levels
   totalling **5/10/15/20/30%** via a new per-level magnitude table on `SkillDefinitionSO`.
-  EXP curve, enemy HP/damage ramp, spawn curve, and boss HP reviewed and deliberately left
-  untouched — they were hand-tuned last playtest round and there's no evidence against them yet.
-- **Remaining:** verify the two targets below against post-nerf playtest runs; tune the curves
-  if they miss.
+- **Round 2 shipped (2026-07-09, simulation-verified):** built `BalanceRunTest` — an
+  `[Explicit]` PlayMode harness that plays full unattended runs at 6× speed with a kiting
+  bot (injected via the `PlayerMovement.Initialize` seam) and checks both targets
+  statistically (run `unity.sh test PlayMode SurveHive.Tests.BalanceRunTest`). 12 sim
+  rounds drove these changes: mid-game density was the real killer (not stat ramps) —
+  spawn-interval ramp 0.2→0.12/min, concurrent cap 60→48, swarmling packs 6→5, ring wave
+  24→16; ramps softened (HP +18%→+15%/min, damage +10%→+6%/min), spawn curve eased-in
+  (same 1×→3.5× endpoints); drip-rank contact damage −25%; Queen 3500→4500 HP, 25→36
+  contact, plus a new **anti-stall enrage** (damage →2.5×, patterns 5s→2s after a minute
+  of fight time) because the boss-frozen drip + summon heal-drops made her grindable by
+  infinite patience at any power level. Verified: maxed-meta clears at ~12 min; fresh runs
+  never clear and die at the mid-game crunch or at the Queen. The bot underestimates a
+  human's mid-game survival by ~2 min (rigid melee-range hover, random picks), so its
+  5.5–6.5-min crunch deaths correspond to the human 8–12 target — **confirm the feel in
+  the next real playtest** and re-tune from the balance harness if it's off.
 - Playtest-driven tuning of: EXP curve (`LevelCurveSO`), enemy HP/damage/speed scaling and the
   per-minute ramp, stage spawn-rate curve, drop-table rates, miniboss/Queen HP and pattern
   timing, and per-lane power-up numbers (esp. Enhancement damage factors and set-bonus potency).
