@@ -7,6 +7,32 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 1B — Working stage difficulty (2026-07-08)
+
+TODO #30: the Phase-4B difficulty dropdown seam (fixed to Normal) is now a real,
+data-driven system.
+
+- **Four tiers — Easy / Normal / Hard / Extreme** — authored as one `DifficultySO` tier
+  table (`Assets/Data/Progression/DifficultySettings.asset`): per tier, enemy HP and
+  damage multipliers (Easy 0.75×/0.75× → Extreme 2.25×/1.9×), an optional spawn-rate
+  multiplier (Hard 1.15×, Extreme 1.3×), and a compensating **honey-gain multiplier**
+  (Easy 0.75× → Extreme 2.25×). Tuning is inspector-only data; the additive
+  `DifficultyBuilder` pass never overwrites an existing 4-row table.
+- **One hook covers every spawn**: the multipliers resolve once at run start
+  (`RunSession.SelectedDifficulty` static carries the menu choice across the scene load)
+  and apply inside `EnemySpawner.SpawnAt` — regular drip, strong waves, the Royal Guard
+  miniboss, and the Queen all scale. Honey compensation multiplies every pickup in
+  `RunCurrencyWallet`, stacking with the meta-shop gain upgrade.
+- **Live world-select dropdown**: 4 options with placeholder icons (feather / star /
+  sword / skull from the temp icon pack — final art specced in `ASSET_GENERATION.md`
+  §2.7), populated from the tier table by a new `DifficultySelectUI`; the TMP dropdown
+  template got icon slots + row sizing to fit.
+- **Save v2**: last-selected difficulty persists (`selectedDifficulty`, clamped on load;
+  v1 saves migrate to Normal) and restores on the next boot.
+- EditMode tests (tier lookup + fallback, enemy HP/damage scaling through
+  `EnemyController.Initialize`, honey stacking, save round-trip/migration/clamping) and
+  ~20 new validator asserts pin the wiring in both scenes.
+
 ### Phase 1A (round 1) — Balance: honey economy + crit rework (2026-07-08)
 
 First tuning round of the new plan's balance pass, driven by playtest feedback (the

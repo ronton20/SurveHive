@@ -14,9 +14,9 @@ namespace SurveHive.BuildTools
     /// Verification driver: plays through the current change under test and
     /// captures game-view screenshots, then quits the editor. The staged
     /// switch below is rewritten per verification target — currently the
-    /// Phase 4B/4C enemies: start a run, spawn a swarmling pack (wobbling
-    /// cluster) and bombers, and capture the pack closing in, the bomber
-    /// fuse pulse, and the AoE blast. Run from the CLI:
+    /// Phase 1B difficulty picker: open world select, pop the (formerly
+    /// locked) difficulty dropdown, pick EXTREME, and start a run on it.
+    /// Run from the CLI:
     /// <c>Unity -projectPath . -executeMethod SurveHive.BuildTools.PlayModeVerifyDriver.Run</c>
     /// (no -batchmode: the game view must render). Screenshots land in
     /// <c>VerifyShots/</c> under the project root.
@@ -92,50 +92,55 @@ namespace SurveHive.BuildTools
                     AdvanceStage();
                     break;
 
-                // Start the run through the real button path.
+                // World select — the difficulty picker lives here.
                 case 1 when elapsed > 1.0:
-                    ClickWorldSelectBeehive();
-                    AdvanceStage();
-                    break;
-
-                // Swarmling pack from one side — the wobble should fan the
-                // cluster out as it closes.
-                case 2 when elapsed > 5.0:
-                    SpawnEnemyCluster("Assets/Data/Enemies/SwarmlingBee.asset", 8, 7f);
-                    AdvanceStage();
-                    break;
-
-                case 3 when elapsed > 1.2:
-                    Capture("shot1_swarm_pack_closing.png");
-                    AdvanceStage();
-                    break;
-
-                // Bombers rush at 3.3 u/s from 5u: fuse (~1s in, 0.55s pulse),
-                // blast at ~1.6s.
-                case 4 when elapsed > 0.5:
-                    SpawnEnemyRing("Assets/Data/Enemies/BomberBee.asset", 3, 5f);
+                    ShowWorldSelect();
                     AdvanceStage();
                     break;
 
                 // Captures ≥1s apart: the batch-launched game view repaints at
                 // a few fps, and a second pending screenshot inside one frame
                 // drops the first.
-                case 5 when elapsed > 1.2:
-                    Capture("shot2_bomber_fuse.png");
+                case 2 when elapsed > 1.2:
+                    Capture("shot1_worldselect_dropdown.png");
                     AdvanceStage();
                     break;
 
-                case 6 when elapsed > 1.0:
-                    Capture("shot3_bomber_blast.png");
+                // Pop the dropdown list: 4 tier rows with icons.
+                case 3 when elapsed > 1.0:
+                    ShowDifficultyDropdown();
                     AdvanceStage();
                     break;
 
-                case 7 when elapsed > 1.5:
-                    Capture("shot4_aftermath.png");
+                case 4 when elapsed > 1.2:
+                    Capture("shot2_dropdown_open.png");
                     AdvanceStage();
                     break;
 
-                case 8 when elapsed > 2.0:
+                // Select EXTREME through the real value-changed path (also
+                // persists to the redirected save).
+                case 5 when elapsed > 0.5:
+                    SelectDifficulty(3);
+                    AdvanceStage();
+                    break;
+
+                case 6 when elapsed > 1.2:
+                    Capture("shot3_extreme_selected.png");
+                    AdvanceStage();
+                    break;
+
+                // Run on Extreme — sanity that the scene boots with the tier.
+                case 7 when elapsed > 0.5:
+                    ClickWorldSelectBeehive();
+                    AdvanceStage();
+                    break;
+
+                case 8 when elapsed > 6.0:
+                    Capture("shot4_run_on_extreme.png");
+                    AdvanceStage();
+                    break;
+
+                case 9 when elapsed > 2.0:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
@@ -236,6 +241,39 @@ namespace SurveHive.BuildTools
             {
                 controller.ShowMain();
                 controller.ShowWorldSelect();
+            }
+        }
+
+        private static TMPro.TMP_Dropdown FindDifficultyDropdown()
+        {
+            var dropdown = Object.FindAnyObjectByType<TMPro.TMP_Dropdown>();
+            if (dropdown == null)
+            {
+                Debug.LogError("VerifyDriver: DifficultyDropdown not found.");
+            }
+
+            return dropdown;
+        }
+
+        private static void ShowDifficultyDropdown()
+        {
+            TMPro.TMP_Dropdown dropdown = FindDifficultyDropdown();
+            if (dropdown != null)
+            {
+                dropdown.Show();
+                Debug.Log("VerifyDriver: difficulty dropdown opened.");
+            }
+        }
+
+        private static void SelectDifficulty(int index)
+        {
+            TMPro.TMP_Dropdown dropdown = FindDifficultyDropdown();
+            if (dropdown != null)
+            {
+                dropdown.Hide();
+                // Real path: fires onValueChanged → DifficultySelectUI.
+                dropdown.value = index;
+                Debug.Log($"VerifyDriver: difficulty set to option {index}.");
             }
         }
 

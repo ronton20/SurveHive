@@ -58,6 +58,27 @@ namespace SurveHive.Data
             }
         }
 
+        /// <summary>Last-selected difficulty tier; writes persist immediately.</summary>
+        public DifficultyTier SelectedDifficulty
+        {
+            get
+            {
+                EnsureLoaded();
+                return (DifficultyTier)_save.selectedDifficulty;
+            }
+            set
+            {
+                EnsureLoaded();
+                if (_save.selectedDifficulty == (int)value)
+                {
+                    return;
+                }
+
+                _save.selectedDifficulty = (int)value;
+                Persist();
+            }
+        }
+
         public override void BankRunCurrency(int amount)
         {
             if (amount <= 0)

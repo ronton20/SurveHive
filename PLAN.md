@@ -55,8 +55,15 @@ The dedicated balance pass the whole backlog has been deferring to.
   `Data/LevelCurveSO.cs` / `Data/EnemyStatsSO.cs` / `Data/StageConfigSO.cs` only if a knob is missing.
 - **Done when:** both targets hold across a few runs each, and the changes are written down.
 
-### 1B — Working stage difficulty — TODO #30 ☐
+### 1B — Working stage difficulty — TODO #30 ✅
 Turn the Phase-4B dropdown seam (currently fixed to Normal) into a real system.
+- **Shipped 2026-07-08:** `DifficultySO` tier table (`Assets/Data/Progression/DifficultySettings.asset`,
+  created by the additive `DifficultyBuilder` pass which never overwrites an existing 4-row
+  table — tune in the inspector freely). Easy 0.75×HP/0.75×dmg/0.75×honey → Extreme
+  2.25×/1.9×/2.25× (+1.15×/1.3× spawn rate on Hard/Extreme). Selection flows dropdown →
+  `DifficultySelectUI` → static `RunSession.SelectedDifficulty` → `EnemySpawner` (all spawn
+  paths incl. bosses) + `RunCurrencyWallet` honey multiplier; persisted as save v2. Placeholder
+  icons wired (ASSET_GENERATION §2.7); EditMode tests + validator checks cover the wiring.
 - Four tiers: **Easy / Normal / Hard / Extreme**. Each scales enemy HP + damage (and optionally
   spawn rate) but **increases honey gain** as compensation — a `DifficultySO` (or a tier table
   on a config SO) holding the multipliers, so tuning stays data-driven.

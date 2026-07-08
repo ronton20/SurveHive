@@ -9,7 +9,7 @@ namespace SurveHive.Persistence
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
 
         public int version = CurrentVersion;
         public int bankedCurrency;
@@ -17,6 +17,10 @@ namespace SurveHive.Persistence
         public int[] upgradeRanks = new int[0];
         public SettingsData settings = new SettingsData();
         public BestRunData bestRun = new BestRunData();
+        // v2: last-selected difficulty tier (Data.DifficultyTier as int). The
+        // initializer doubles as the v1 migration — JsonUtility leaves missing
+        // fields at their default, so old saves land on Normal.
+        public int selectedDifficulty = (int)Data.DifficultyTier.Normal;
     }
 
     [Serializable]

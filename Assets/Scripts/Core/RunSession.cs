@@ -10,9 +10,16 @@ namespace SurveHive.Core
     {
         public static RunSession Instance { get; private set; }
 
+        // Chosen on the menu's world-select screen and read by the run scene
+        // after load; a plain static survives the scene swap without a carrier
+        // object. Defaults to Normal so editor boots straight into a run scene
+        // (and tests) play unscaled.
+        public static DifficultyTier SelectedDifficulty { get; set; } = DifficultyTier.Normal;
+
         [SerializeField] private RunCurrencyWallet _currencyWallet;
         [SerializeField] private MetaProgressionStoreSO _metaProgressionStore;
         [SerializeField] private PlayerExperience _playerExperience;
+        [SerializeField] private DifficultySO _difficulty;
 
         private int _killCount;
         private float _elapsedSeconds;
@@ -30,6 +37,15 @@ namespace SurveHive.Core
         private void Awake()
         {
             Instance = this;
+
+            // Difficulty honey compensation, applied once so every pickup this
+            // run pays out at the tier's rate (stacks with the meta-shop gain
+            // multiplier, which MetaUpgradeApplier adds separately).
+            if (_currencyWallet != null && _difficulty != null)
+            {
+                _currencyWallet.SetDifficultyGainMultiplier(
+                    _difficulty.GetSettings(SelectedDifficulty).honeyGainMultiplier);
+            }
         }
 
         private void OnDestroy()

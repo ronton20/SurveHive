@@ -302,6 +302,7 @@ MonoBehaviour:
   _currencyWallet: {fileID: 12424190}
   _metaProgressionStore: {fileID: 11400000, guid: ff90004b21c2941359817a27e27df045, type: 2}
   _playerExperience: {fileID: 1089349800}
+  _difficulty: {fileID: 11400000, guid: 56f5da05932b549308a78fa6ad0ab1bd, type: 2}
 --- !u!114 &12424193
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13669,6 +13670,7 @@ MonoBehaviour:
   _player: {fileID: 1089349801}
   _playerExperience: {fileID: 1089349800}
   _currencyWallet: {fileID: 12424190}
+  _difficulty: {fileID: 11400000, guid: 56f5da05932b549308a78fa6ad0ab1bd, type: 2}
 --- !u!4 &1838535677
 Transform:
   m_ObjectHideFlags: 0

@@ -13,9 +13,26 @@ namespace SurveHive.Spawning
         [SerializeField] private Transform _player;
         [SerializeField] private PlayerExperience _playerExperience;
         [SerializeField] private RunCurrencyWallet _currencyWallet;
+        [SerializeField] private DifficultySO _difficulty;
 
         private float _elapsedSeconds;
         private float _spawnTimer;
+        // Difficulty-tier multipliers (PLAN 1B), resolved once at run start on
+        // top of the config's per-minute ramp. Identity when unwired.
+        private float _difficultyHealthMultiplier = 1f;
+        private float _difficultyDamageMultiplier = 1f;
+        private float _difficultySpawnRateMultiplier = 1f;
+
+        private void Awake()
+        {
+            if (_difficulty != null)
+            {
+                DifficultySO.TierSettings tier = _difficulty.GetSettings(RunSession.SelectedDifficulty);
+                _difficultyHealthMultiplier = tier.enemyHealthMultiplier;
+                _difficultyDamageMultiplier = tier.enemyDamageMultiplier;
+                _difficultySpawnRateMultiplier = Mathf.Max(0.1f, tier.spawnRateMultiplier);
+            }
+        }
 
         private void Update()
         {
@@ -59,7 +76,7 @@ namespace SurveHive.Spawning
                 interval /= SurveHive.Stage.StageDirector.Instance.CurrentSpawnRateMultiplier;
             }
 
-            return interval;
+            return interval / _difficultySpawnRateMultiplier;
         }
 
         private void SpawnOne()
@@ -101,8 +118,8 @@ namespace SurveHive.Spawning
 
             if (instance.TryGetComponent(out EnemyController controller))
             {
-                float healthMultiplier = _config.HealthMultiplierAt(_elapsedSeconds);
-                float damageMultiplier = _config.DamageMultiplierAt(_elapsedSeconds);
+                float healthMultiplier = _config.HealthMultiplierAt(_elapsedSeconds) * _difficultyHealthMultiplier;
+                float damageMultiplier = _config.DamageMultiplierAt(_elapsedSeconds) * _difficultyDamageMultiplier;
                 controller.Initialize(stats, _player, healthMultiplier, damageMultiplier);
             }
 

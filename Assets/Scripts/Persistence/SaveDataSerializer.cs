@@ -79,6 +79,9 @@ namespace SurveHive.Persistence
             {
                 data.bestRun = new BestRunData();
             }
+
+            data.selectedDifficulty = Mathf.Clamp(
+                data.selectedDifficulty, (int)Data.DifficultyTier.Easy, (int)Data.DifficultyTier.Extreme);
         }
 
         private static void Migrate(SaveData data)

@@ -146,6 +146,9 @@ namespace SurveHive.BuildTools
                     ok &= Check(so.FindProperty("_player").objectReferenceValue != null, "EnemySpawner._player wired");
                     ok &= Check(so.FindProperty("_playerExperience").objectReferenceValue != null, "EnemySpawner._playerExperience wired");
                     ok &= Check(so.FindProperty("_currencyWallet").objectReferenceValue != null, "EnemySpawner._currencyWallet wired");
+                    // 1B: difficulty tier table feeding enemy HP/damage/spawn-rate.
+                    ok &= Check(so.FindProperty("_difficulty").objectReferenceValue is Data.DifficultySO,
+                        "EnemySpawner._difficulty wired to the tier table");
                 }
             }
 
@@ -246,6 +249,33 @@ namespace SurveHive.BuildTools
                     "RunSession._metaProgressionStore wired to the persistent store");
                 ok &= Check(so.FindProperty("_playerExperience").objectReferenceValue != null,
                     "RunSession._playerExperience wired");
+                // 1B: difficulty tier table feeding the honey-gain multiplier.
+                ok &= Check(so.FindProperty("_difficulty").objectReferenceValue is Data.DifficultySO,
+                    "RunSession._difficulty wired to the tier table");
+            }
+
+            // 1B: the difficulty tier table itself — 4 sane rows in tier order.
+            var difficulty = AssetDatabase.LoadAssetAtPath<Data.DifficultySO>(
+                "Assets/Data/Progression/DifficultySettings.asset");
+            ok &= Check(difficulty != null, "DifficultySettings asset exists");
+            if (difficulty != null)
+            {
+                ok &= Check(difficulty.TierCount == 4, $"DifficultySettings has 4 tiers (found {difficulty.TierCount})");
+                for (int i = 0; i < difficulty.TierCount; i++)
+                {
+                    Data.DifficultySO.TierSettings tier = difficulty.GetTierAt(i);
+                    ok &= Check((int)tier.tier == i, $"difficulty row {i} is tier {(Data.DifficultyTier)i}");
+                    ok &= Check(!string.IsNullOrEmpty(tier.displayName), $"difficulty row {i} has a display name");
+                    ok &= Check(tier.icon != null, $"difficulty row {i} has an icon");
+                    ok &= Check(tier.enemyHealthMultiplier > 0f && tier.enemyDamageMultiplier > 0f,
+                        $"difficulty row {i} enemy multipliers > 0");
+                    ok &= Check(tier.spawnRateMultiplier > 0f, $"difficulty row {i} spawn-rate multiplier > 0");
+                    ok &= Check(tier.honeyGainMultiplier > 0f, $"difficulty row {i} honey multiplier > 0");
+                }
+
+                Data.DifficultySO.TierSettings normal = difficulty.GetSettings(Data.DifficultyTier.Normal);
+                ok &= Check(normal.enemyHealthMultiplier == 1f && normal.enemyDamageMultiplier == 1f
+                    && normal.honeyGainMultiplier == 1f, "Normal tier is the identity baseline");
             }
 
             // 4A: player applies purchased ranks at run start.
@@ -462,8 +492,36 @@ namespace SurveHive.BuildTools
                     GameObject woods = FindChildIncludingInactive(worldPanel.transform, "WoodsButton");
                     ok &= Check(woods != null && !woods.GetComponent<UnityEngine.UI.Button>().interactable,
                         "WoodsButton locked");
-                    ok &= Check(FindChildIncludingInactive(worldPanel.transform, "DifficultyDropdown") != null,
-                        "DifficultyDropdown seam present");
+                    // 1B: the difficulty picker is live — 4 tiers, icon slots,
+                    // and a DifficultySelectUI wired to dropdown/table/store.
+                    GameObject dropdownGo = FindChildIncludingInactive(worldPanel.transform, "DifficultyDropdown");
+                    ok &= Check(dropdownGo != null, "DifficultyDropdown present");
+                    if (dropdownGo != null)
+                    {
+                        var dropdown = dropdownGo.GetComponent<TMPro.TMP_Dropdown>();
+                        ok &= Check(dropdown != null && dropdown.interactable, "DifficultyDropdown interactable");
+                        if (dropdown != null)
+                        {
+                            ok &= Check(dropdown.options.Count == 4,
+                                $"DifficultyDropdown has 4 options (found {dropdown.options.Count})");
+                            ok &= Check(dropdown.itemImage != null, "DifficultyDropdown item icon slot wired");
+                            ok &= Check(dropdown.captionImage != null, "DifficultyDropdown caption icon slot wired");
+                        }
+
+                        var select = worldPanel.GetComponentInChildren<DifficultySelectUI>(true);
+                        ok &= Check(select != null, "WorldSelectPanel has DifficultySelectUI");
+                        if (select != null)
+                        {
+                            var selectSo = new SerializedObject(select);
+                            ok &= Check(selectSo.FindProperty("_dropdown").objectReferenceValue != null,
+                                "DifficultySelectUI._dropdown wired");
+                            ok &= Check(selectSo.FindProperty("_difficulty").objectReferenceValue is Data.DifficultySO,
+                                "DifficultySelectUI._difficulty wired");
+                            ok &= Check(
+                                selectSo.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                                "DifficultySelectUI._store wired to the persistent store");
+                        }
+                    }
                 }
 
                 // Shop wiring: persistent store + one row per upgrade, fully wired.
