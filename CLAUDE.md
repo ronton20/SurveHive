@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `README.md` is a **living document** holding the current game vision, story, and gameplay/systems design. Whenever a change in this repo alters scope, story, mechanics, or systems described there — new/changed worlds, enemies, progression systems, controls, etc. — update `README.md` in the same session/commit as the change. Don't let it drift out of date; treat it as required upkeep, not optional polish.
 
+`ASSET_GENERATION.md` is a **living document** tracking every art/audio asset that still needs generating (AI-generated via tools like ElevenLabs for audio, or commissioned/drawn for visuals) to replace a placeholder or fill a gap. Whenever work in this repo adds a new placeholder asset, replaces a placeholder with final art/audio, or removes/retires an asset need, update `ASSET_GENERATION.md` in the same session — add new entries, flip their status, or delete rows once the final asset lands. Treat it the same as `README.md`: required upkeep, not optional polish.
+
 ## Project Overview
 
 SurveHive is a Unity project targeting mobile platforms, built on Unity 6000.5.2f1 with the Universal Render Pipeline (2D). The project is in an early/greenfield state — currently just the default 2D URP template (sample scene, input actions, renderer/volume assets) with no gameplay scripts yet.

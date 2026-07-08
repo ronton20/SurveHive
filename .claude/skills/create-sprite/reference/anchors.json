@@ -1,0 +1,24 @@
+{
+  "_comment": "Style anchors for cross-session consistency. Each entry pins a PixelLab id whose rendered image is reused as a style_images/reference_image input for later generations in the same family, so new sprites visually match old ones instead of drifting. Update via the create-sprite skill, not by hand, except to fix a stale id.",
+  "hero_character": {
+    "kind": "character",
+    "id": "4696ce65-b8f1-4d37-a34b-8cc3fe4a5ea6",
+    "name": "Hero Bee-Person (Male)",
+    "role": "CURRENT approved direction — humanoid bee-person, not an insect body. mode=v3, body_type=humanoid, view=low top-down, outline=single color black outline, detail=medium detail. Description recipe: yellow skin, black hair, small branching antler-like antennae, shirt, pants, insect wings, and a large/clearly-visible yellow-and-black striped bee-abdomen tail as the stinger weapon (must be called out as prominent, not a minor detail, or it under-renders). Use this exact recipe for the female variant and any future customization-driven regenerations so they visually match. The tool takes no image reference for characters, so consistency is param/vocabulary-level — for a female counterpart, keep every param identical and only change the description's gendered details.",
+    "staged_at": "Assets/Sprites/HeroBeePerson/ — LIVE on the Player via HeroBeePersonGenerated.asset (Assets/Editor/BuildTools/HeroBeePersonSkinBuilder.cs).",
+    "generated": "2026-07-08",
+    "confirmed_by_user": "yeah i actually like this design (2026-07-08)",
+    "facing_note": "Idle/Hit/Death sourced from this character's south rotation, Run/Attack from west. Reconciled with the game's single-facing+flip system via CharacterAnimator._idleUsesMirroredFacing=false on the Player (new opt-in field, defaults true elsewhere for backward compatibility)."
+  },
+  "hero_character_insect_REJECTED": {
+    "kind": "character",
+    "id": "698b84ba-2ef7-4d05-9380-38484f70f3a9",
+    "name": "Hero Bee (insect body, rejected 2026-07-08)",
+    "role": "DEPRECATED — do not use as a style anchor. Kept only as a record of what didn't work: standard mode's skeleton generation always reads as a human in a costume for non-human creatures; v3 mode plus explicit 'not human/person' text got an actual insect, but the user ultimately wanted a humanoid direction instead (bee evolves into a humanoid version of itself), not an insect at all. See ASSET_GENERATION.md §1.1 for the current direction.",
+    "staged_at": "Assets/Sprites/HeroBee/ — art still exists, SpriteLibraryAsset still exists, just no longer used by the Player.",
+    "generated": "2026-07-07"
+  },
+  "icon_anchor": null,
+  "pickup_anchor": null,
+  "tile_anchor": null
+}
