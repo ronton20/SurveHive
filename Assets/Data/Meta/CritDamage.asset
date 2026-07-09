@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Barbed Stingers
   _description: Permanently raises critical-hit damage.
   _effectLabel: Crit DMG
+  _icon: {fileID: 21300000, guid: 24f40d9d490414de3b32ac94fc97281f, type: 3}
   _statType: 10
   _maxRank: 10
   _baseCost: 70

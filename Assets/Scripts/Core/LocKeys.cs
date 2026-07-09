@@ -54,6 +54,11 @@ namespace SurveHive.Core
         // Meta shop
         public const string ShopHoneyPrefix = "shop.honey_prefix";
         public const string ShopRankPrefix = "shop.rank_prefix";
+        public const string ShopTabCombat = "shop.tab_combat";
+        public const string ShopTabSurvival = "shop.tab_survival";
+        public const string ShopTabUtility = "shop.tab_utility";
+        public const string ShopBuy = "shop.buy";
+        public const string ShopCostPrefix = "shop.cost_prefix";
 
         // Settings
         public const string SettingsVibrationOn = "settings.vibration_on";

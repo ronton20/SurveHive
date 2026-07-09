@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Killer Instinct
   _description: Permanently raises critical-hit chance.
   _effectLabel: Crit Chance
+  _icon: {fileID: 21300000, guid: 2c756fb2ca4bd4810a1e2e3fd8fd3da6, type: 3}
   _statType: 9
   _maxRank: 20
   _baseCost: 50

@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Royal Jelly Diet
   _description: Permanently raises base attack damage.
   _effectLabel: Damage
+  _icon: {fileID: 21300000, guid: 8cbf80c89e27142e2bb1a63828e9331d, type: 3}
   _statType: 1
   _maxRank: 10
   _baseCost: 60

@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Queen's Blessing
   _description: Permanently raises active-skill damage.
   _effectLabel: Ability DMG
+  _icon: {fileID: 21300000, guid: a8fae77f3b8904136877198e6907135b, type: 3}
   _statType: 7
   _maxRank: 8
   _baseCost: 80

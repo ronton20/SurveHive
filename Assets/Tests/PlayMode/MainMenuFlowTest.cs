@@ -52,32 +52,39 @@ namespace SurveHive.Tests
             GameObject mainPanel = GameObject.Find("MainPanel");
             Assert.IsNotNull(mainPanel, "MainPanel active on boot");
 
-            // --- Shop: balance zero, every buy button disabled. ---
+            // --- Shop (3B tabbed layout): balance zero, buy disabled for every
+            //     upgrade shown in the detail pane. ---
             controller.ShowShop();
             yield return null;
 
             var shop = Object.FindAnyObjectByType<MetaShopUI>();
             Assert.IsNotNull(shop, "MetaShopUI present on the shop panel");
-            var rows = shop.GetComponentsInChildren<MetaShopCardUI>();
-            Assert.AreEqual(13, rows.Length, "thirteen shop rows (Phase 1C expansion)");
-            foreach (MetaShopCardUI row in rows)
+            var icons = shop.GetComponentsInChildren<MetaShopIconUI>(true);
+            Assert.AreEqual(13, icons.Length, "thirteen shop upgrade icons");
+            var detail = shop.GetComponentInChildren<MetaShopDetailUI>(true);
+            Assert.IsNotNull(detail, "shop detail pane present");
+            foreach (MetaShopIconUI icon in icons)
             {
-                Assert.IsFalse(row.BuyButton.interactable, $"{row.name} buy disabled at zero balance");
+                // Selecting an icon binds it into the detail pane; at zero honey
+                // its BUY must be disabled.
+                icon.Button.onClick.Invoke();
+                Assert.IsFalse(detail.BuyButton.interactable, $"{icon.name} buy disabled at zero balance");
             }
 
             // --- Bank honey (as a finished run would), reopen, buy a rank. ---
-            var store = FindStore(rows[0]);
+            var store = FindStore(shop);
             store.BankRunCurrency(500);
             controller.ShowMain();
             controller.ShowShop();
             yield return null;
 
-            MetaShopCardUI healthRow = FindRow(rows, "meta_max_health");
-            Assert.IsNotNull(healthRow, "max-health shop row exists");
-            float healthPerRank = healthRow.Upgrade.EffectPerRank;
-            Assert.IsTrue(healthRow.BuyButton.interactable, "buy enabled once affordable");
+            MetaShopIconUI healthIcon = FindIcon(icons, "meta_max_health");
+            Assert.IsNotNull(healthIcon, "max-health upgrade icon exists");
+            float healthPerRank = healthIcon.Upgrade.EffectPerRank;
+            healthIcon.Button.onClick.Invoke(); // select it into the detail pane
+            Assert.IsTrue(detail.BuyButton.interactable, "buy enabled once affordable");
             int balanceBefore = store.BankedCurrency;
-            healthRow.BuyButton.onClick.Invoke();
+            detail.BuyButton.onClick.Invoke();
             yield return null;
 
             Assert.AreEqual(1, store.GetUpgradeRank("meta_max_health"), "purchase granted rank 1");
@@ -111,21 +118,20 @@ namespace SurveHive.Tests
                 "meta max-health rank raised starting HP");
         }
 
-        private static Core.IMetaProgressionStore FindStore(MetaShopCardUI row)
+        private static Core.IMetaProgressionStore FindStore(MetaShopUI shop)
         {
-            var shop = row.GetComponentInParent<MetaShopUI>(true);
             var field = typeof(MetaShopUI).GetField("_store",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             return (Core.IMetaProgressionStore)field.GetValue(shop);
         }
 
-        private static MetaShopCardUI FindRow(MetaShopCardUI[] rows, string upgradeId)
+        private static MetaShopIconUI FindIcon(MetaShopIconUI[] icons, string upgradeId)
         {
-            foreach (MetaShopCardUI row in rows)
+            foreach (MetaShopIconUI icon in icons)
             {
-                if (row.Upgrade != null && row.Upgrade.UpgradeId == upgradeId)
+                if (icon.Upgrade != null && icon.Upgrade.UpgradeId == upgradeId)
                 {
-                    return row;
+                    return icon;
                 }
             }
 

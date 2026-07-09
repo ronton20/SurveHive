@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Efficient Glands
   _description: Permanently shortens active-skill cooldowns.
   _effectLabel: Cooldown Cut
+  _icon: {fileID: 21300000, guid: c09977bc758c24320820a192de6296c5, type: 3}
   _statType: 8
   _maxRank: 6
   _baseCost: 80

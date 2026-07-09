@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Nectar Scent
   _description: Permanently widens pickup range.
   _effectLabel: Pickup Range
+  _icon: {fileID: 21300000, guid: 73bf33231a335447fa8e71939d4f0c83, type: 3}
   _statType: 4
   _maxRank: 5
   _baseCost: 35

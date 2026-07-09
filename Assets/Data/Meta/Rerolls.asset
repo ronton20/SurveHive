@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Waggle Dance
   _description: Reroll one offered power-up card. Stock refills every run.
   _effectLabel: Rerolls / Run
+  _icon: {fileID: 21300000, guid: e7987998849424a7b90c0ff3480416bf, type: 3}
   _statType: 12
   _maxRank: 3
   _baseCost: 400

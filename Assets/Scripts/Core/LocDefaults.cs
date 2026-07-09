@@ -54,6 +54,11 @@ namespace SurveHive.Core
 
             new KeyValuePair<string, string>(LocKeys.ShopHoneyPrefix, "HONEY: "),
             new KeyValuePair<string, string>(LocKeys.ShopRankPrefix, "Rank "),
+            new KeyValuePair<string, string>(LocKeys.ShopTabCombat, "COMBAT"),
+            new KeyValuePair<string, string>(LocKeys.ShopTabSurvival, "SURVIVAL"),
+            new KeyValuePair<string, string>(LocKeys.ShopTabUtility, "UTILITY"),
+            new KeyValuePair<string, string>(LocKeys.ShopBuy, "BUY"),
+            new KeyValuePair<string, string>(LocKeys.ShopCostPrefix, "COST: "),
 
             new KeyValuePair<string, string>(LocKeys.SettingsVibrationOn, "VIBRATION: ON"),
             new KeyValuePair<string, string>(LocKeys.SettingsVibrationOff, "VIBRATION: OFF"),

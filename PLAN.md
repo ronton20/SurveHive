@@ -223,8 +223,24 @@ The #25 wishlist pass. **Do 3A first** — the localization seam only gets more 
 - **Done when:** grep for user-facing literals in `UI/` comes back clean and the game reads
   identically from the table.
 
-### 3B — Complete UI overhaul — TODO #25 ☐
-Fit to PC, enlarge text, smoother animations, click sounds, health bars — the playtest polish list.
+### 3B — Complete UI overhaul — TODO #25 ◐
+Fit to PC, enlarge text, smoother animations, click sounds, health bars — the playtest polish
+list. Sliced into ship-and-verify units; do them in any order.
+
+#### 3B-1 — Meta-shop tab rework ✅
+- **Shipped 2026-07-09:** the Hive Upgrades shop is now the TODO #25 tabbed layout — category
+  tabs on the left (**Combat / Survival / Utility**), a detail pane up top for the selected
+  upgrade (icon, name, description, rank/max, the concrete stat transition, cost, BUY), and a
+  bottom grid of just that category's upgrade icons each with `rank/max`. Tab → grid → select →
+  detail → buy, all driven from the 13-upgrade catalog. Categories are derived purely from each
+  upgrade's stat (`Progression/MetaShopCategories`, EditMode-tested — no per-asset authoring); a
+  new `_icon` field on `MetaUpgradeSO` carries a placeholder picto per upgrade (final art tracked
+  in `ASSET_GENERATION.md` §2.11). New `UI/MetaShopIconUI` (grid cell) + `UI/MetaShopDetailUI`
+  (detail pane); `MetaShopUI` rewritten to drive them; built by the additive idempotent
+  `MetaShopTabsBuilder` (removes the old scroll+cards, rebuilds tab column / detail / grid).
+  Validator + PlayMode flow test updated to the new components; EditMode covers the category map.
+
+#### 3B-2 — Remaining PC polish ☐
 - Layout fit pass at common desktop resolutions (1080p/1440p): HUD margins, meter sizes,
   results/menu composition; enlarge in-run text (damage numbers, counters, card text).
 - **Motion:** consistent, cheap UI transitions (card slide/scale-in on the level-up screen,

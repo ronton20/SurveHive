@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Wisdom of the Hive
   _description: Permanently raises EXP gained in runs.
   _effectLabel: EXP Gain
+  _icon: {fileID: 21300000, guid: 251943870e5cb43f4bec2163205eebfe, type: 3}
   _statType: 6
   _maxRank: 8
   _baseCost: 60

@@ -95,3 +95,13 @@ MonoBehaviour:
     value: 'Clear '
   - key: difficulty.on
     value: ' on '
+  - key: shop.tab_combat
+    value: COMBAT
+  - key: shop.tab_survival
+    value: SURVIVAL
+  - key: shop.tab_utility
+    value: UTILITY
+  - key: shop.buy
+    value: BUY
+  - key: shop.cost_prefix
+    value: 'COST: '

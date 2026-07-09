@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Rapid Reflexes
   _description: Permanently raises attack speed.
   _effectLabel: Attack Speed
+  _icon: {fileID: 21300000, guid: 9ae6eb2a5fa4f46489506fec28bb27f1, type: 3}
   _statType: 3
   _maxRank: 8
   _baseCost: 60

@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Stronger Wings
   _description: Permanently raises move speed.
   _effectLabel: Move Speed
+  _icon: {fileID: 21300000, guid: 9234b44c47cd64c21a213ffdc455a0fe, type: 3}
   _statType: 2
   _maxRank: 6
   _baseCost: 50

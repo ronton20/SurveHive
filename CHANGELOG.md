@@ -7,6 +7,40 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 3B-1 — meta-shop tab rework (2026-07-09)
+
+First slice of the #25 UI overhaul: the Hive Upgrades shop moves from a flat scrolling card grid
+to the TODO #25 tabbed layout. No new upgrades — same 13, reorganized so the screen stops being a
+wall of identical cards.
+
+- **New layout:** category tabs on the left — **Combat / Survival / Utility** — with a detail
+  pane up top showing the selected upgrade (icon, name, description, `Rank n/max`, the concrete
+  stat transition e.g. `+25 → +50 Max HP`, `COST: n`, and the BUY button), and a bottom grid of
+  just the current category's upgrade icons, each with its `rank/max`. Clicking a tab shows that
+  category and auto-selects its first upgrade; clicking an icon drives the detail pane; BUY
+  purchases the shown upgrade and refreshes balance, icons, and detail.
+- **Category mapping** is derived purely from each upgrade's stat type (`Progression/
+  MetaShopCategories`, EditMode-tested), so there's no per-asset authoring and no default-value
+  migration risk. Combat = Damage, Attack Speed, Crit Chance, Crit Damage, Ability DMG, Cooldown
+  Cut · Survival = Max HP, Move Speed, Pickup Range · Utility = Honey Gain, EXP Gain, Item Drop
+  Rate, Rerolls.
+- **New icon slot:** `MetaUpgradeSO` gained an `_icon` field; each of the 13 upgrades is wired to
+  a placeholder picto (Heart, Sword, Speedmeter, …) — final art tracked in `ASSET_GENERATION.md`
+  §2.11.
+- **Code:** new `UI/MetaShopIconUI` (grid cell — icon + `rank/max` label + selection border) and
+  `UI/MetaShopDetailUI` (detail pane); `UI/MetaShopUI` rewritten to drive tabs → grid → selection
+  → detail → buy (menu-only, zero per-frame allocation). Built by the additive, idempotent
+  `MetaShopTabsBuilder` pass, which removes the old scroll + cards and rebuilds the tab column,
+  detail pane, and icon grid, then rewires `MetaShopUI`. New Loc keys for the tab/BUY/COST chrome.
+- **Tests:** EditMode `MetaShopCategoriesTests` locks the mapping and that every stat lands in one
+  of the three tabs; the `MainMenuFlowTest` shop walk was rewritten for the icon→detail→buy flow;
+  the scene validator now asserts the tabbed wiring (tabs, detail, icon grid, per-upgrade icons).
+- **Cleanup:** the superseded scrolling-card layout was removed — deleted `UI/MetaShopCardUI`, the
+  orphaned `MetaShopCard.prefab`, and the now-redundant `ShopDataDrivenBuilder` (its catalog
+  authoring moved into `MetaShopTabsBuilder`); the card/scroll code was stripped from the historical
+  `Phase4MetaAndMenusBuilder` and `MetaShopExpansionBuilder` passes (which now build a bare shop
+  shell + the reroll controls, leaving the shop layout entirely to `MetaShopTabsBuilder`).
+
 ### Phase 3A — localization seam (2026-07-09)
 
 The #25 UI overhaul's foundation: every user-facing UI-chrome string now resolves through a

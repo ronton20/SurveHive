@@ -16,6 +16,7 @@ MonoBehaviour:
   _displayName: Thick Comb Walls
   _description: Permanently raises max health.
   _effectLabel: Max HP
+  _icon: {fileID: 21300000, guid: 580c87f8109074e0f874da831a83a2d0, type: 3}
   _statType: 0
   _maxRank: 10
   _baseCost: 40

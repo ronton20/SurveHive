@@ -16,6 +16,8 @@ namespace SurveHive.Data
         [SerializeField, TextArea] private string _description;
         // Short stat label for the value line on the card (e.g. "Max HP", "Damage").
         [SerializeField] private string _effectLabel;
+        // Grid/detail icon for the tabbed shop (placeholder until final art lands).
+        [SerializeField] private Sprite _icon;
         [SerializeField] private MetaStatType _statType;
         [SerializeField] private int _maxRank = 10;
         [SerializeField] private int _baseCost = 50;
@@ -32,7 +34,12 @@ namespace SurveHive.Data
 
         public string EffectLabel => _effectLabel;
 
+        public Sprite Icon => _icon;
+
         public MetaStatType StatType => _statType;
+
+        /// <summary>Which shop tab this upgrade lives under (derived from its stat).</summary>
+        public MetaShopCategory Category => MetaShopCategories.For(_statType);
 
         public int MaxRank => _maxRank;
 

@@ -13,35 +13,35 @@ namespace SurveHive.BuildTools
     /// <summary>
     /// PLAN.md Phase 1C — meta shop expansion. Seven new permanent upgrades
     /// (EXP gain, ability power, cooldown reduction, crit chance, crit damage,
-    /// item drop rate, and the per-run power-up reroll stock), the shop panel
-    /// converted to a scrollable 2-column grid holding all 13 cards, and the
-    /// level-up screen's reroll controls (per-card REROLL buttons + remaining
-    /// count). Additive and idempotent over the existing scenes/assets.
+    /// item drop rate, and the per-run power-up reroll stock) and the level-up
+    /// screen's reroll controls (per-card REROLL buttons + remaining count).
+    /// Additive and idempotent over the existing scenes/assets.
+    ///
+    /// The menu-scene shop layout this pass originally built (a scrollable 2-column
+    /// card grid) was superseded by the 3B-1 tabbed layout (<see cref="MetaShopTabsBuilder"/>),
+    /// so the card/scroll code was removed; this pass now only authors the upgrade
+    /// assets and the in-run reroll controls.
     /// </summary>
     public static class MetaShopExpansionBuilder
     {
         private const string MetaFolder = "Assets/Data/Meta";
         private const string PersistentStorePath = "Assets/Data/Progression/PersistentMetaProgressionStore.asset";
         private const string RerollUpgradePath = MetaFolder + "/Rerolls.asset";
-        private const string MenuScenePath = "Assets/Scenes/MainMenu.unity";
         private const string RunScenePath = "Assets/Scenes/Beehive.unity";
-        private const string UiKitTexturePath = "Assets/ThirdParty/PixelUI/UI SIMPLE PIXEL UNSPLIT.png";
         private const string FontAssetPath = "Assets/ThirdParty/Fonts/BoldPixels/Assets/font/BoldPixels SDF.asset";
 
         private static readonly Color Amber = new Color(0.961f, 0.651f, 0.137f);
         private static readonly Color CombBrown = new Color(0.549f, 0.353f, 0.169f);
 
-        // Shop order: the six Phase-4A upgrades, then the 1C additions.
+        // Every upgrade id, in catalog order — read by WireApplier to hand the
+        // player every non-reroll upgrade. (The menu-scene layout that also used
+        // this list moved to MetaShopTabsBuilder.)
         private static readonly string[] AllUpgradeNames =
         {
             "MaxHealth", "Damage", "MoveSpeed", "AttackSpeed", "Magnet", "CurrencyGain",
             "ExpGain", "AbilityPower", "CooldownReduction", "CritChance", "CritDamage",
             "ItemDropRate", "Rerolls",
         };
-
-        private const int GridColumns = 2;
-        private static readonly Vector2 CardSize = new Vector2(490f, 410f);
-        private const float RowPitch = 430f;
 
         [MenuItem("SurveHive/Apply Meta Shop Expansion (Phase 1C)")]
         public static void Apply()
@@ -51,7 +51,6 @@ namespace SurveHive.BuildTools
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            ApplyMenuSceneChanges();
             ApplyRunSceneChanges();
 
             Debug.Log("SurveHive meta shop expansion (Phase 1C) build complete.");
@@ -114,222 +113,6 @@ namespace SurveHive.BuildTools
             so.FindProperty("_effectPerRank").floatValue = effectPerRank;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(upgrade);
-        }
-
-        // ------------------------------------------------------------------
-        // MainMenu: wrap the card area in a ScrollRect, move the six existing
-        // cards into its content, add the seven new ones, rewire MetaShopUI.
-        // ------------------------------------------------------------------
-        private static void ApplyMenuSceneChanges()
-        {
-            EditorSceneManager.OpenScene(MenuScenePath, OpenSceneMode.Single);
-
-            GameObject canvas = GameObject.Find("Canvas");
-            Transform shopPanel = canvas != null ? canvas.transform.Find("ShopPanel") : null;
-            if (shopPanel == null)
-            {
-                Debug.LogError("MetaShopExpansionBuilder: ShopPanel not found in MainMenu.");
-                return;
-            }
-
-            var font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(FontAssetPath);
-            Sprite panelSprite = Phase4MetaAndMenusBuilder.LoadUiKitSprite("PixelPanel");
-            Sprite buttonSprite = Phase4MetaAndMenusBuilder.LoadUiKitSprite("PixelButton");
-
-            RectTransform content = EnsureShopScroll(shopPanel);
-
-            // All assets loaded after the scene switch (see DifficultyBuilder —
-            // pre-switch instances go fake-null and wire as fileID 0).
-            var rows = new MetaShopCardUI[AllUpgradeNames.Length];
-            for (int i = 0; i < AllUpgradeNames.Length; i++)
-            {
-                var upgrade = AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>($"{MetaFolder}/{AllUpgradeNames[i]}.asset");
-                if (upgrade == null)
-                {
-                    Debug.LogError($"MetaShopExpansionBuilder: upgrade asset '{AllUpgradeNames[i]}' missing.");
-                    return;
-                }
-
-                rows[i] = EnsureCardInGrid(content, shopPanel, upgrade, i, font, panelSprite, buttonSprite);
-            }
-
-            content.sizeDelta = new Vector2(
-                content.sizeDelta.x,
-                Mathf.Ceil(AllUpgradeNames.Length / (float)GridColumns) * RowPitch + 20f);
-
-            var shopUi = shopPanel.GetComponent<MetaShopUI>();
-            var shopSerialized = new SerializedObject(shopUi);
-            SerializedProperty rowsProp = shopSerialized.FindProperty("_rows");
-            rowsProp.arraySize = rows.Length;
-            for (int i = 0; i < rows.Length; i++)
-            {
-                rowsProp.GetArrayElementAtIndex(i).objectReferenceValue = rows[i];
-            }
-
-            shopSerialized.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(shopUi);
-
-            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
-        }
-
-        // Scroll area between the balance line and the back button. Idempotent
-        // in pieces so re-runs can retrofit an already-built scroll (the first
-        // 1C pass shipped without an input surface or scrollbar and didn't
-        // actually scroll under the pointer).
-        private static RectTransform EnsureShopScroll(Transform shopPanel)
-        {
-            Transform existing = shopPanel.Find("ShopScroll");
-            GameObject scrollGo;
-            RectTransform viewport;
-            RectTransform content;
-            if (existing != null)
-            {
-                scrollGo = existing.gameObject;
-                viewport = (RectTransform)existing.Find("Viewport");
-                content = (RectTransform)viewport.Find("Content");
-            }
-            else
-            {
-                scrollGo = new GameObject("ShopScroll", typeof(RectTransform), typeof(ScrollRect));
-                var scrollRect = (RectTransform)scrollGo.transform;
-                scrollRect.SetParent(shopPanel, false);
-                scrollRect.anchorMin = Vector2.zero;
-                scrollRect.anchorMax = Vector2.one;
-                scrollRect.offsetMin = new Vector2(20f, 170f);
-                scrollRect.offsetMax = new Vector2(-20f, -210f);
-
-                var viewportGo = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
-                viewport = (RectTransform)viewportGo.transform;
-                viewport.SetParent(scrollRect, false);
-                viewport.anchorMin = Vector2.zero;
-                viewport.anchorMax = Vector2.one;
-                viewport.offsetMin = Vector2.zero;
-                viewport.offsetMax = Vector2.zero;
-
-                var contentGo = new GameObject("Content", typeof(RectTransform));
-                content = (RectTransform)contentGo.transform;
-                content.SetParent(viewport, false);
-                content.anchorMin = new Vector2(0f, 1f);
-                content.anchorMax = new Vector2(1f, 1f);
-                content.pivot = new Vector2(0.5f, 1f);
-                content.anchoredPosition = Vector2.zero;
-            }
-
-            // Wheel and drag events only reach the ScrollRect when the pointer
-            // is over one of ITS raycast targets — give the viewport an
-            // invisible full-size surface so the whole area scrolls, not just
-            // the exact pixels covered by card graphics.
-            if (!viewport.TryGetComponent(out Image surface))
-            {
-                surface = viewport.gameObject.AddComponent<Image>();
-            }
-
-            surface.color = Color.clear;
-            surface.raycastTarget = true;
-
-            var scroll = scrollGo.GetComponent<ScrollRect>();
-            scroll.viewport = viewport;
-            scroll.content = content;
-            scroll.horizontal = false;
-            scroll.vertical = true;
-            scroll.movementType = ScrollRect.MovementType.Clamped;
-            scroll.scrollSensitivity = 60f;
-            scroll.verticalScrollbar = EnsureShopScrollbar(scrollGo.transform);
-            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
-
-            return content;
-        }
-
-        // Visible draggable scrollbar down the right edge — both a grab handle
-        // and the "there's more below" signal the cut-off grid alone didn't give.
-        private static Scrollbar EnsureShopScrollbar(Transform shopScroll)
-        {
-            Transform existing = shopScroll.Find("Scrollbar");
-            if (existing != null)
-            {
-                return existing.GetComponent<Scrollbar>();
-            }
-
-            var barGo = new GameObject("Scrollbar", typeof(RectTransform), typeof(Image), typeof(Scrollbar));
-            var barRect = (RectTransform)barGo.transform;
-            barRect.SetParent(shopScroll, false);
-            barRect.anchorMin = new Vector2(1f, 0f);
-            barRect.anchorMax = new Vector2(1f, 1f);
-            barRect.pivot = new Vector2(1f, 0.5f);
-            barRect.anchoredPosition = Vector2.zero;
-            barRect.sizeDelta = new Vector2(18f, 0f);
-
-            var background = barGo.GetComponent<Image>();
-            background.color = new Color(0.15f, 0.09f, 0.05f, 0.9f);
-
-            var areaGo = new GameObject("Sliding Area", typeof(RectTransform));
-            var area = (RectTransform)areaGo.transform;
-            area.SetParent(barRect, false);
-            area.anchorMin = Vector2.zero;
-            area.anchorMax = Vector2.one;
-            area.offsetMin = new Vector2(2f, 2f);
-            area.offsetMax = new Vector2(-2f, -2f);
-
-            var handleGo = new GameObject("Handle", typeof(RectTransform), typeof(Image));
-            var handle = (RectTransform)handleGo.transform;
-            handle.SetParent(area, false);
-            handle.anchorMin = Vector2.zero;
-            handle.anchorMax = Vector2.one;
-            handle.offsetMin = Vector2.zero;
-            handle.offsetMax = Vector2.zero;
-
-            var handleImage = handleGo.GetComponent<Image>();
-            handleImage.sprite = Phase4MetaAndMenusBuilder.LoadUiKitSprite("PixelButton");
-            handleImage.type = Image.Type.Sliced;
-            handleImage.pixelsPerUnitMultiplier = 2f;
-            handleImage.color = CombBrown;
-
-            var scrollbar = barGo.GetComponent<Scrollbar>();
-            scrollbar.handleRect = handle;
-            scrollbar.targetGraphic = handleImage;
-            scrollbar.direction = Scrollbar.Direction.BottomToTop;
-
-            return scrollbar;
-        }
-
-        // Finds the card wherever it lives (panel root for pre-1C cards,
-        // content for re-runs), reparents it into the grid, and positions it
-        // by index. Missing cards are built via the shared Phase-4 factory.
-        private static MetaShopCardUI EnsureCardInGrid(
-            RectTransform content, Transform shopPanel, MetaUpgradeSO upgrade, int index,
-            TMP_FontAsset font, Sprite panelSprite, Sprite buttonSprite)
-        {
-            string cardName = $"Card_{upgrade.name}";
-            Transform card = content.Find(cardName);
-            if (card == null)
-            {
-                card = shopPanel.Find(cardName);
-            }
-
-            MetaShopCardUI row;
-            if (card == null)
-            {
-                row = Phase4MetaAndMenusBuilder.CreateShopCard(
-                    content, upgrade, Vector2.zero, CardSize, font, panelSprite, buttonSprite);
-                card = row.transform;
-            }
-            else
-            {
-                card.SetParent(content, false);
-                row = card.GetComponent<MetaShopCardUI>();
-            }
-
-            var rect = (RectTransform)card;
-            rect.anchorMin = new Vector2(0.5f, 1f);
-            rect.anchorMax = new Vector2(0.5f, 1f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            int column = index % GridColumns;
-            int gridRow = index / GridColumns;
-            rect.anchoredPosition = new Vector2(column == 0 ? -258f : 258f, -(215f + gridRow * RowPitch));
-            rect.sizeDelta = CardSize;
-
-            return row;
         }
 
         // ------------------------------------------------------------------

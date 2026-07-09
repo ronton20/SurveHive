@@ -209,25 +209,16 @@ namespace SurveHive.BuildTools
             Button worldBackButton = CreateMenuButton(worldPanel.transform, "BackButton", "BACK",
                 font, buttonSprite, new Vector2(0f, -420f));
 
-            // --- Hive Upgrades (shop) panel: near-fullscreen 2×3 card grid ---
+            // --- Hive Upgrades (shop) panel ---
+            // Title, balance line, back button, and the MetaShopUI shell are built
+            // here; the shop's contents (tab column / detail pane / icon grid) are
+            // authored by the later additive MetaShopTabsBuilder pass (PLAN 3B-1).
             GameObject shopPanel = CreatePanel(canvasGo.transform, "ShopPanel", panelSprite, new Vector2(1060f, 1880f));
 
             CreateMenuText(shopPanel.transform, "Title", "HIVE UPGRADES", font, 64f, HoneyGold,
                 anchorY: 1f, offsetY: -40f, new Vector2(1000f, 90f));
             TMP_Text balanceText = CreateMenuText(shopPanel.transform, "BalanceText", "HONEY: 0", font, 42f, Amber,
                 anchorY: 1f, offsetY: -140f, new Vector2(1000f, 60f));
-
-            var upgrades = new MetaUpgradeSO[MetaUpgradePaths.Length];
-            var rows = new MetaShopCardUI[MetaUpgradePaths.Length];
-            var cardSize = new Vector2(490f, 410f);
-            for (int i = 0; i < MetaUpgradePaths.Length; i++)
-            {
-                upgrades[i] = AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>(MetaUpgradePaths[i]);
-                int col = i % 2;
-                int gridRow = i / 2;
-                var center = new Vector2(col == 0 ? -258f : 258f, 440f - (gridRow * 430f));
-                rows[i] = CreateShopCard(shopPanel.transform, upgrades[i], center, cardSize, font, panelSprite, buttonSprite);
-            }
 
             Button shopBackButton = CreateMenuButton(shopPanel.transform, "BackButton", "BACK",
                 font, buttonSprite, Vector2.zero);
@@ -241,13 +232,6 @@ namespace SurveHive.BuildTools
             var shopSerialized = new SerializedObject(shopUi);
             shopSerialized.FindProperty("_store").objectReferenceValue = store;
             shopSerialized.FindProperty("_balanceText").objectReferenceValue = balanceText;
-            SerializedProperty rowsProp = shopSerialized.FindProperty("_rows");
-            rowsProp.arraySize = rows.Length;
-            for (int i = 0; i < rows.Length; i++)
-            {
-                rowsProp.GetArrayElementAtIndex(i).objectReferenceValue = rows[i];
-            }
-
             shopSerialized.ApplyModifiedPropertiesWithoutUndo();
 
             // --- Settings panel (4C: real controls, shared with the pause menu) ---
@@ -433,91 +417,6 @@ namespace SurveHive.BuildTools
             }
 
             return dropdown;
-        }
-
-        // One shop grid card (vertical: name / description / value change / rank /
-        // cost / BUY). Its MetaShopCardUI keeps the generic name for the shared
-        // component; the layout is a card, not a row. Internal: the 1C shop
-        // expansion pass builds its added cards through the same factory.
-        internal static MetaShopCardUI CreateShopCard(
-            Transform parent, MetaUpgradeSO upgrade, Vector2 centerOffset, Vector2 size,
-            TMP_FontAsset font, Sprite panelSprite, Sprite buttonSprite)
-        {
-            var cardGo = new GameObject($"Card_{upgrade.name}", typeof(RectTransform));
-            cardGo.transform.SetParent(parent, false);
-
-            var rect = (RectTransform)cardGo.transform;
-            rect.anchorMin = new Vector2(0.5f, 0.5f);
-            rect.anchorMax = new Vector2(0.5f, 0.5f);
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.anchoredPosition = centerOffset;
-            rect.sizeDelta = size;
-
-            Image bg = cardGo.AddComponent<Image>();
-            bg.sprite = panelSprite;
-            bg.type = Image.Type.Sliced;
-            bg.pixelsPerUnitMultiplier = 2f;
-            bg.color = new Color(CombBrown.r, CombBrown.g, CombBrown.b, 0.9f);
-            bg.raycastTarget = false;
-
-            float width = size.x - 40f;
-            TMP_Text nameText = CreateCardText(cardGo.transform, "Name", font, 34f, HoneyGold,
-                -16f, 46f, width, TextAlignmentOptions.Center);
-            TMP_Text descText = CreateCardText(cardGo.transform, "Description", font, 22f, Wax,
-                -64f, 84f, width, TextAlignmentOptions.Top);
-            TMP_Text effectText = CreateCardText(cardGo.transform, "Effect", font, 26f, HoneyGold,
-                -156f, 44f, width, TextAlignmentOptions.Center);
-            TMP_Text rankText = CreateCardText(cardGo.transform, "Rank", font, 24f, Amber,
-                -204f, 36f, width, TextAlignmentOptions.Center);
-            TMP_Text costText = CreateCardText(cardGo.transform, "Cost", font, 30f, Amber,
-                -246f, 40f, width, TextAlignmentOptions.Center);
-
-            Button buyButton = CreateButton(cardGo.transform, "BuyButton", "BUY", font, buttonSprite,
-                Vector2.zero, new Vector2(300f, 76f), 32f);
-            var buyRect = (RectTransform)buyButton.transform;
-            buyRect.anchorMin = new Vector2(0.5f, 0f);
-            buyRect.anchorMax = new Vector2(0.5f, 0f);
-            buyRect.pivot = new Vector2(0.5f, 0f);
-            buyRect.anchoredPosition = new Vector2(0f, 18f);
-
-            var row = cardGo.AddComponent<MetaShopCardUI>();
-            var rowSerialized = new SerializedObject(row);
-            rowSerialized.FindProperty("_upgrade").objectReferenceValue = upgrade;
-            rowSerialized.FindProperty("_nameText").objectReferenceValue = nameText;
-            rowSerialized.FindProperty("_descriptionText").objectReferenceValue = descText;
-            rowSerialized.FindProperty("_effectText").objectReferenceValue = effectText;
-            rowSerialized.FindProperty("_rankText").objectReferenceValue = rankText;
-            rowSerialized.FindProperty("_costText").objectReferenceValue = costText;
-            rowSerialized.FindProperty("_buyButton").objectReferenceValue = buyButton;
-            rowSerialized.ApplyModifiedPropertiesWithoutUndo();
-
-            return row;
-        }
-
-        // Top-anchored, horizontally-centered text inside a card.
-        private static TMP_Text CreateCardText(
-            Transform parent, string name, TMP_FontAsset font, float fontSize, Color color,
-            float topOffset, float height, float width, TextAlignmentOptions alignment)
-        {
-            var textGo = new GameObject(name, typeof(RectTransform));
-            textGo.transform.SetParent(parent, false);
-
-            var rect = (RectTransform)textGo.transform;
-            rect.anchorMin = new Vector2(0.5f, 1f);
-            rect.anchorMax = new Vector2(0.5f, 1f);
-            rect.pivot = new Vector2(0.5f, 1f);
-            rect.anchoredPosition = new Vector2(0f, topOffset);
-            rect.sizeDelta = new Vector2(width, height);
-
-            var tmp = textGo.AddComponent<TextMeshProUGUI>();
-            tmp.font = font;
-            tmp.fontSize = fontSize;
-            tmp.color = color;
-            tmp.alignment = alignment;
-            tmp.textWrappingMode = TextWrappingModes.Normal;
-            tmp.raycastTarget = false;
-            tmp.text = name;
-            return tmp;
         }
 
         // ------------------------------------------------------------------

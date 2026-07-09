@@ -620,7 +620,8 @@ namespace SurveHive.BuildTools
                     }
                 }
 
-                // Shop wiring: persistent store + a data-driven catalog/prefab grid.
+                // Shop wiring: persistent store + the 3B tabbed layout (tab column,
+                // detail pane, icon grid) driven from the 13-upgrade catalog.
                 var shopUi = shopPanel != null ? shopPanel.GetComponent<MetaShopUI>() : null;
                 ok &= Check(shopUi != null, "ShopPanel has MetaShopUI");
                 if (shopUi != null)
@@ -632,32 +633,7 @@ namespace SurveHive.BuildTools
                     ok &= Check(shopSo.FindProperty("_balanceText").objectReferenceValue != null,
                         "MetaShopUI._balanceText wired");
 
-                    // 1C: the shop scrolls — cards live under ShopScroll/Viewport/Content.
-                    Transform shopScroll = shopPanel.transform.Find("ShopScroll");
-                    ok &= Check(shopScroll != null, "ShopPanel has ShopScroll");
-                    if (shopScroll != null)
-                    {
-                        var scroll = shopScroll.GetComponent<UnityEngine.UI.ScrollRect>();
-                        ok &= Check(scroll != null && scroll.content != null && scroll.viewport != null,
-                            "ShopScroll ScrollRect wired (content + viewport)");
-                        ok &= Check(scroll != null && scroll.vertical && !scroll.horizontal,
-                            "ShopScroll scrolls vertically only");
-                        // Playtest fix: wheel/drag only reach the ScrollRect
-                        // through its own raycast surface, and the scrollbar is
-                        // both a handle and the "more below" cue.
-                        var surface = scroll != null && scroll.viewport != null
-                            ? scroll.viewport.GetComponent<UnityEngine.UI.Image>()
-                            : null;
-                        ok &= Check(surface != null && surface.raycastTarget,
-                            "ShopScroll viewport has a raycast surface (scroll input works everywhere)");
-                        ok &= Check(scroll != null && scroll.verticalScrollbar != null
-                            && scroll.verticalScrollbar.handleRect != null,
-                            "ShopScroll has a wired vertical scrollbar");
-                    }
-
-                    // Data-driven grid (ShopDataDrivenBuilder): a catalog of 13
-                    // upgrades + one card prefab spawned at runtime under a
-                    // GridLayoutGroup. The baked per-card _rows array is retired.
+                    // Catalog of all 13 upgrades, each carrying a (placeholder) icon.
                     var catalogRef = shopSo.FindProperty("_catalog").objectReferenceValue as Data.MetaUpgradeCatalogSO;
                     ok &= Check(catalogRef != null, "MetaShopUI._catalog wired");
                     if (catalogRef != null)
@@ -668,34 +644,65 @@ namespace SurveHive.BuildTools
                             $"MetaUpgradeCatalog has 13 upgrades (found {upgradesProp.arraySize})");
                         for (int i = 0; i < upgradesProp.arraySize; i++)
                         {
-                            ok &= Check(upgradesProp.GetArrayElementAtIndex(i).objectReferenceValue != null,
-                                $"MetaUpgradeCatalog[{i}] wired");
+                            var up = upgradesProp.GetArrayElementAtIndex(i).objectReferenceValue as Data.MetaUpgradeSO;
+                            ok &= Check(up != null, $"MetaUpgradeCatalog[{i}] wired");
+                            if (up != null)
+                            {
+                                var upSo = new SerializedObject(up);
+                                ok &= Check(upSo.FindProperty("_icon").objectReferenceValue != null,
+                                    $"MetaUpgrade '{up.name}' has a shop icon");
+                            }
                         }
                     }
 
-                    var cardPrefab = shopSo.FindProperty("_cardPrefab").objectReferenceValue as MetaShopCardUI;
-                    ok &= Check(cardPrefab != null, "MetaShopUI._cardPrefab wired");
-                    if (cardPrefab != null)
+                    // Icon grid-cell prefab + its grid container.
+                    var iconPrefab = shopSo.FindProperty("_iconPrefab").objectReferenceValue as MetaShopIconUI;
+                    ok &= Check(iconPrefab != null, "MetaShopUI._iconPrefab wired");
+                    if (iconPrefab != null)
                     {
-                        var cardSo = new SerializedObject(cardPrefab);
-                        ok &= Check(cardSo.FindProperty("_nameText").objectReferenceValue != null,
-                            "Shop card prefab name text wired");
-                        ok &= Check(cardSo.FindProperty("_descriptionText").objectReferenceValue != null,
-                            "Shop card prefab description text wired");
-                        ok &= Check(cardSo.FindProperty("_effectText").objectReferenceValue != null,
-                            "Shop card prefab effect/value text wired");
-                        ok &= Check(cardSo.FindProperty("_rankText").objectReferenceValue != null,
-                            "Shop card prefab rank text wired");
-                        ok &= Check(cardSo.FindProperty("_costText").objectReferenceValue != null,
-                            "Shop card prefab cost text wired");
-                        ok &= Check(cardSo.FindProperty("_buyButton").objectReferenceValue != null,
-                            "Shop card prefab buy button wired");
+                        var iconSo = new SerializedObject(iconPrefab);
+                        ok &= Check(iconSo.FindProperty("_iconImage").objectReferenceValue != null,
+                            "Shop icon prefab image wired");
+                        ok &= Check(iconSo.FindProperty("_levelText").objectReferenceValue != null,
+                            "Shop icon prefab level text wired");
+                        ok &= Check(iconSo.FindProperty("_button").objectReferenceValue != null,
+                            "Shop icon prefab button wired");
+                        ok &= Check(iconSo.FindProperty("_selectionHighlight").objectReferenceValue != null,
+                            "Shop icon prefab selection highlight wired");
                     }
 
-                    var contentRef = shopSo.FindProperty("_content").objectReferenceValue as RectTransform;
-                    ok &= Check(contentRef != null, "MetaShopUI._content wired");
-                    ok &= Check(contentRef != null && contentRef.GetComponent<UnityEngine.UI.GridLayoutGroup>() != null,
-                        "Shop content has a GridLayoutGroup");
+                    var gridRef = shopSo.FindProperty("_gridContent").objectReferenceValue as RectTransform;
+                    ok &= Check(gridRef != null, "MetaShopUI._gridContent wired");
+                    ok &= Check(gridRef != null && gridRef.GetComponent<UnityEngine.UI.GridLayoutGroup>() != null,
+                        "Shop icon grid has a GridLayoutGroup");
+
+                    // Detail pane: at least name/rank/cost/buy must be wired.
+                    var detail = shopSo.FindProperty("_detail").objectReferenceValue as MetaShopDetailUI;
+                    ok &= Check(detail != null, "MetaShopUI._detail wired");
+                    if (detail != null)
+                    {
+                        var detailSo = new SerializedObject(detail);
+                        ok &= Check(detailSo.FindProperty("_nameText").objectReferenceValue != null,
+                            "Shop detail name text wired");
+                        ok &= Check(detailSo.FindProperty("_rankText").objectReferenceValue != null,
+                            "Shop detail rank text wired");
+                        ok &= Check(detailSo.FindProperty("_costText").objectReferenceValue != null,
+                            "Shop detail cost text wired");
+                        ok &= Check(detailSo.FindProperty("_buyButton").objectReferenceValue != null,
+                            "Shop detail buy button wired");
+                    }
+
+                    // Three category tabs, each with a highlight, all wired.
+                    var tabsProp = shopSo.FindProperty("_tabButtons");
+                    var tabHighlightsProp = shopSo.FindProperty("_tabHighlights");
+                    ok &= Check(tabsProp.arraySize == 3, $"MetaShopUI has 3 tabs (found {tabsProp.arraySize})");
+                    ok &= Check(tabHighlightsProp.arraySize == 3,
+                        $"MetaShopUI has 3 tab highlights (found {tabHighlightsProp.arraySize})");
+                    for (int i = 0; i < tabsProp.arraySize; i++)
+                    {
+                        ok &= Check(tabsProp.GetArrayElementAtIndex(i).objectReferenceValue != null,
+                            $"MetaShopUI tab button [{i}] wired");
+                    }
                 }
             }
 

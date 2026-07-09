@@ -305,6 +305,28 @@ accents where relevant, dark outline, flat shading, transparent background.
   can extend to both.
 - **Usage:** future character customization screen (male + female, once both exist)
 
+#### 2.11 Meta-shop upgrade icons (13 exist)
+- **Status:** 🟡 placeholder (`_icon` slot exists on `MetaUpgradeSO`; each of the 13 upgrades
+  currently borrows a generic picto from `Assets/ThirdParty/IconsTemp/Icons/PictoIcon_128` —
+  Heart / Sword / Speedmeter / Hammer / Magnetic / Money / Star / Thunder / Time / Target /
+  Star_Circle / Gift / Random). Wired by the Phase 3B-1 `MetaShopTabsBuilder`.
+- **Spec:** Icon tier, 32×32, 13 icons — one per permanent shop upgrade, shown both in the shop's
+  category grid and the detail pane. Group visually by tab so a player reads the category at a
+  glance: **Combat** (Damage, Attack Speed, Crit Chance, Crit Damage, Ability DMG, Cooldown Cut),
+  **Survival** (Max HP, Move Speed, Pickup Range), **Utility** (Honey Gain, EXP Gain, Item Drop
+  Rate, Rerolls). Reuse existing motifs where they exist (the Honey-Gain icon should echo the
+  honey-drop currency; crit icons can echo the Keen Eye / crit power-up motifs).
+- **Usage:** Hive Upgrades shop (tab grid + detail pane)
+- **Generation prompt:** "A set of 13 icon badges for a bee-themed survival game's permanent
+  upgrade shop: max health (heart/honeycomb heart), damage (stinger/sword), move speed (winged
+  boot), attack speed (blurred wing), pickup range (magnet), honey gain (honey jar/coin), EXP
+  gain (star), ability power (radiant hex), cooldown cut (winged hourglass), crit chance
+  (targeting eye), crit damage (cracked impact star), item drop rate (gift/loot bag), rerolls
+  (shuffling arrows / dice), pixel art for SurveHive — a 16-PPU top-down-plane bee/honey
+  survival-action game (Vampire-Survivors-style); Icon tier, 32×32 each; hard pixel edges, no
+  anti-aliasing, flat/indexed shading, transparent background. Honey-gold/amber/comb-brown
+  palette, thick readable silhouettes, dark outline, no two icons sharing a base shape."
+
 ---
 
 ## 3. Future world content (Phase D — lower priority, build once systems are stable)
