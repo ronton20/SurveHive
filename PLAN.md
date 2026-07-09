@@ -196,7 +196,21 @@ a build-defining moment.
 The #25 wishlist pass. **Do 3A first** — the localization seam only gets more expensive once
 3B/Phase 4 start touching every string.
 
-### 3A — Localization seam ☐
+### 3A — Localization seam ✅
+- **Shipped 2026-07-09:** every user-facing UI-chrome literal now resolves through `Loc.Get`
+  against a flat key→string table. Keys are `const`s in `Core/LocKeys.cs`; the authoritative
+  English lives in `Core/LocDefaults.cs`, which the additive idempotent `LocalizationBuilder`
+  pass authors into `Assets/Resources/StringTable.asset` (a `Data/StringTableSO`, append-only
+  so hand edits / future locales survive re-runs). `Loc` resolves table → code default → raw
+  key, lazy-loading the Resources asset once (zero-GC after: dictionary lookups return cached
+  refs). **Decision:** SO-authored content stays authoritative — skill/upgrade/set names +
+  descriptions and enemy display names remain on their SOs; the table covers UI chrome only
+  (banners, prefixes, labels, buttons), so a future translation localizes both together. Swept
+  11 UI scripts (level-up offer, meta shop, settings, results, wave banner, owned-build view,
+  difficulty select, exp bar). Roman tier numerals and pure markup/punctuation left as-is.
+  EditMode tests (137 total) cover the fallback chain, table override, and a reflection guard
+  keeping `LocKeys` ↔ `LocDefaults` in lockstep; the scene validator now asserts the table
+  exists and carries every key.
 - Route all user-facing strings through one string-table asset (a `StringTableSO` or similar
   key→string lookup) instead of hardcoded literals. Actual translation deferred — English-only
   table for now.

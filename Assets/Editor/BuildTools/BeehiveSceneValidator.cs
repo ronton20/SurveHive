@@ -207,8 +207,39 @@ namespace SurveHive.BuildTools
             ok &= ValidatePhase3RunStructure(canvasGo);
             ok &= ValidatePhase4MetaAndMenus(player);
             ok &= ValidateEnemyVariety();
+            ok &= ValidateLocalization();
 
             Debug.Log(ok ? "SurveHive Beehive scene validation PASSED." : "SurveHive Beehive scene validation FAILED - see errors above.");
+        }
+
+        // --- Phase 3A (PLAN.md): localization string table ---
+        private static bool ValidateLocalization()
+        {
+            bool ok = true;
+
+            var table = AssetDatabase.LoadAssetAtPath<Data.StringTableSO>(
+                "Assets/Resources/StringTable.asset");
+            ok &= Check(table != null, "Localization StringTable asset exists (run Apply Localization Table)");
+            if (table == null)
+            {
+                return ok;
+            }
+
+            // Every default key the code resolves must be authored in the table, so
+            // no UI string silently falls back to the raw key at runtime.
+            int missing = 0;
+            System.Collections.Generic.IReadOnlyList<
+                System.Collections.Generic.KeyValuePair<string, string>> defaults = LocDefaults.All;
+            for (int i = 0; i < defaults.Count; i++)
+            {
+                if (!table.TryGet(defaults[i].Key, out _))
+                {
+                    missing++;
+                }
+            }
+
+            ok &= Check(missing == 0, $"StringTable carries every LocKeys default ({missing} missing)");
+            return ok;
         }
 
         // --- Phase 4 (PLAN.md): save/load, meta shop, menus, pause ---

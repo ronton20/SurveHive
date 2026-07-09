@@ -1,4 +1,5 @@
 using System.Text;
+using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Stage;
 using TMPro;
@@ -64,9 +65,9 @@ namespace SurveHive.UI
                 case StageEventType.FinalBoss:
                     return stageEvent.EnemyStats != null
                         ? stageEvent.EnemyStats.DisplayName.ToUpperInvariant()
-                        : "BOSS";
+                        : Loc.Get(LocKeys.WaveBoss);
                 default:
-                    return "DANGER WAVE";
+                    return Loc.Get(LocKeys.WaveDanger);
             }
         }
 
@@ -105,7 +106,8 @@ namespace SurveHive.UI
             }
 
             _builder.Clear();
-            _builder.Append(_title).Append("\nINCOMING IN ").Append(seconds).Append('s');
+            _builder.Append(_title).Append('\n').Append(Loc.Get(LocKeys.WaveIncomingPrefix))
+                .Append(seconds).Append(Loc.Get(LocKeys.WaveSecondsSuffix));
             _text.text = _builder.ToString();
         }
 

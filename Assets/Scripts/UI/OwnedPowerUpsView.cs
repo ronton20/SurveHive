@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Progression;
 using TMPro;
@@ -35,14 +36,14 @@ namespace SurveHive.UI
             _levelUp.GetOwnedPowerUps(_owned);
             _builder.Clear();
 
-            AppendLane("PASSIVES", PassiveHex, PowerUpLane.Passive);
-            AppendLane("ENHANCEMENTS", EnhancementHex, PowerUpLane.Enhancement);
-            AppendLane("ABILITIES", AbilityHex, PowerUpLane.Ability);
+            AppendLane(Loc.Get(LocKeys.LanePassivePlural), PassiveHex, PowerUpLane.Passive);
+            AppendLane(Loc.Get(LocKeys.LaneEnhancementPlural), EnhancementHex, PowerUpLane.Enhancement);
+            AppendLane(Loc.Get(LocKeys.LaneAbilityPlural), AbilityHex, PowerUpLane.Ability);
             AppendSets();
 
             if (_builder.Length == 0)
             {
-                _builder.Append("No power-ups yet.");
+                _builder.Append(Loc.Get(LocKeys.OwnedEmpty));
             }
 
             _text.text = _builder.ToString();
@@ -72,7 +73,8 @@ namespace SurveHive.UI
                 }
 
                 _builder.Append("  <color=").Append(ElementHex(p.Element)).Append('>');
-                _builder.Append(p.Name).Append("</color>  <color=#9C8B6E>Lv ").Append(p.Level).Append("</color>\n");
+                _builder.Append(p.Name).Append("</color>  <color=#9C8B6E>").Append(Loc.Get(LocKeys.OwnedLevelPrefix))
+                    .Append(p.Level).Append("</color>\n");
             }
 
             _builder.Append('\n');
@@ -101,12 +103,14 @@ namespace SurveHive.UI
                 if (!any)
                 {
                     any = true;
-                    _builder.Append("<b><color=#C9A227>SET BONUSES</color></b>\n");
+                    _builder.Append("<b><color=#C9A227>").Append(Loc.Get(LocKeys.SetBonusesHeader))
+                        .Append("</color></b>\n");
                 }
 
                 int tier = bonus.GetTierIndex(pieces);
                 _builder.Append("  <color=").Append(ElementHex(element)).Append('>');
-                _builder.Append(bonus.SetName).Append("</color>  <color=#9C8B6E>").Append(pieces).Append(" pc</color>");
+                _builder.Append(bonus.SetName).Append("</color>  <color=#9C8B6E>").Append(pieces)
+                    .Append(Loc.Get(LocKeys.SetPiecesSuffix)).Append("</color>");
 
                 if (tier >= 0)
                 {
@@ -116,7 +120,7 @@ namespace SurveHive.UI
                 if (tier + 1 < bonus.TierCount)
                 {
                     SetBonusTier next = bonus.GetTier(tier + 1);
-                    _builder.Append("  <color=#9C8B6E>(at ").Append(next.PiecesRequired)
+                    _builder.Append("  <color=#9C8B6E>").Append(Loc.Get(LocKeys.SetAtOpen)).Append(next.PiecesRequired)
                         .Append(": ").Append(next.Description).Append(")</color>");
                 }
 

@@ -101,15 +101,17 @@ namespace SurveHive.UI
 
         private void RefreshVibrationLabel(SettingsData settings)
         {
-            _vibrationLabel.text = settings.vibration ? "VIBRATION: ON" : "VIBRATION: OFF";
+            _vibrationLabel.text = settings.vibration
+                ? Loc.Get(LocKeys.SettingsVibrationOn)
+                : Loc.Get(LocKeys.SettingsVibrationOff);
         }
 
         private void RefreshQualityLabel(SettingsData settings)
         {
             string name = settings.qualityLevel < 0
-                ? "DEFAULT"
+                ? Loc.Get(LocKeys.SettingsQualityDefault)
                 : QualitySettings.names[settings.qualityLevel].ToUpperInvariant();
-            _qualityLabel.text = $"QUALITY: {name}";
+            _qualityLabel.text = Loc.Get(LocKeys.SettingsQualityPrefix) + name;
         }
 
         private void SaveAndApply()

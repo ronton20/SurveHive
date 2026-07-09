@@ -265,7 +265,9 @@ namespace SurveHive.UI
 
             if (_titleText != null)
             {
-                _titleText.text = _currentOfferForceLucky ? "MINIBOSS KILLED!" : "LEVEL UP!";
+                _titleText.text = Loc.Get(_currentOfferForceLucky
+                    ? LocKeys.LevelUpTitleMiniboss
+                    : LocKeys.LevelUpTitle);
             }
 
             int eligibleCount = BuildEligibleBuffer();
@@ -392,7 +394,7 @@ namespace SurveHive.UI
             {
                 _rerollCountText.gameObject.SetActive(anyStockThisRun);
                 _counterBuilder.Clear();
-                _counterBuilder.Append("REROLLS: ");
+                _counterBuilder.Append(Loc.Get(LocKeys.RerollsPrefix));
                 _counterBuilder.Append(_rerollStock);
                 _rerollCountText.text = _counterBuilder.ToString();
             }
@@ -454,11 +456,11 @@ namespace SurveHive.UI
             switch (lane)
             {
                 case PowerUpLane.Enhancement:
-                    return "ENHANCEMENT";
+                    return Loc.Get(LocKeys.LaneEnhancement);
                 case PowerUpLane.Ability:
-                    return "ABILITY";
+                    return Loc.Get(LocKeys.LaneAbility);
                 default:
-                    return "PASSIVE";
+                    return Loc.Get(LocKeys.LanePassive);
             }
         }
 
@@ -580,22 +582,23 @@ namespace SurveHive.UI
 
             if (lucky)
             {
-                _descriptionBuilder.Append("LUCKY! +2 levels\n");
+                _descriptionBuilder.Append(Loc.Get(LocKeys.LevelUpLucky));
+                _descriptionBuilder.Append('\n');
             }
 
             if (currentLevel <= 0 && !lucky)
             {
-                _descriptionBuilder.Append("New!");
+                _descriptionBuilder.Append(Loc.Get(LocKeys.LevelUpNewExclaim));
             }
             else
             {
                 if (currentLevel <= 0)
                 {
-                    _descriptionBuilder.Append("New");
+                    _descriptionBuilder.Append(Loc.Get(LocKeys.LevelUpNew));
                 }
                 else
                 {
-                    _descriptionBuilder.Append("Lv. ");
+                    _descriptionBuilder.Append(Loc.Get(LocKeys.LevelPrefix));
                     _descriptionBuilder.Append(currentLevel);
                 }
 
@@ -604,11 +607,11 @@ namespace SurveHive.UI
                 // Taking this pick hits the cap: make that explicit.
                 if (skill.HasLevelCap && targetLevel >= skill.MaxLevel)
                 {
-                    _descriptionBuilder.Append("MAX");
+                    _descriptionBuilder.Append(Loc.Get(LocKeys.Max));
                 }
                 else
                 {
-                    _descriptionBuilder.Append("Lv. ");
+                    _descriptionBuilder.Append(Loc.Get(LocKeys.LevelPrefix));
                     _descriptionBuilder.Append(targetLevel);
                 }
             }
@@ -658,11 +661,13 @@ namespace SurveHive.UI
             _descriptionBuilder.Append(ElementPalette.GetHex(skill.Element));
             _descriptionBuilder.Append('>');
             _descriptionBuilder.Append(bonus.SetName);
-            _descriptionBuilder.Append(" SET</color> ");
+            _descriptionBuilder.Append(' ');
+            _descriptionBuilder.Append(Loc.Get(LocKeys.SetLabel));
+            _descriptionBuilder.Append("</color> ");
 
             if (tierAfter > ElementSets.GetTierIndex(skill.Element))
             {
-                _descriptionBuilder.Append("— unlocks: ");
+                _descriptionBuilder.Append(Loc.Get(LocKeys.SetUnlocks));
                 _descriptionBuilder.Append(bonus.GetTier(tierAfter).Description);
             }
             else if (tierAfter + 1 < bonus.TierCount)
@@ -671,14 +676,14 @@ namespace SurveHive.UI
                 _descriptionBuilder.Append(piecesAfter);
                 _descriptionBuilder.Append('/');
                 _descriptionBuilder.Append(next.PiecesRequired);
-                _descriptionBuilder.Append(" — at ");
+                _descriptionBuilder.Append(Loc.Get(LocKeys.SetAtPrefix));
                 _descriptionBuilder.Append(next.PiecesRequired);
                 _descriptionBuilder.Append(": ");
                 _descriptionBuilder.Append(next.Description);
             }
             else
             {
-                _descriptionBuilder.Append("— maxed");
+                _descriptionBuilder.Append(Loc.Get(LocKeys.SetMaxed));
             }
 
             return _descriptionBuilder.ToString();

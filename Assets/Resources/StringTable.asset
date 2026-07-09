@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99ad6b011b7924682bc04d1277174465, type: 3}
+  m_Name: StringTable
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.StringTableSO
+  _entries:
+  - key: hud.level_prefix
+    value: 'Lv. '
+  - key: hud.owned_level_prefix
+    value: 'Lv '
+  - key: common.max
+    value: MAX
+  - key: levelup.title
+    value: LEVEL UP!
+  - key: levelup.title_miniboss
+    value: MINIBOSS KILLED!
+  - key: levelup.lucky
+    value: LUCKY! +2 levels
+  - key: levelup.new
+    value: New
+  - key: levelup.new_exclaim
+    value: New!
+  - key: levelup.rerolls_prefix
+    value: 'REROLLS: '
+  - key: lane.passive
+    value: PASSIVE
+  - key: lane.enhancement
+    value: ENHANCEMENT
+  - key: lane.ability
+    value: ABILITY
+  - key: lane.passives
+    value: PASSIVES
+  - key: lane.enhancements
+    value: ENHANCEMENTS
+  - key: lane.abilities
+    value: ABILITIES
+  - key: set.label
+    value: SET
+  - key: set.unlocks
+    value: "\u2014 unlocks: "
+  - key: set.at_prefix
+    value: " \u2014 at "
+  - key: set.maxed
+    value: "\u2014 maxed"
+  - key: set.bonuses_header
+    value: SET BONUSES
+  - key: set.pieces_suffix
+    value: ' pc'
+  - key: set.at_open
+    value: '(at '
+  - key: owned.empty
+    value: No power-ups yet.
+  - key: wave.boss
+    value: BOSS
+  - key: wave.danger
+    value: DANGER WAVE
+  - key: wave.incoming_prefix
+    value: 'INCOMING IN '
+  - key: wave.seconds_suffix
+    value: s
+  - key: shop.honey_prefix
+    value: 'HONEY: '
+  - key: shop.rank_prefix
+    value: 'Rank '
+  - key: settings.vibration_on
+    value: 'VIBRATION: ON'
+  - key: settings.vibration_off
+    value: 'VIBRATION: OFF'
+  - key: settings.quality_prefix
+    value: 'QUALITY: '
+  - key: settings.quality_default
+    value: DEFAULT
+  - key: results.time
+    value: 'Time  '
+  - key: results.kills
+    value: 'Kills  '
+  - key: results.level
+    value: 'Level  '
+  - key: results.honey_banked
+    value: 'Honey banked  '
+  - key: difficulty.locked_suffix
+    value: ' - LOCKED'
+  - key: difficulty.unlock_prefix
+    value: 'UNLOCK '
+  - key: difficulty.clear_prefix
+    value: 'Clear '
+  - key: difficulty.on
+    value: ' on '

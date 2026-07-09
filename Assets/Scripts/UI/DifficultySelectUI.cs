@@ -19,8 +19,6 @@ namespace SurveHive.UI
     /// </summary>
     public sealed class DifficultySelectUI : MonoBehaviour
     {
-        private const string LockedSuffix = " - LOCKED";
-
         [SerializeField] private TMP_Dropdown _dropdown;
         [SerializeField] private DifficultySO _difficulty;
         [SerializeField] private PersistentMetaProgressionStoreSO _store;
@@ -47,7 +45,9 @@ namespace SurveHive.UI
             {
                 DifficultySO.TierSettings tier = _difficulty.GetTierAt(i);
                 _unlocked[i] = DifficultyUnlocks.IsUnlocked(tier, _store);
-                string label = _unlocked[i] ? tier.displayName : tier.displayName + LockedSuffix;
+                string label = _unlocked[i]
+                    ? tier.displayName
+                    : tier.displayName + Loc.Get(LocKeys.DifficultyLockedSuffix);
                 _dropdown.options.Add(new TMP_Dropdown.OptionData(label, tier.icon, Color.white));
             }
 
@@ -134,7 +134,7 @@ namespace SurveHive.UI
 
             DifficultySO.TierSettings tier = _difficulty.GetTierAt(index);
             _tooltipBuilder.Clear();
-            _tooltipBuilder.Append("UNLOCK ");
+            _tooltipBuilder.Append(Loc.Get(LocKeys.DifficultyUnlockPrefix));
             _tooltipBuilder.Append(tier.displayName);
             _tooltipBuilder.Append(':');
 
@@ -146,9 +146,9 @@ namespace SurveHive.UI
                     bool met = DifficultyUnlocks.IsRequirementMet(requirement, _store);
                     _tooltipBuilder.Append('\n');
                     _tooltipBuilder.Append(met ? "<color=#7BE382>[X] <s>" : "[  ] ");
-                    _tooltipBuilder.Append("Clear ");
+                    _tooltipBuilder.Append(Loc.Get(LocKeys.DifficultyClearPrefix));
                     _tooltipBuilder.Append(requirement.stageName);
-                    _tooltipBuilder.Append(" on ");
+                    _tooltipBuilder.Append(Loc.Get(LocKeys.DifficultyOn));
                     _tooltipBuilder.Append(GetTierName(requirement.clearTier));
                     if (met)
                     {

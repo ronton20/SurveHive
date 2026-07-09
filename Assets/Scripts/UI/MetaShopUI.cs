@@ -1,3 +1,4 @@
+using SurveHive.Core;
 using SurveHive.Data;
 using SurveHive.Progression;
 using TMPro;
@@ -107,7 +108,7 @@ namespace SurveHive.UI
 
             if (_balanceText != null)
             {
-                _balanceText.text = $"HONEY: {_store.BankedCurrency}";
+                _balanceText.text = Loc.Get(LocKeys.ShopHoneyPrefix) + _store.BankedCurrency;
             }
 
             for (int i = 0; i < _activeCards.Length; i++)

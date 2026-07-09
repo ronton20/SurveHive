@@ -143,6 +143,14 @@ Screens/flow: `MainMenuController`, `DifficultySelectUI`, `MetaShopUI`+`MetaShop
 `LevelUpUIController`, `RunResultsUI`, `PauseMenuController`, `SettingsPanelUI`, `OwnedPowerUpsView`.
 **Almost all UI is generated directly into the scenes by the editor builders — see §6 and §7.**
 
+### Localization — `Assets/Scripts/Core/Loc.cs` (+ `LocKeys`, `LocDefaults`, `Data/StringTableSO`)
+UI-chrome strings resolve through `Loc.Get(LocKeys.X)`: authored `StringTable` Resources asset →
+code `LocDefaults` → raw key. Keys are `const`s in `LocKeys`; English lives in `LocDefaults` and
+is authored into `Assets/Resources/StringTable.asset` by the idempotent `LocalizationBuilder`
+pass. **SO-authored content (skill/upgrade/set names + descriptions, enemy display names) stays
+on its SO** — the table is chrome only. Add a key → add its `LocDefaults` default (a test enforces
+the pairing) → re-run the builder. Translation deferred; the asset is the future locale surface.
+
 ### Audio — `Assets/Scripts/Core/AudioService.cs`
 Scene-scoped `AudioService` behind `IAudioService`: round-robin SFX pool + one music loop, driven
 by settings sliders. `SfxId`/`MusicId` map 1:1 to clips in `AudioLibrarySO`. SFX synthesized by
@@ -180,8 +188,8 @@ in `Assets/Editor/BuildTools/`:
 `BeehiveSceneBuilder` (full build) → `Phase1LookAndFeelBuilder` → `Phase2CombatDepthBuilder` →
 `Phase3RunStructureBuilder` → `Phase4MetaAndMenusBuilder` → `Phase5AudioBuilder`, plus additive
 passes (`CombatOverhaulBuilder`, `EnemyVarietyBuilder`, `DifficultyBuilder`,
-`MetaShopExpansionBuilder`, `SetSignatureBuilder`, `HeroBee*SkinBuilder`). Validated by
-`BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
+`MetaShopExpansionBuilder`, `SetSignatureBuilder`, `LocalizationBuilder`, `HeroBee*SkinBuilder`).
+Validated by `BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
 
 > ⚠️ **Builder caution (from `PLAN.md` and project memory):** the scenes/data have since been
 > **hand-tuned**. Do **not** re-run `BeehiveSceneBuilder.Build()` or early phase builders casually —

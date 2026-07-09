@@ -1,4 +1,5 @@
 using System.Text;
+using SurveHive.Core;
 using SurveHive.Progression;
 using TMPro;
 using UnityEngine;
@@ -35,7 +36,7 @@ namespace SurveHive.UI
         private void HandleLevelUp(int level)
         {
             _stringBuilder.Clear();
-            _stringBuilder.Append("Lv. ");
+            _stringBuilder.Append(Loc.Get(LocKeys.LevelPrefix));
             _stringBuilder.Append(level);
             _levelText.SetText(_stringBuilder);
         }

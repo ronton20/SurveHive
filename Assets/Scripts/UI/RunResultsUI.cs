@@ -33,7 +33,7 @@ namespace SurveHive.UI
             if (_session != null)
             {
                 int totalSeconds = Mathf.FloorToInt(_session.ElapsedSeconds);
-                _builder.Append("Time  ");
+                _builder.Append(Loc.Get(LocKeys.ResultsTime));
                 _builder.Append(totalSeconds / 60);
                 _builder.Append(':');
                 int seconds = totalSeconds % 60;
@@ -44,21 +44,21 @@ namespace SurveHive.UI
 
                 _builder.Append(seconds);
                 _builder.Append('\n');
-                _builder.Append("Kills  ");
+                _builder.Append(Loc.Get(LocKeys.ResultsKills));
                 _builder.Append(_session.KillCount);
                 _builder.Append('\n');
             }
 
             if (_playerExperience != null)
             {
-                _builder.Append("Level  ");
+                _builder.Append(Loc.Get(LocKeys.ResultsLevel));
                 _builder.Append(_playerExperience.CurrentLevel);
                 _builder.Append('\n');
             }
 
             if (_wallet != null)
             {
-                _builder.Append("Honey banked  ");
+                _builder.Append(Loc.Get(LocKeys.ResultsHoneyBanked));
                 _builder.Append(_wallet.TotalCurrency);
             }
 

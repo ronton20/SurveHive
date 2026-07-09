@@ -93,8 +93,10 @@ interleaves well with chain A (e.g. a magic-shielded ranged bee once #20/#23 exi
    curve retune and the Queen anti-stall enrage — see `CHANGELOG.md`; confirm feel next playtest.)*
 6. **Mobile UI overhaul (#14–17) + mobile sanity pass** — the gap for "mobile-ready";
    safe-area anchoring is the most urgent (the notch currently hides HUD meters).
-7. **Localization seam** — cheap now, only gets more expensive as UI/string count grows;
-   worth doing *before* the mobile UI pass touches all that text anyway.
+7. ~~**Localization seam** — cheap now, only gets more expensive as UI/string count grows;
+   worth doing *before* the mobile UI pass touches all that text anyway.~~ *(done as PLAN
+   Phase 3A, 2026-07-09: UI chrome flows through `Loc.Get` → a key→string `StringTableSO`;
+   SO-authored content stays authoritative. See `CHANGELOG.md`.)*
 
 **D. Content expansion** — additional worlds (Garden / Woods / City / Alien Ship), custom
 Aseprite hero/boss art, a real hive tileset/floor. The biggest lift; best once the systems
@@ -171,5 +173,5 @@ above are locked so new content drops into a stable framework rather than a movi
 - ~~**Difficulty curve tuning pass** — once waves, bosses, and meta upgrades exist, do a dedicated balance pass on exp curve, enemy scaling, spawn curve, drop rates, and boss HP. Target: a first-time player dies around **minute 8–12**; a meta-invested player can clear. Document what changed and why.~~ *(done in Phase 1A rounds 1–2, 2026-07-09: tuned via the new `BalanceRunTest` sim harness; both targets machine-verified, changes logged in `CHANGELOG.md`.)*
 - ~~**Audio pass** — SFX for hits/level-up/death/pickups and background music per world.~~ *(done in Phase 5A: pooled `AudioService` + CC0 SFX/music for every listed event, credits in `Assets/Audio/CREDITS.md`.)*
 - ~~**Damage feedback** — hit flash / knockback / screen shake to make combat feel impactful (cheap wins alongside status effects).~~ *(done in Phase 1: hit flash, knockback, screen shake, hit-stop on elite kills, death VFX.)*
-- **Localization seam** — if wider release is a goal, isolate user-facing strings early rather than retrofitting later: all user-facing strings flow through one string table/asset instead of hardcoded literals (actual translation deferred).
+- ~~**Localization seam** — if wider release is a goal, isolate user-facing strings early rather than retrofitting later: all user-facing strings flow through one string table/asset instead of hardcoded literals (actual translation deferred).~~ *(done in PLAN Phase 3A, 2026-07-09: `Core/Loc` resolver + `LocKeys`/`LocDefaults` + `StringTableSO` Resources asset; UI chrome swept, SO content stays authoritative, translation still deferred.)*
 - **Bloom / "magic honey" glow pass** — the URP Bloom post-process is set up (Global Volume) but not yet dialled in; tune a high threshold so only deliberately-bright VFX pixels bloom without smearing the pixel art. Optional follow-on: 2D lights for hive-interior mood.

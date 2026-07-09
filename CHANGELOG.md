@@ -7,6 +7,34 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 3A — localization seam (2026-07-09)
+
+The #25 UI overhaul's foundation: every user-facing UI-chrome string now resolves through a
+single key→string table instead of hardcoded literals, so the upcoming UI passes (and a future
+translation) touch one asset rather than dozens of call sites. Actual translation is deferred —
+English-only for now, and the game reads byte-for-byte identically to before.
+
+- **New seam:** `Core/LocKeys.cs` holds the string keys as `const`s; `Core/LocDefaults.cs`
+  holds the authoritative English; `Core/Loc.cs` resolves a key as *authored table →
+  code default → raw key*, lazy-loading the table once and caching it (allocation-free
+  lookups after the first call, safe from any scene without wiring).
+- **Authoring:** `Data/StringTableSO` is a flat key→string ScriptableObject; the additive,
+  idempotent `LocalizationBuilder` pass authors `Assets/Resources/StringTable.asset` from
+  `LocDefaults`, appending only missing keys so hand edits / future locales survive re-runs.
+- **Scope decision:** SO-authored *content* stays authoritative — skill / upgrade / set
+  names + descriptions and enemy display names remain on their SOs. The table covers UI
+  *chrome* only (banners, prefixes, labels, buttons), so a later translation localizes the SO
+  text and this table together, not one at the other's expense.
+- **Swept 11 UI scripts:** level-up offer (title, lane banners, lucky/new/MAX/Lv lines, set
+  progress, rerolls), meta shop (honey balance, rank, MAX), settings (vibration/quality),
+  run results (time/kills/level/honey), wave-warning banner, owned-build view (lanes + set
+  bonuses), difficulty select (locked/unlock/clear), and the exp bar. Roman tier numerals and
+  pure markup/punctuation left as literals. Zero new per-frame allocations.
+- **Tests:** EditMode `LocalizationTests` cover the fallback chain, an injected-table
+  override, and a reflection guard asserting every `LocKeys` const has a `LocDefaults` entry
+  (a new key can't ship without its text). The scene validator now checks the table exists and
+  carries every default key.
+
 ### Phase 2B — enhanced set bonuses (2026-07-09)
 
 TODO #27: the 4-piece elemental set tier is now a build-defining moment — one signature

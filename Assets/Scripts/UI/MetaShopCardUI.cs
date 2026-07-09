@@ -50,11 +50,11 @@ namespace SurveHive.UI
                 _effectText.text = _upgrade.FormatEffectTransition(rank);
             }
 
-            _rankText.text = $"Rank {rank}/{_upgrade.MaxRank}";
+            _rankText.text = Loc.Get(LocKeys.ShopRankPrefix) + rank + "/" + _upgrade.MaxRank;
 
             if (maxed)
             {
-                _costText.text = "MAX";
+                _costText.text = Loc.Get(LocKeys.Max);
                 _buyButton.interactable = false;
             }
             else
