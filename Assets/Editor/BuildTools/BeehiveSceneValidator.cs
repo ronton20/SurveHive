@@ -589,7 +589,7 @@ namespace SurveHive.BuildTools
                     }
                 }
 
-                // Shop wiring: persistent store + one row per upgrade, fully wired.
+                // Shop wiring: persistent store + a data-driven catalog/prefab grid.
                 var shopUi = shopPanel != null ? shopPanel.GetComponent<MetaShopUI>() : null;
                 ok &= Check(shopUi != null, "ShopPanel has MetaShopUI");
                 if (shopUi != null)
@@ -624,33 +624,47 @@ namespace SurveHive.BuildTools
                             "ShopScroll has a wired vertical scrollbar");
                     }
 
-                    var rowsProp = shopSo.FindProperty("_rows");
-                    ok &= Check(rowsProp.arraySize == 13, $"MetaShopUI._rows has 13 entries (found {rowsProp.arraySize})");
-                    for (int i = 0; i < rowsProp.arraySize; i++)
+                    // Data-driven grid (ShopDataDrivenBuilder): a catalog of 13
+                    // upgrades + one card prefab spawned at runtime under a
+                    // GridLayoutGroup. The baked per-card _rows array is retired.
+                    var catalogRef = shopSo.FindProperty("_catalog").objectReferenceValue as Data.MetaUpgradeCatalogSO;
+                    ok &= Check(catalogRef != null, "MetaShopUI._catalog wired");
+                    if (catalogRef != null)
                     {
-                        var row = rowsProp.GetArrayElementAtIndex(i).objectReferenceValue as MetaShopRowUI;
-                        ok &= Check(row != null, $"MetaShopUI._rows[{i}] wired");
-                        if (row == null)
+                        var catalogSo = new SerializedObject(catalogRef);
+                        var upgradesProp = catalogSo.FindProperty("_upgrades");
+                        ok &= Check(upgradesProp.arraySize == 13,
+                            $"MetaUpgradeCatalog has 13 upgrades (found {upgradesProp.arraySize})");
+                        for (int i = 0; i < upgradesProp.arraySize; i++)
                         {
-                            continue;
+                            ok &= Check(upgradesProp.GetArrayElementAtIndex(i).objectReferenceValue != null,
+                                $"MetaUpgradeCatalog[{i}] wired");
                         }
-
-                        var rowSo = new SerializedObject(row);
-                        ok &= Check(rowSo.FindProperty("_upgrade").objectReferenceValue != null,
-                            $"Shop row {i} upgrade wired");
-                        ok &= Check(rowSo.FindProperty("_nameText").objectReferenceValue != null,
-                            $"Shop row {i} name text wired");
-                        ok &= Check(rowSo.FindProperty("_descriptionText").objectReferenceValue != null,
-                            $"Shop row {i} description text wired");
-                        ok &= Check(rowSo.FindProperty("_effectText").objectReferenceValue != null,
-                            $"Shop row {i} effect/value text wired");
-                        ok &= Check(rowSo.FindProperty("_rankText").objectReferenceValue != null,
-                            $"Shop row {i} rank text wired");
-                        ok &= Check(rowSo.FindProperty("_costText").objectReferenceValue != null,
-                            $"Shop row {i} cost text wired");
-                        ok &= Check(rowSo.FindProperty("_buyButton").objectReferenceValue != null,
-                            $"Shop row {i} buy button wired");
                     }
+
+                    var cardPrefab = shopSo.FindProperty("_cardPrefab").objectReferenceValue as MetaShopCardUI;
+                    ok &= Check(cardPrefab != null, "MetaShopUI._cardPrefab wired");
+                    if (cardPrefab != null)
+                    {
+                        var cardSo = new SerializedObject(cardPrefab);
+                        ok &= Check(cardSo.FindProperty("_nameText").objectReferenceValue != null,
+                            "Shop card prefab name text wired");
+                        ok &= Check(cardSo.FindProperty("_descriptionText").objectReferenceValue != null,
+                            "Shop card prefab description text wired");
+                        ok &= Check(cardSo.FindProperty("_effectText").objectReferenceValue != null,
+                            "Shop card prefab effect/value text wired");
+                        ok &= Check(cardSo.FindProperty("_rankText").objectReferenceValue != null,
+                            "Shop card prefab rank text wired");
+                        ok &= Check(cardSo.FindProperty("_costText").objectReferenceValue != null,
+                            "Shop card prefab cost text wired");
+                        ok &= Check(cardSo.FindProperty("_buyButton").objectReferenceValue != null,
+                            "Shop card prefab buy button wired");
+                    }
+
+                    var contentRef = shopSo.FindProperty("_content").objectReferenceValue as RectTransform;
+                    ok &= Check(contentRef != null, "MetaShopUI._content wired");
+                    ok &= Check(contentRef != null && contentRef.GetComponent<UnityEngine.UI.GridLayoutGroup>() != null,
+                        "Shop content has a GridLayoutGroup");
                 }
             }
 

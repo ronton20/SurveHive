@@ -13,6 +13,27 @@ namespace SurveHive.UI
 {
     public sealed class LevelUpUIController : MonoBehaviour
     {
+        // One offer card's widgets, bundled from the parallel serialized arrays
+        // below into a single view so the controller logic reads card.Name /
+        // card.Banner instead of ten index-aligned arrays. Optional widgets
+        // (icon/banner/gem/counter/set-line/reroll) may be null when a builder
+        // pass hasn't wired them — every read is guarded with an explicit null
+        // check (Unity fake-null: never ?./??). Built once in Awake.
+        private sealed class Card
+        {
+            public Button Button;
+            public Image Background;
+            public TMP_Text Name;
+            public TMP_Text Description;
+            public Image Icon;
+            public TMP_Text Banner;
+            public Image BannerBackground;
+            public Image ElementGem;
+            public TMP_Text LaneCounter;
+            public TMP_Text SetText;
+            public Button RerollButton;
+        }
+
         [SerializeField] private SkillDatabaseSO _database;
         [SerializeField] private PlayerExperience _playerExperience;
         [SerializeField] private PlayerStats _playerStats;
@@ -96,7 +117,9 @@ namespace SurveHive.UI
         private bool _currentOfferForceLucky;
         private int _rerollStock;
         private readonly int[] _rerollResultScratch = new int[1];
-        private Image[] _choiceBackgrounds;
+        // The bundled card views, one per choice slot (built from the arrays above).
+        private Card[] _cards;
+        private bool _anyRerollButton;
         private CanvasGroup _canvasGroup;
         private readonly StringBuilder _descriptionBuilder = new StringBuilder(96);
         private readonly StringBuilder _counterBuilder = new StringBuilder(8);
@@ -124,16 +147,13 @@ namespace SurveHive.UI
 
             // Fresh run: reset set counts and hand the per-element configs over.
             ElementSets.Initialize(_database.SetBonuses);
-            _selectedBuffer = new int[_choiceButtons.Length];
-            _currentChoices = new SkillDefinitionSO[_choiceButtons.Length];
-            _currentChoiceDbIndices = new int[_choiceButtons.Length];
-            _currentChoiceLucky = new bool[_choiceButtons.Length];
 
-            _choiceBackgrounds = new Image[_choiceButtons.Length];
-            for (int i = 0; i < _choiceButtons.Length; i++)
-            {
-                _choiceBackgrounds[i] = _choiceButtons[i].GetComponent<Image>();
-            }
+            BuildCards();
+
+            _selectedBuffer = new int[_cards.Length];
+            _currentChoices = new SkillDefinitionSO[_cards.Length];
+            _currentChoiceDbIndices = new int[_cards.Length];
+            _currentChoiceLucky = new bool[_cards.Length];
 
             // Per-run reroll stock from the bought meta rank (1C).
             _rerollStock = RerollLogic.StockFromRank(
@@ -153,22 +173,59 @@ namespace SurveHive.UI
             Hide();
         }
 
+        // Bundles the parallel serialized arrays into one Card per choice slot.
+        // The arrays stay the serialized/wired surface (builders + validator read
+        // them); this is the view the runtime logic actually talks to.
+        private void BuildCards()
+        {
+            int n = _choiceButtons.Length;
+            _cards = new Card[n];
+            for (int i = 0; i < n; i++)
+            {
+                Button button = _choiceButtons[i];
+                var card = new Card
+                {
+                    Button = button,
+                    Background = button.GetComponent<Image>(),
+                    Name = ElementAt(_choiceNameTexts, i),
+                    Description = ElementAt(_choiceDescriptionTexts, i),
+                    Icon = ElementAt(_choiceIcons, i),
+                    Banner = ElementAt(_choiceBanners, i),
+                    BannerBackground = ElementAt(_choiceBannerBackgrounds, i),
+                    ElementGem = ElementAt(_choiceElementGems, i),
+                    LaneCounter = ElementAt(_choiceLaneCounters, i),
+                    SetText = ElementAt(_choiceSetTexts, i),
+                    RerollButton = ElementAt(_rerollButtons, i),
+                };
+
+                if (card.RerollButton != null)
+                {
+                    _anyRerollButton = true;
+                }
+
+                _cards[i] = card;
+            }
+        }
+
+        // Safe indexer for the optional parallel arrays (shorter-than-slots or
+        // unwired). Returns null (never a fake-null) when absent.
+        private static T ElementAt<T>(T[] array, int i) where T : Object
+        {
+            return array != null && i < array.Length ? array[i] : null;
+        }
+
         private void OnEnable()
         {
             _playerExperience.OnLevelUp += HandleLevelUp;
 
-            for (int i = 0; i < _choiceButtons.Length; i++)
+            for (int i = 0; i < _cards.Length; i++)
             {
                 int choiceIndex = i;
-                _choiceButtons[i].onClick.AddListener(() => HandleChoiceSelected(choiceIndex));
-            }
+                _cards[i].Button.onClick.AddListener(() => HandleChoiceSelected(choiceIndex));
 
-            if (_rerollButtons != null)
-            {
-                for (int i = 0; i < _rerollButtons.Length; i++)
+                if (_cards[i].RerollButton != null)
                 {
-                    int choiceIndex = i;
-                    _rerollButtons[i].onClick.AddListener(() => HandleReroll(choiceIndex));
+                    _cards[i].RerollButton.onClick.AddListener(() => HandleReroll(choiceIndex));
                 }
             }
         }
@@ -177,16 +234,13 @@ namespace SurveHive.UI
         {
             _playerExperience.OnLevelUp -= HandleLevelUp;
 
-            for (int i = 0; i < _choiceButtons.Length; i++)
+            for (int i = 0; i < _cards.Length; i++)
             {
-                _choiceButtons[i].onClick.RemoveAllListeners();
-            }
+                _cards[i].Button.onClick.RemoveAllListeners();
 
-            if (_rerollButtons != null)
-            {
-                for (int i = 0; i < _rerollButtons.Length; i++)
+                if (_cards[i].RerollButton != null)
                 {
-                    _rerollButtons[i].onClick.RemoveAllListeners();
+                    _cards[i].RerollButton.onClick.RemoveAllListeners();
                 }
             }
         }
@@ -216,7 +270,7 @@ namespace SurveHive.UI
 
             int eligibleCount = BuildEligibleBuffer();
             int choiceCount = SkillOfferSelector.Select(
-                _indexBuffer, _weightBuffer, eligibleCount, _choiceButtons.Length,
+                _indexBuffer, _weightBuffer, eligibleCount, _cards.Length,
                 _selectedBuffer, _weightScratch, _rng);
 
             // Nothing left to offer (every skill maxed): resume without a panel and
@@ -237,12 +291,12 @@ namespace SurveHive.UI
             for (int i = 0; i < choiceCount; i++)
             {
                 BindChoice(i, _selectedBuffer[i]);
-                _choiceButtons[i].gameObject.SetActive(true);
+                _cards[i].Button.gameObject.SetActive(true);
             }
 
-            for (int i = choiceCount; i < _choiceButtons.Length; i++)
+            for (int i = choiceCount; i < _cards.Length; i++)
             {
-                _choiceButtons[i].gameObject.SetActive(false);
+                _cards[i].Button.gameObject.SetActive(false);
             }
 
             RefreshRerollUI();
@@ -256,6 +310,7 @@ namespace SurveHive.UI
         private void BindChoice(int i, int dbIndex)
         {
             SkillDefinitionSO skill = _database.Skills[dbIndex];
+            Card card = _cards[i];
             _currentChoices[i] = skill;
             _currentChoiceDbIndices[i] = dbIndex;
 
@@ -263,25 +318,25 @@ namespace SurveHive.UI
             bool canDoubleLevel = !skill.HasLevelCap || _skillLevels[dbIndex] + 2 <= skill.MaxLevel;
             _currentChoiceLucky[i] = canDoubleLevel && (_currentOfferForceLucky || _rng.NextDouble() < _luckyChance);
 
-            _choiceNameTexts[i].text = skill.DisplayName;
-            _choiceDescriptionTexts[i].text = BuildDescription(skill, _skillLevels[dbIndex], _currentChoiceLucky[i]);
+            card.Name.text = skill.DisplayName;
+            card.Description.text = BuildDescription(skill, _skillLevels[dbIndex], _currentChoiceLucky[i]);
 
-            if (_choiceBackgrounds[i] != null)
+            if (card.Background != null)
             {
-                _choiceBackgrounds[i].color = _currentChoiceLucky[i] ? _luckyCardColor : GetRarityColor(skill.Rarity);
+                card.Background.color = _currentChoiceLucky[i] ? _luckyCardColor : GetRarityColor(skill.Rarity);
             }
 
-            if (_choiceIcons != null && i < _choiceIcons.Length && _choiceIcons[i] != null)
+            if (card.Icon != null)
             {
-                _choiceIcons[i].sprite = skill.Icon;
-                _choiceIcons[i].enabled = skill.Icon != null;
+                card.Icon.sprite = skill.Icon;
+                card.Icon.enabled = skill.Icon != null;
             }
 
-            ApplyCardTaxonomy(i, skill);
+            ApplyCardTaxonomy(card, skill);
 
-            if (_choiceSetTexts != null && i < _choiceSetTexts.Length && _choiceSetTexts[i] != null)
+            if (card.SetText != null)
             {
-                _choiceSetTexts[i].text = BuildSetLine(skill, _skillLevels[dbIndex]);
+                card.SetText.text = BuildSetLine(skill, _skillLevels[dbIndex]);
             }
         }
 
@@ -315,17 +370,22 @@ namespace SurveHive.UI
         // out once the stock is spent.
         private void RefreshRerollUI()
         {
-            if (_rerollButtons == null || _rerollButtons.Length == 0)
+            if (!_anyRerollButton)
             {
                 return;
             }
 
             bool anyStockThisRun = _rerollStock > 0 || HasRerollRank();
-            for (int i = 0; i < _rerollButtons.Length; i++)
+            for (int i = 0; i < _cards.Length; i++)
             {
+                if (_cards[i].RerollButton == null)
+                {
+                    continue;
+                }
+
                 bool visible = anyStockThisRun && i < _currentChoiceCount;
-                _rerollButtons[i].gameObject.SetActive(visible);
-                _rerollButtons[i].interactable = _rerollStock > 0;
+                _cards[i].RerollButton.gameObject.SetActive(visible);
+                _cards[i].RerollButton.interactable = _rerollStock > 0;
             }
 
             if (_rerollCountText != null)
@@ -357,35 +417,35 @@ namespace SurveHive.UI
             }
         }
 
-        // Drives the lane banner + element gem for choice i. All slots are guarded
+        // Drives the lane banner + element gem for a card. All widgets are guarded
         // so the controller works before the banner-UI builder pass wires them.
-        private void ApplyCardTaxonomy(int i, SkillDefinitionSO skill)
+        private void ApplyCardTaxonomy(Card card, SkillDefinitionSO skill)
         {
-            if (_choiceBanners != null && i < _choiceBanners.Length && _choiceBanners[i] != null)
+            if (card.Banner != null)
             {
-                _choiceBanners[i].text = GetLaneLabel(skill.Lane);
+                card.Banner.text = GetLaneLabel(skill.Lane);
             }
 
-            if (_choiceBannerBackgrounds != null && i < _choiceBannerBackgrounds.Length && _choiceBannerBackgrounds[i] != null)
+            if (card.BannerBackground != null)
             {
-                _choiceBannerBackgrounds[i].color = GetLaneColor(skill.Lane);
+                card.BannerBackground.color = GetLaneColor(skill.Lane);
             }
 
-            if (_choiceElementGems != null && i < _choiceElementGems.Length && _choiceElementGems[i] != null)
+            if (card.ElementGem != null)
             {
-                _choiceElementGems[i].color = GetElementColor(skill.Element);
+                card.ElementGem.color = GetElementColor(skill.Element);
             }
 
             // Owned/cap for this card's lane (populated by BuildEligibleBuffer,
             // which runs before this loop). Runs on the paused level-up screen.
-            if (_choiceLaneCounters != null && i < _choiceLaneCounters.Length && _choiceLaneCounters[i] != null)
+            if (card.LaneCounter != null)
             {
                 int lane = (int)skill.Lane;
                 _counterBuilder.Clear();
                 _counterBuilder.Append(_ownedPerLane[lane]);
                 _counterBuilder.Append('/');
                 _counterBuilder.Append(_laneCaps[lane]);
-                _choiceLaneCounters[i].text = _counterBuilder.ToString();
+                card.LaneCounter.text = _counterBuilder.ToString();
             }
         }
 

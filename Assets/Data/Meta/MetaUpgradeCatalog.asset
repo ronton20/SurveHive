@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5a80e1d111c14e18b369ee3733f725d, type: 3}
+  m_Name: MetaUpgradeCatalog
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.MetaUpgradeCatalogSO
+  _upgrades:
+  - {fileID: 11400000, guid: 38742bbc3d0f9400e8c01778e5518426, type: 2}
+  - {fileID: 11400000, guid: 82e1c446fbdd4487d954b2ec9acba7ba, type: 2}
+  - {fileID: 11400000, guid: b32152ee143b442dcb08aa8ff82ed924, type: 2}
+  - {fileID: 11400000, guid: 787189113240147c992943efff521f25, type: 2}
+  - {fileID: 11400000, guid: ea6d5e4a940c844979297569e517b750, type: 2}
+  - {fileID: 11400000, guid: f79b66aba17ce48daa8f634bdfb945ee, type: 2}
+  - {fileID: 11400000, guid: d6a2f2df7a65042d4aecb92de8d5e2fa, type: 2}
+  - {fileID: 11400000, guid: 5db485ff9120f44509d4b589c4d3aa9b, type: 2}
+  - {fileID: 11400000, guid: 54583cd7a09a7436081ed31d81120b2e, type: 2}
+  - {fileID: 11400000, guid: 8b6fba0e6a41a4f4d9d5238f142a70ba, type: 2}
+  - {fileID: 11400000, guid: 65184923dbcd348ff80ddafdb62d9335, type: 2}
+  - {fileID: 11400000, guid: b284570ebfd0847fcbace1586193d75d, type: 2}
+  - {fileID: 11400000, guid: 888adf31930b245938deeb8edb79e2e0, type: 2}

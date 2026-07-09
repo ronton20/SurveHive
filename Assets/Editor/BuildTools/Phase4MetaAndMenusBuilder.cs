@@ -218,7 +218,7 @@ namespace SurveHive.BuildTools
                 anchorY: 1f, offsetY: -140f, new Vector2(1000f, 60f));
 
             var upgrades = new MetaUpgradeSO[MetaUpgradePaths.Length];
-            var rows = new MetaShopRowUI[MetaUpgradePaths.Length];
+            var rows = new MetaShopCardUI[MetaUpgradePaths.Length];
             var cardSize = new Vector2(490f, 410f);
             for (int i = 0; i < MetaUpgradePaths.Length; i++)
             {
@@ -436,10 +436,10 @@ namespace SurveHive.BuildTools
         }
 
         // One shop grid card (vertical: name / description / value change / rank /
-        // cost / BUY). Its MetaShopRowUI keeps the generic name for the shared
+        // cost / BUY). Its MetaShopCardUI keeps the generic name for the shared
         // component; the layout is a card, not a row. Internal: the 1C shop
         // expansion pass builds its added cards through the same factory.
-        internal static MetaShopRowUI CreateShopCard(
+        internal static MetaShopCardUI CreateShopCard(
             Transform parent, MetaUpgradeSO upgrade, Vector2 centerOffset, Vector2 size,
             TMP_FontAsset font, Sprite panelSprite, Sprite buttonSprite)
         {
@@ -480,7 +480,7 @@ namespace SurveHive.BuildTools
             buyRect.pivot = new Vector2(0.5f, 0f);
             buyRect.anchoredPosition = new Vector2(0f, 18f);
 
-            var row = cardGo.AddComponent<MetaShopRowUI>();
+            var row = cardGo.AddComponent<MetaShopCardUI>();
             var rowSerialized = new SerializedObject(row);
             rowSerialized.FindProperty("_upgrade").objectReferenceValue = upgrade;
             rowSerialized.FindProperty("_nameText").objectReferenceValue = nameText;

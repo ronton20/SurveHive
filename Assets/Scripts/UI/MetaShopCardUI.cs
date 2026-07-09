@@ -7,10 +7,10 @@ using UnityEngine.UI;
 namespace SurveHive.UI
 {
     /// <summary>
-    /// One shop row: name, description, owned rank, next-rank cost, buy button.
+    /// One shop card: name, description, owned rank, next-rank cost, buy button.
     /// Menu-only path, so the small refresh-time string allocations are fine.
     /// </summary>
-    public sealed class MetaShopRowUI : MonoBehaviour
+    public sealed class MetaShopCardUI : MonoBehaviour
     {
         [SerializeField] private MetaUpgradeSO _upgrade;
         [SerializeField] private TMP_Text _nameText;
@@ -24,6 +24,15 @@ namespace SurveHive.UI
         public MetaUpgradeSO Upgrade => _upgrade;
 
         public Button BuyButton => _buyButton;
+
+        /// <summary>
+        /// Assigns the upgrade this row represents. Used when the shop spawns rows
+        /// from a prefab at runtime; baked rows keep their serialized <c>_upgrade</c>.
+        /// </summary>
+        public void Bind(MetaUpgradeSO upgrade)
+        {
+            _upgrade = upgrade;
+        }
 
         public void Refresh(IMetaProgressionStore store)
         {

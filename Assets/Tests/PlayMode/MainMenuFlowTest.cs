@@ -58,9 +58,9 @@ namespace SurveHive.Tests
 
             var shop = Object.FindAnyObjectByType<MetaShopUI>();
             Assert.IsNotNull(shop, "MetaShopUI present on the shop panel");
-            var rows = shop.GetComponentsInChildren<MetaShopRowUI>();
+            var rows = shop.GetComponentsInChildren<MetaShopCardUI>();
             Assert.AreEqual(13, rows.Length, "thirteen shop rows (Phase 1C expansion)");
-            foreach (MetaShopRowUI row in rows)
+            foreach (MetaShopCardUI row in rows)
             {
                 Assert.IsFalse(row.BuyButton.interactable, $"{row.name} buy disabled at zero balance");
             }
@@ -72,7 +72,7 @@ namespace SurveHive.Tests
             controller.ShowShop();
             yield return null;
 
-            MetaShopRowUI healthRow = FindRow(rows, "meta_max_health");
+            MetaShopCardUI healthRow = FindRow(rows, "meta_max_health");
             Assert.IsNotNull(healthRow, "max-health shop row exists");
             float healthPerRank = healthRow.Upgrade.EffectPerRank;
             Assert.IsTrue(healthRow.BuyButton.interactable, "buy enabled once affordable");
@@ -111,7 +111,7 @@ namespace SurveHive.Tests
                 "meta max-health rank raised starting HP");
         }
 
-        private static Core.IMetaProgressionStore FindStore(MetaShopRowUI row)
+        private static Core.IMetaProgressionStore FindStore(MetaShopCardUI row)
         {
             var shop = row.GetComponentInParent<MetaShopUI>(true);
             var field = typeof(MetaShopUI).GetField("_store",
@@ -119,9 +119,9 @@ namespace SurveHive.Tests
             return (Core.IMetaProgressionStore)field.GetValue(shop);
         }
 
-        private static MetaShopRowUI FindRow(MetaShopRowUI[] rows, string upgradeId)
+        private static MetaShopCardUI FindRow(MetaShopCardUI[] rows, string upgradeId)
         {
-            foreach (MetaShopRowUI row in rows)
+            foreach (MetaShopCardUI row in rows)
             {
                 if (row.Upgrade != null && row.Upgrade.UpgradeId == upgradeId)
                 {

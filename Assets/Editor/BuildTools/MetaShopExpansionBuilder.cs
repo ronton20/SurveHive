@@ -140,7 +140,7 @@ namespace SurveHive.BuildTools
 
             // All assets loaded after the scene switch (see DifficultyBuilder —
             // pre-switch instances go fake-null and wire as fileID 0).
-            var rows = new MetaShopRowUI[AllUpgradeNames.Length];
+            var rows = new MetaShopCardUI[AllUpgradeNames.Length];
             for (int i = 0; i < AllUpgradeNames.Length; i++)
             {
                 var upgrade = AssetDatabase.LoadAssetAtPath<MetaUpgradeSO>($"{MetaFolder}/{AllUpgradeNames[i]}.asset");
@@ -296,7 +296,7 @@ namespace SurveHive.BuildTools
         // Finds the card wherever it lives (panel root for pre-1C cards,
         // content for re-runs), reparents it into the grid, and positions it
         // by index. Missing cards are built via the shared Phase-4 factory.
-        private static MetaShopRowUI EnsureCardInGrid(
+        private static MetaShopCardUI EnsureCardInGrid(
             RectTransform content, Transform shopPanel, MetaUpgradeSO upgrade, int index,
             TMP_FontAsset font, Sprite panelSprite, Sprite buttonSprite)
         {
@@ -307,7 +307,7 @@ namespace SurveHive.BuildTools
                 card = shopPanel.Find(cardName);
             }
 
-            MetaShopRowUI row;
+            MetaShopCardUI row;
             if (card == null)
             {
                 row = Phase4MetaAndMenusBuilder.CreateShopCard(
@@ -317,7 +317,7 @@ namespace SurveHive.BuildTools
             else
             {
                 card.SetParent(content, false);
-                row = card.GetComponent<MetaShopRowUI>();
+                row = card.GetComponent<MetaShopCardUI>();
             }
 
             var rect = (RectTransform)card;
