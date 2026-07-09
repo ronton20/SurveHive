@@ -30,3 +30,8 @@ MonoBehaviour:
     StatusDurationBonusPercent: 100
     AttackDamageBonusPercent: 0
     Description: Stuns last twice as long
+  _signature: 3
+  _signatureRadius: 3.5
+  _signaturePotency: 0
+  _signatureDuration: 1
+  _signatureDescription: Stun arcs to a nearby enemy on death

@@ -30,3 +30,8 @@ MonoBehaviour:
     StatusDurationBonusPercent: 60
     AttackDamageBonusPercent: 0
     Description: Burns tick 60% harder and last 60% longer
+  _signature: 1
+  _signatureRadius: 3
+  _signaturePotency: 0
+  _signatureDuration: 3
+  _signatureDescription: Burns spread to a nearby enemy on death

@@ -33,11 +33,36 @@ namespace SurveHive.Data
         // Ordered ascending by PiecesRequired (validated by the scene validator).
         [SerializeField] private SetBonusTier[] _tiers;
 
+        // Top-tier (4-piece) signature effect (PLAN 2B). Appended fields:
+        // existing assets default to None until the SetSignatureBuilder pass
+        // authors them. Only meaningful while the top tier is active.
+        [SerializeField] private SetSignatureType _signature = SetSignatureType.None;
+        [Tooltip("AoE radius for shatter/pool/slick zones and spread/chain search range.")]
+        [SerializeField] private float _signatureRadius;
+        [Tooltip("Signature magnitude: shatter % of victim max HP, execute HP% threshold, pool DPS, slick slow fraction.")]
+        [SerializeField] private float _signaturePotency;
+        [Tooltip("Lifetime of spawned zones / applied statuses, seconds.")]
+        [SerializeField] private float _signatureDuration;
+        [SerializeField] private string _signatureDescription;
+
         public SkillElement Element => _element;
 
         public string SetName => _setName;
 
         public int TierCount => _tiers != null ? _tiers.Length : 0;
+
+        /// <summary>Index of the top (4-piece) tier, or -1 if there are no tiers.</summary>
+        public int TopTierIndex => TierCount - 1;
+
+        public SetSignatureType Signature => _signature;
+
+        public float SignatureRadius => _signatureRadius;
+
+        public float SignaturePotency => _signaturePotency;
+
+        public float SignatureDuration => _signatureDuration;
+
+        public string SignatureDescription => _signatureDescription;
 
         public SetBonusTier GetTier(int tierIndex) => _tiers[tierIndex];
 
@@ -67,6 +92,17 @@ namespace SurveHive.Data
             _element = element;
             _setName = setName;
             _tiers = tiers;
+        }
+
+        /// <summary>Authoring entry point for the top-tier signature (builder pass + tests).</summary>
+        public void ConfigureSignature(
+            SetSignatureType signature, float radius, float potency, float duration, string description)
+        {
+            _signature = signature;
+            _signatureRadius = radius;
+            _signaturePotency = potency;
+            _signatureDuration = duration;
+            _signatureDescription = description;
         }
     }
 }

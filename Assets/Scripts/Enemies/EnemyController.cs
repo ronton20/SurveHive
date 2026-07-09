@@ -165,6 +165,10 @@ namespace SurveHive.Enemies
             {
                 EnemyRegistry.Instance.Unregister(this);
             }
+
+            // Fire the owner's top-tier elemental set signatures (PLAN 2B) after
+            // unregistering, so a spread/shatter never re-targets this corpse.
+            Combat.Skills.ElementalSetSignatures.OnEnemyDied(this);
         }
 
         private void FixedUpdate()

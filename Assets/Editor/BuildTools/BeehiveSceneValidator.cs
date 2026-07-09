@@ -918,12 +918,17 @@ namespace SurveHive.BuildTools
                         }
 
                         setsOk &= bonus.GetTier(0).PiecesRequired == 2;
+
+                        // Phase 2B: every set defines a top-tier signature effect
+                        // with a HUD description.
+                        setsOk &= bonus.Signature != Data.SetSignatureType.None &&
+                            !string.IsNullOrEmpty(bonus.SignatureDescription);
                     }
 
                     setsOk &= coveredElements == 0b111111;
                 }
 
-                ok &= Check(setsOk, "SkillDatabase carries 6 valid element set bonuses (tiers from 2 pieces, all granting)");
+                ok &= Check(setsOk, "SkillDatabase carries 6 valid element set bonuses (tiers from 2 pieces, all granting, with a top-tier signature)");
             }
 
             // Phase 3C: set-tier summary lives on the offer panel, never on the

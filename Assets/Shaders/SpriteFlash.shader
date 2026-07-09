@@ -1,5 +1,6 @@
-// Sprite shader with a white hit-flash: _FlashAmount (0..1) lerps the sprite
-// toward solid white while keeping its alpha. Driven per-renderer through a
+// Sprite shader with a hit-flash: _FlashAmount (0..1) lerps the sprite toward
+// _FlashColor (white by default; hue-shifted by active status effects — PLAN
+// 2A) while keeping its alpha. Driven per-renderer through a
 // MaterialPropertyBlock by SurveHive.View.HitFlash.
 Shader "SurveHive/SpriteFlash"
 {
@@ -8,6 +9,12 @@ Shader "SurveHive/SpriteFlash"
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
         _Color ("Tint", Color) = (1,1,1,1)
         _FlashAmount ("Flash Amount", Range(0, 1)) = 0
+        _FlashColor ("Flash Color", Color) = (1,1,1,1)
+        // Rank/status tint, set per-renderer via MaterialPropertyBlock. Lives
+        // in the shader because the rig's animation clips keyframe the
+        // SpriteRenderer color every frame — renderer.color writes get
+        // clobbered, shader properties don't (PLAN 2A).
+        _Tint ("Rank/Status Tint", Color) = (1,1,1,1)
     }
 
     SubShader
@@ -56,6 +63,8 @@ Shader "SurveHive/SpriteFlash"
             CBUFFER_START(UnityPerMaterial)
                 half4 _Color;
                 half _FlashAmount;
+                half4 _FlashColor;
+                half4 _Tint;
             CBUFFER_END
 
             Varyings vert(Attributes input)
@@ -63,14 +72,14 @@ Shader "SurveHive/SpriteFlash"
                 Varyings output;
                 output.positionCS = TransformObjectToHClip(input.positionOS.xyz);
                 output.uv = input.uv;
-                output.color = input.color * _Color;
+                output.color = input.color * _Color * _Tint;
                 return output;
             }
 
             half4 frag(Varyings input) : SV_Target
             {
                 half4 color = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, input.uv) * input.color;
-                color.rgb = lerp(color.rgb, half3(1, 1, 1), _FlashAmount);
+                color.rgb = lerp(color.rgb, _FlashColor.rgb, _FlashAmount);
                 // Premultiplied alpha to match Unity's default sprite blending.
                 color.rgb *= color.a;
                 return color;

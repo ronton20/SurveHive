@@ -7,6 +7,58 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 2B — enhanced set bonuses (2026-07-09)
+
+TODO #27: the 4-piece elemental set tier is now a build-defining moment — one signature
+effect per element on top of the existing potency/duration scaling.
+
+- **Signature payload on `SetBonusSO`** (append-only): a new `SetSignatureType` enum plus
+  radius / potency / duration / description fields, authored by the additive, idempotent
+  `SetSignatureBuilder` pass (only writes sets still set to `None`, so the 3C-tuned tiers
+  and any inspector tuning survive re-runs).
+- **Five death-triggered signatures** fire from a new `ElementalSetSignatures` dispatcher
+  called by `EnemyController.HandleDied` (after the corpse leaves the registry, so nothing
+  re-targets it), each keyed on the victim's active status:
+  - **Fire (WILDFIRE)** — spreads Burn to the nearest enemy within 3u.
+  - **Frost (DEEP CHILL)** — chilled/frozen enemies shatter for 25%-of-max-HP AoE magic
+    damage (2.5u). Keyed on Cold *or* Freeze so a killing blow that damage-breaks the
+    freeze still shatters.
+  - **Electric (OVERCHARGE)** — arcs the Stun to the nearest enemy within 3.5u (1s).
+  - **Poison (VIRULENCE)** — leaves a 2u toxic pool (8 DPS, 4s) that re-poisons anything inside.
+  - **Honey (STICKY SWEET)** — leaves a 2.5u sticky slow zone (50% slow, 4s).
+  Pools and slicks reuse the existing honey-puddle zone pool — no new prefab or pool wiring.
+- **Physical (SHARP STINGERS)** is a basic-attack hook instead of a death effect: `Projectile`
+  now **executes** enemies at or below 15% max HP, via a new `HealthComponent.Kill` that
+  bypasses the shield/armor pipeline (still drops loot/EXP). Gated by a single cached
+  `ElementSets.ExecuteThresholdFraction` read — zero cost while the set is inactive.
+- **HUD**: the offer-panel `SetTierHUD` appends a `✦` signature line under a set once its
+  top tier is active, so the unlocked payoff reads at pick time.
+- Zero-GC throughout (registry walks + pooled zones, no per-death allocations). EditMode
+  tests cover shatter damage and top-tier gating; the scene validator now asserts every set
+  defines a signature.
+
+### Phase 2A — status-effect visual pass (2026-07-09)
+
+TODO #26: you can now tell at a glance which status an enemy is under.
+
+- **Per-status signature tints** (burn ember-orange, poison toxic-green, slow dusk-blue,
+  freeze ice-cyan, stun spark-yellow, cold frost-blue) with a fixed display priority —
+  hard CC > DoTs > movement debuffs — in a new pure `StatusTintPalette`
+  (EditMode-tested). Tints lerp the sprite 75% toward the status color, so they stay
+  loud over dark elite rank tints.
+- **Stacked statuses pulse**: two-plus active effects ping-pong the sprite between the
+  top two tints (~2.5 cycles/s), so a burn+slow reads as both.
+- **Hit flashes keep the hue**: the SpriteFlash shader's flash color is now a property
+  (`_FlashColor`), and the receiver hue-shifts it toward the active status — in dense
+  combat enemies flash near-constantly, and a pure-white flash used to erase the cue.
+- **Root cause fix**: status tints (and the elite **rank tints**) were being silently
+  clobbered — the shared rig's animation clips keyframe the SpriteRenderer color every
+  frame, overwriting any `renderer.color` write. All tinting moved to a new `_Tint`
+  shader property driven per-renderer via MaterialPropertyBlock (zero-GC, no prefab
+  edits); rank tints render correctly again as a side effect.
+- `PlayModeVerifyDriver` staged switch rewritten for the pass: ring of guards under each
+  single status, stacked pairs captured twice to show the pulse, and a mid-flash capture.
+
 ### Phase 1A round 2 — simulation-verified balance pass + Queen enrage (2026-07-09)
 
 Closes the curve-tuning pass: both 1A targets are now machine-checked by a new balance

@@ -58,6 +58,18 @@ namespace SurveHive.UI
                 _builder.Append(RomanTier(tierIndex));
                 _builder.Append("</color> — ");
                 _builder.Append(bonus.GetTier(tierIndex).Description);
+
+                // Top (4-piece) tier: append the unlocked signature effect line
+                // (PLAN 2B) so the build-defining payoff reads on the HUD.
+                if (tierIndex == bonus.TopTierIndex &&
+                    bonus.Signature != Data.SetSignatureType.None &&
+                    !string.IsNullOrEmpty(bonus.SignatureDescription))
+                {
+                    _builder.Append("\n    <color=");
+                    _builder.Append(ElementPalette.GetHex(element));
+                    _builder.Append(">✦</color> ");
+                    _builder.Append(bonus.SignatureDescription);
+                }
             }
 
             _text.text = _builder.ToString();

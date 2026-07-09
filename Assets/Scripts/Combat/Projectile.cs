@@ -112,6 +112,7 @@ namespace SurveHive.Combat
             {
                 enemy.ApplyKnockback(_direction * _knockbackImpulse);
                 ApplyStatuses(enemy);
+                TryExecute(enemy);
             }
 
             // Pierce takes priority: pass straight through until the budget runs out.
@@ -129,6 +130,23 @@ namespace SurveHive.Combat
             }
 
             ReleaseSelf();
+        }
+
+        // Physical set top-tier signature (PLAN 2B): the basic attack finishes
+        // enemies already below the threshold fraction of max HP. Gated by a
+        // single field read that is 0 unless the signature is active.
+        private void TryExecute(EnemyController enemy)
+        {
+            float threshold = Progression.ElementSets.ExecuteThresholdFraction;
+            if (threshold <= 0f || enemy.Health == null || enemy.Health.IsDead)
+            {
+                return;
+            }
+
+            if (enemy.Health.CurrentHealth <= enemy.Health.MaxHealth * threshold)
+            {
+                enemy.Health.Kill(gameObject);
+            }
         }
 
         private void ApplyStatuses(EnemyController enemy)

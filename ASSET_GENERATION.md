@@ -178,6 +178,12 @@ crystal — genuinely need different rendering, not just a tint).
 - **Usage:** the active-skill weapons' visible attacks (Ember Sting, Frost Nova, Static Wings, Honey Splash/Bomb, Pollen Cloud, Stinger Barrage)
 - **Generation prompt:** "A set of elemental VFX sprites for a bee-themed action game — an ember bolt (orange/red trail), a frost ring shard (pale blue crystalline), a static/lightning arc segment (electric yellow-white), a honey glob projectile (amber, glossy — a droplet accent flying off the splash is fine, it's a minor detail not the primary shape), a pollen aura cloud (poison-green particle puff), a honey puddle zone (translucent amber pool), a lance dart (physical steel-grey barb), pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Pickup tier, 16×16 canvas each; hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background. Each readable at small size over cluttered combat."
 
+#### 1.8b Set-signature effect VFX (Phase 2B)
+- **Status:** 🟡 placeholder (reuses existing zone/damage-number visuals — no dedicated art)
+- **Spec:** Pickup tier, 16×16 base (zones scaled up at runtime), element-colored per §1.9
+- **Usage:** the 4-piece set signatures (PLAN 2B). Currently: the **Virulence** toxic pool and **Sticky Sweet** slow slick reuse `HoneyPuddleZone.png` runtime-tinted green/gold; the **Deep Chill** shatter has **no VFX at all** (only AoE damage numbers); Wildfire spread / Overcharge stun-arc rely on the target's status tint. A dedicated **frost-shatter burst** (icy shard-spray, ~24×24) and distinct **toxic-pool** + **honey-slick** zone sprites would sell these clearly.
+- **Generation prompt:** "A frost-shatter burst VFX (pale-blue crystalline shards spraying outward from a point), a translucent toxic-green poison pool zone, and a glossy amber honey-slick zone, pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game; Pickup tier, hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background; readable over cluttered combat."
+
 ---
 
 ## 2. Icons & UI

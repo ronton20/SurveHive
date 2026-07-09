@@ -30,3 +30,8 @@ MonoBehaviour:
     StatusDurationBonusPercent: 60
     AttackDamageBonusPercent: 0
     Description: Freezes are 60% sturdier, chills 60% stronger and longer
+  _signature: 2
+  _signatureRadius: 2.5
+  _signaturePotency: 25
+  _signatureDuration: 0
+  _signatureDescription: Chilled enemies shatter for 25% max HP AoE on death

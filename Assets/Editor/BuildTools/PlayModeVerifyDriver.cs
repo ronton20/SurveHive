@@ -14,9 +14,10 @@ namespace SurveHive.BuildTools
     /// Verification driver: plays through the current change under test and
     /// captures game-view screenshots, then quits the editor. The staged
     /// switch below is rewritten per verification target — currently the
-    /// 1B/1C playtest fixes: difficulty unlock gating (locked rows, the
-    /// rejected-pick tooltip with checked/struck tasks, picking an unlocked
-    /// Hard) and the shop's visible scrollbar.
+    /// 2A status-effect visual pass: a ring of guards each under a single
+    /// status (distinct tints), then stacked pairs (two-tone pulse, captured
+    /// twice to show the alternation), then a hit mid-status (hue-shifted
+    /// flash instead of pure white).
     /// Run from the CLI:
     /// <c>Unity -projectPath . -executeMethod SurveHive.BuildTools.PlayModeVerifyDriver.Run</c>
     /// (no -batchmode: the game view must render). Screenshots land in
@@ -44,7 +45,7 @@ namespace SurveHive.BuildTools
         {
             System.IO.Directory.CreateDirectory(OutputDir);
             SessionState.SetBool(ActiveFlag, true);
-            EditorSceneManager.OpenScene("Assets/Scenes/MainMenu.unity", OpenSceneMode.Single);
+            EditorSceneManager.OpenScene("Assets/Scenes/Beehive.unity", OpenSceneMode.Single);
             EditorApplication.update += OnEditorUpdate;
             EditorApplication.isPlaying = true;
         }
@@ -87,78 +88,140 @@ namespace SurveHive.BuildTools
                     AdvanceStage();
                     break;
 
-                // Simulate progress: Beehive cleared on Normal AND Hard, so
-                // Hard is open while Extreme stays locked with one task done.
+                // A ring of tanky guards around the player — the status
+                // demo subjects (90 HP each survives the auto-attack long
+                // enough to read every capture).
                 case 1 when elapsed > 1.0:
-                    GrantStageClear("Beehive", 1);
-                    GrantStageClear("Beehive", 2);
-                    ShowWorldSelect();
+                    SpawnEnemyRing("Assets/Data/Enemies/QueensGuard.asset", 6, 8f);
                     AdvanceStage();
                     break;
 
-                // Captures ≥1s apart: the batch-launched game view repaints at
-                // a few fps, and a second pending screenshot inside one frame
-                // drops the first.
-                case 2 when elapsed > 1.2:
-                    ShowDifficultyDropdown();
+                case 2 when elapsed > 0.4:
+                    ApplySingleStatusesToRing();
                     AdvanceStage();
                     break;
 
-                case 3 when elapsed > 1.2:
-                    Capture("shot1_dropdown_extreme_locked.png");
+                case 3 when elapsed > 0.6:
+                    Capture("shot1_single_status_tints.png");
                     AdvanceStage();
                     break;
 
-                // Picking locked EXTREME bounces + pins the task tooltip
-                // ([X] struck Hard clear, [ ] open Garden task).
-                case 4 when elapsed > 0.5:
-                    SelectDifficulty(3);
+                // Second status on each subject → the two-tone pulse. Two
+                // captures a beat apart must show different blends.
+                case 4 when elapsed > 0.4:
+                    StackSecondStatusesOnRing();
                     AdvanceStage();
                     break;
 
-                case 5 when elapsed > 1.2:
-                    Capture("shot2_locked_pick_tooltip.png");
+                case 5 when elapsed > 0.6:
+                    Capture("shot2_stacked_pulse_a.png");
                     AdvanceStage();
                     break;
 
-                // Hard is genuinely unlocked — the pick sticks.
-                case 6 when elapsed > 0.5:
-                    SelectDifficulty(2);
+                case 6 when elapsed > 0.3:
+                    Capture("shot3_stacked_pulse_b.png");
                     AdvanceStage();
                     break;
 
-                case 7 when elapsed > 1.2:
-                    Capture("shot3_hard_selected.png");
+                // Hit the burning subject: the flash should read ember-tinted,
+                // not pure white (capture lands within the 0.12s flash).
+                case 7 when elapsed > 0.4:
+                    DamageStatusSubject(0);
+                    Capture("shot4_hit_flash_keeps_hue.png");
                     AdvanceStage();
                     break;
 
-                // Shop: the scrollbar is visible and programmatic scrolling
-                // still reaches the bottom rows.
-                case 8 when elapsed > 0.5:
-                    BankHoneyAndOpenShop(3000);
-                    AdvanceStage();
-                    break;
-
-                case 9 when elapsed > 1.2:
-                    Capture("shot4_shop_scrollbar.png");
-                    AdvanceStage();
-                    break;
-
-                case 10 when elapsed > 0.5:
-                    ScrollShopToBottom();
-                    AdvanceStage();
-                    break;
-
-                case 11 when elapsed > 1.2:
-                    Capture("shot5_shop_scrolled.png");
-                    AdvanceStage();
-                    break;
-
-                case 12 when elapsed > 2.0:
+                case 8 when elapsed > 2.0:
                     SessionState.SetBool(ActiveFlag, false);
                     Debug.Log("VerifyDriver: capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
+            }
+        }
+
+        // The ring subjects, in spawn order, tracked so stacking/damage hits
+        // the same enemies the single statuses went to.
+        private static readonly System.Collections.Generic.List<EnemyController> StatusSubjects
+            = new System.Collections.Generic.List<EnemyController>(8);
+
+        private static void CollectRingSubjects()
+        {
+            StatusSubjects.Clear();
+            if (EnemyRegistry.Instance == null || PlayerContextTransform() == null)
+            {
+                return;
+            }
+
+            Vector3 player = PlayerContextTransform().position;
+            var enemies = EnemyRegistry.Instance.ActiveEnemies;
+            for (int i = 0; i < EnemyRegistry.Instance.ActiveCount; i++)
+            {
+                // The ring sits at 8u; drip spawns start at 11u+.
+                if ((enemies[i].transform.position - player).sqrMagnitude < 81f)
+                {
+                    StatusSubjects.Add(enemies[i]);
+                }
+            }
+
+            Debug.Log($"VerifyDriver: {StatusSubjects.Count} ring subjects collected.");
+        }
+
+        private static Transform PlayerContextTransform()
+        {
+            return Player.PlayerContext.Transform;
+        }
+
+        private static void ApplySingleStatusesToRing()
+        {
+            CollectRingSubjects();
+            ApplyToSubject(0, StatusEffectType.Burn, 4f, 30f);
+            ApplyToSubject(1, StatusEffectType.Poison, 4f, 30f);
+            ApplyToSubject(2, StatusEffectType.Slow, 0.4f, 30f);
+            ApplyToSubject(3, StatusEffectType.Freeze, 50f, 30f);
+            ApplyToSubject(4, StatusEffectType.Stun, 1f, 30f);
+            // Subject 5 stays clean as the control.
+        }
+
+        private static void StackSecondStatusesOnRing()
+        {
+            ApplyToSubject(0, StatusEffectType.Slow, 0.4f, 30f);   // burn + slow
+            ApplyToSubject(1, StatusEffectType.Stun, 1f, 30f);     // stun + poison
+            ApplyToSubject(2, StatusEffectType.Poison, 4f, 30f);   // poison + slow
+            ApplyToSubject(3, StatusEffectType.Burn, 4f, 30f);     // freeze + burn
+        }
+
+        private static void ApplyToSubject(int index, StatusEffectType type, float potency, float duration)
+        {
+            if (index >= StatusSubjects.Count || StatusSubjects[index] == null)
+            {
+                Debug.LogError($"VerifyDriver: status subject {index} missing.");
+                return;
+            }
+
+            EnemyController subject = StatusSubjects[index];
+            if (subject.StatusReceiver != null)
+            {
+                subject.StatusReceiver.ApplyEffect(type, potency, duration);
+                Debug.Log(
+                    $"VerifyDriver: applied {type} to subject {index} " +
+                    $"({(subject.Stats != null ? subject.Stats.DisplayName : subject.name)}) — " +
+                    $"active={subject.StatusReceiver.Buffer.IsActive(type)} " +
+                    $"remaining={subject.StatusReceiver.Buffer.GetRemaining(type):F1}s");
+            }
+        }
+
+        private static void DamageStatusSubject(int index)
+        {
+            if (index >= StatusSubjects.Count || StatusSubjects[index] == null)
+            {
+                Debug.LogError($"VerifyDriver: status subject {index} missing for damage.");
+                return;
+            }
+
+            if (StatusSubjects[index].TryGetComponent(out Health.HealthComponent health))
+            {
+                health.TakeDamage(1f, Health.DamageType.Physical, null);
+                Debug.Log("VerifyDriver: damaged status subject for flash capture.");
             }
         }
 

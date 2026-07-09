@@ -1,5 +1,6 @@
 using SurveHive.Health;
 using SurveHive.Progression;
+using SurveHive.View;
 using UnityEngine;
 
 namespace SurveHive.Combat.Status
@@ -7,33 +8,43 @@ namespace SurveHive.Combat.Status
     /// <summary>
     /// Scene-facing wrapper around a <see cref="StatusEffectBuffer"/>: ticks the
     /// buffer, deals DoT damage with colored damage numbers, feeds freeze-break
-    /// damage, and shows a cheap tint cue on the sprite while effects are active.
-    /// Pooled-safe: fully resets in OnEnable.
+    /// damage, and drives the status readability scheme (PLAN 2A): the
+    /// highest-priority effect tints the sprite via <see cref="StatusTintPalette"/>,
+    /// two-plus stacked effects pulse between the top two tints, and the hit
+    /// flash is hue-shifted to match so the status reads mid-flash too.
+    /// Pooled-safe: fully resets in OnEnable. Zero-GC per frame.
     /// </summary>
     [RequireComponent(typeof(HealthComponent))]
     public sealed class StatusEffectReceiver : MonoBehaviour
     {
+        // The tint goes through the SpriteFlash shader's _Tint (via
+        // MaterialPropertyBlock), NOT renderer.color: the rig's animation
+        // clips keyframe the renderer color every frame and clobber any
+        // direct write (they ate the rank tints too, silently).
+        private static readonly int TintProperty = Shader.PropertyToID("_Tint");
+
         [SerializeField] private HealthComponent _health;
         [SerializeField] private SpriteRenderer _renderer;
-
-        // Highest-priority active effect drives the tint (multiplied into the base
-        // rank tint): Freeze > Stun > Burn > Poison > Slow.
-        private static readonly Color FreezeTint = new Color(0.55f, 0.8f, 1f);
-        private static readonly Color StunTint = new Color(1f, 1f, 0.45f);
-        private static readonly Color BurnTint = new Color(1f, 0.55f, 0.35f);
-        private static readonly Color PoisonTint = new Color(0.6f, 1f, 0.45f);
-        private static readonly Color SlowTint = new Color(0.65f, 0.75f, 1f);
-        private static readonly Color ColdTint = new Color(0.6f, 0.85f, 1f);
 
         private readonly StatusEffectBuffer _buffer = new StatusEffectBuffer();
         private Color _baseTint = Color.white;
         private int _lastTintKey = -1;
+        private MaterialPropertyBlock _propertyBlock;
+        // Optional sibling (looked up, not serialized, so existing pooled
+        // prefabs need no re-wiring): receives the status-hued flash color.
+        private HitFlash _hitFlash;
 
         public StatusEffectBuffer Buffer => _buffer;
 
         public float MoveSpeedMultiplier => _buffer.MoveSpeedMultiplier;
 
         public bool IsAttackDisabled => _buffer.IsAttackDisabled;
+
+        private void Awake()
+        {
+            _propertyBlock = new MaterialPropertyBlock();
+            TryGetComponent(out _hitFlash);
+        }
 
         private void OnEnable()
         {
@@ -116,57 +127,56 @@ namespace SurveHive.Combat.Status
                 return;
             }
 
-            int tintKey = 0;
-            for (int i = 0; i < StatusEffectBuffer.EffectTypeCount; i++)
+            int activeCount = StatusTintPalette.GetTopTwoActive(
+                _buffer, out StatusEffectType first, out StatusEffectType second);
+
+            // A two-status pulse animates every frame; otherwise the tint (and
+            // the flash hue) only needs rewriting when the active set changes.
+            if (activeCount >= 2)
             {
-                if (_buffer.IsActive((StatusEffectType)i))
-                {
-                    tintKey |= 1 << i;
-                }
+                _lastTintKey = -1;
+                Color firstTint = StatusTintPalette.GetTint(first);
+                WriteTint(StatusTintPalette.GetSpriteColor(
+                    _baseTint,
+                    StatusTintPalette.GetPulsedTint(firstTint, StatusTintPalette.GetTint(second), Time.time)));
+                // Flash keeps the dominant status hue (no-op while unchanged).
+                PushFlashColor(StatusTintPalette.GetFlashColor(firstTint));
+                return;
             }
 
+            int tintKey = activeCount == 0 ? 0 : 1 + (int)first;
             if (tintKey == _lastTintKey)
             {
                 return;
             }
 
             _lastTintKey = tintKey;
-            _renderer.color = _baseTint * GetStatusTint();
+            if (activeCount == 0)
+            {
+                WriteTint(_baseTint);
+                PushFlashColor(Color.white);
+            }
+            else
+            {
+                Color tint = StatusTintPalette.GetTint(first);
+                WriteTint(StatusTintPalette.GetSpriteColor(_baseTint, tint));
+                PushFlashColor(StatusTintPalette.GetFlashColor(tint));
+            }
         }
 
-        private Color GetStatusTint()
+        private void WriteTint(Color color)
         {
-            if (_buffer.IsActive(StatusEffectType.Freeze))
-            {
-                return FreezeTint;
-            }
+            _renderer.GetPropertyBlock(_propertyBlock);
+            _propertyBlock.SetColor(TintProperty, color);
+            _renderer.SetPropertyBlock(_propertyBlock);
+        }
 
-            if (_buffer.IsActive(StatusEffectType.Stun))
+        private void PushFlashColor(Color color)
+        {
+            if (_hitFlash != null)
             {
-                return StunTint;
+                _hitFlash.SetFlashColor(color);
             }
-
-            if (_buffer.IsActive(StatusEffectType.Burn))
-            {
-                return BurnTint;
-            }
-
-            if (_buffer.IsActive(StatusEffectType.Poison))
-            {
-                return PoisonTint;
-            }
-
-            if (_buffer.IsActive(StatusEffectType.Cold))
-            {
-                return ColdTint;
-            }
-
-            if (_buffer.IsActive(StatusEffectType.Slow))
-            {
-                return SlowTint;
-            }
-
-            return Color.white;
         }
     }
 }

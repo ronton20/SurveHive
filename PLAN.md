@@ -134,7 +134,17 @@ Way more modifiers to buy; gives the honey from 1B somewhere to go.
 Two self-contained follow-ups from the playtest wishlist. Independent of Phase 1; interleave
 freely.
 
-### 2A — Status-effect visual pass — TODO #26 ☐
+### 2A — Status-effect visual pass — TODO #26 ✅
+- **Shipped 2026-07-09:** per-status signature tints + display priority (hard CC > DoT >
+  movement) in a pure, EditMode-tested `StatusTintPalette`; stacked statuses pulse between
+  the top two tints; hit flashes hue-shift toward the active status (`_FlashColor` on the
+  SpriteFlash shader). Root-caused why tints never read: the rig's animation clips keyframe
+  the renderer color every frame, clobbering all direct `renderer.color` writes — including
+  the elite **rank tints**, which this fixes too — so the tint moved into a new `_Tint`
+  shader property driven by MaterialPropertyBlock (zero-GC, no prefab edits). Verified by
+  screenshot drive (per-status tints, visible pulse alternation, hue-kept flash). The
+  optional elite/boss status icon over the health bar was skipped — revisit with 3B's
+  health-bar polish if playtests still want it.
 - Replace the basic priority tint in `StatusEffectReceiver` with a proper, readable scheme:
   per-status tint colors (burn orange, poison green, slow/freeze blue, stun yellow) with a
   clear priority/blend rule, plus a lightweight pulse or overlay so stacked statuses read.
@@ -147,9 +157,24 @@ freely.
 - **Done when:** you can tell at a glance which status an enemy is under, including during hit
   flashes, with no new per-frame allocations.
 
-### 2B — Enhanced set bonuses — TODO #27 ☐
+### 2B — Enhanced set bonuses — TODO #27 ✅
 Richer per-element payoffs beyond the current potency/duration scaling — make the 4-piece tier
 a build-defining moment.
+- **Shipped 2026-07-09:** one signature effect per element at the 4-piece tier, appended to
+  `SetBonusSO` (new `SetSignatureType` enum + radius/potency/duration/description fields, authored
+  by the additive `SetSignatureBuilder` pass — idempotent, never touches the 3C-tuned tiers).
+  Five fire off the victim's death via a new `ElementalSetSignatures` dispatcher called from
+  `EnemyController.HandleDied` (after unregister, so nothing re-targets the corpse): **Fire**
+  spreads Burn to the nearest enemy, **Frost** shatters chilled/frozen enemies for 25%-max-HP AoE
+  magic damage (keyed on Cold||Freeze so a damage-broken freeze still counts), **Electric** arcs
+  the Stun to the nearest enemy, **Poison** drops a toxic pool, **Honey** drops a sticky slow zone
+  (pools/slicks reuse the existing honey-puddle zone pool — no new prefab/pool wiring). **Physical**
+  is a basic-attack hook instead: `Projectile` executes enemies below 15% HP via a new
+  `HealthComponent.Kill` that bypasses the shield/armor pipeline, gated by a single cached
+  `ElementSets.ExecuteThresholdFraction` field read. The unlocked signature shows as a `✦` line
+  under its set on the offer-panel `SetTierHUD`. EditMode tests cover shatter damage + top-tier
+  gating; the validator now asserts every set carries a signature. Zero-GC (registry walks +
+  pooled zones, no allocations).
 - Design one signature effect per element at the top tier, e.g.: **fire** — burns spread to a
   nearby enemy on death; **frost** — frozen enemies shatter on kill (AoE); **electric** — stun
   arcs chain once; **poison** — pools on death; **honey** — slow zones stick; **physical** —

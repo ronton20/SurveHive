@@ -30,3 +30,8 @@ MonoBehaviour:
     StatusDurationBonusPercent: 60
     AttackDamageBonusPercent: 0
     Description: Slows are 60% stickier and last 60% longer
+  _signature: 5
+  _signatureRadius: 2.5
+  _signaturePotency: 0.5
+  _signatureDuration: 4
+  _signatureDescription: Slowed enemies leave a sticky slow zone on death

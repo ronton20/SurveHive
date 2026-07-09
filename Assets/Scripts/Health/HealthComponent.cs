@@ -90,6 +90,25 @@ namespace SurveHive.Health
             }
         }
 
+        /// <summary>
+        /// Instantly kills the entity, bypassing the shield/armor pipeline.
+        /// Used by the Physical set's Execute signature (PLAN 2B) to finish
+        /// low-HP enemies. No-op if already invulnerable or dead. Raises OnDied
+        /// so loot/EXP still drop; skips OnDamaged (no lifesteal on an execute).
+        /// </summary>
+        public void Kill(GameObject instigator)
+        {
+            if (_isDead || _invulnerable)
+            {
+                return;
+            }
+
+            _currentHealth = 0f;
+            OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
+            _isDead = true;
+            OnDied?.Invoke();
+        }
+
         public void Heal(float amount)
         {
             if (_isDead || amount <= 0f)

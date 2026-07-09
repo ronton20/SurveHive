@@ -30,3 +30,8 @@ MonoBehaviour:
     StatusDurationBonusPercent: 60
     AttackDamageBonusPercent: 0
     Description: Poisons tick 60% harder and last 60% longer
+  _signature: 4
+  _signatureRadius: 2
+  _signaturePotency: 8
+  _signatureDuration: 4
+  _signatureDescription: Poisoned enemies leave a toxic pool on death

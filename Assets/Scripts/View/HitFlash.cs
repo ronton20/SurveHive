@@ -4,14 +4,17 @@ using UnityEngine;
 namespace SurveHive.View
 {
     /// <summary>
-    /// Flashes the sprite white for a few frames whenever the paired
+    /// Flashes the sprite for a few frames whenever the paired
     /// <see cref="HealthComponent"/> takes damage. Requires the renderer to use
     /// the SurveHive/SpriteFlash shader; drives it through a
-    /// MaterialPropertyBlock so no material instances are created.
+    /// MaterialPropertyBlock so no material instances are created. The flash
+    /// color defaults to white; status effects hue-shift it via
+    /// <see cref="SetFlashColor"/> so statuses stay readable mid-flash (PLAN 2A).
     /// </summary>
     public sealed class HitFlash : MonoBehaviour
     {
         private static readonly int FlashAmountProperty = Shader.PropertyToID("_FlashAmount");
+        private static readonly int FlashColorProperty = Shader.PropertyToID("_FlashColor");
 
         [SerializeField] private SpriteRenderer _renderer;
         [SerializeField] private HealthComponent _health;
@@ -19,6 +22,7 @@ namespace SurveHive.View
 
         private MaterialPropertyBlock _propertyBlock;
         private float _flashRemaining;
+        private Color _flashColor = Color.white;
 
         private void Awake()
         {
@@ -29,7 +33,23 @@ namespace SurveHive.View
         {
             _health.OnDamaged += HandleDamaged;
             _flashRemaining = 0f;
+            _flashColor = Color.white;
             SetFlash(0f);
+        }
+
+        /// <summary>Sets the color the sprite flashes toward (pooled-safe: resets to white on enable).</summary>
+        public void SetFlashColor(Color color)
+        {
+            if (_flashColor == color)
+            {
+                return;
+            }
+
+            _flashColor = color;
+            if (_flashRemaining > 0f)
+            {
+                SetFlash(Mathf.Clamp01(_flashRemaining / _flashDuration));
+            }
         }
 
         private void OnDisable()
@@ -58,6 +78,7 @@ namespace SurveHive.View
         {
             _renderer.GetPropertyBlock(_propertyBlock);
             _propertyBlock.SetFloat(FlashAmountProperty, amount);
+            _propertyBlock.SetColor(FlashColorProperty, _flashColor);
             _renderer.SetPropertyBlock(_propertyBlock);
         }
     }

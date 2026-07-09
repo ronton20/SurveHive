@@ -30,3 +30,8 @@ MonoBehaviour:
     StatusDurationBonusPercent: 0
     AttackDamageBonusPercent: 20
     Description: Basic attack damage +20%
+  _signature: 6
+  _signatureRadius: 0
+  _signaturePotency: 15
+  _signatureDuration: 0
+  _signatureDescription: Basic attacks execute enemies below 15% HP

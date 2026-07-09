@@ -23,6 +23,9 @@ namespace SurveHive.Progression
         private static readonly float[] _potencyMultiplier = new float[ElementCount];
         private static readonly float[] _durationMultiplier = new float[ElementCount];
         private static float _attackDamageMultiplier = 1f;
+        // 0 while the Physical set's top-tier Execute signature is inactive; the
+        // basic-attack hot path reads this single field to gate low-HP executes.
+        private static float _executeThresholdFraction;
 
         // A HUD/consumer can run before LevelUpUIController.Awake initializes us
         // (Unity gives no cross-object Awake/OnEnable ordering) — without this the
@@ -36,6 +39,12 @@ namespace SurveHive.Progression
         public static event Action OnChanged;
 
         public static float AttackDamageMultiplier => _attackDamageMultiplier;
+
+        /// <summary>
+        /// Fraction of max HP at or below which a basic attack executes an enemy
+        /// (Physical top-tier signature). 0 when the signature is inactive.
+        /// </summary>
+        public static float ExecuteThresholdFraction => _executeThresholdFraction;
 
         /// <summary>Wires the per-element configs and resets all counts for a fresh run.</summary>
         public static void Initialize(SetBonusSO[] bonuses)
@@ -100,6 +109,28 @@ namespace SurveHive.Progression
 
         public static SetBonusSO GetBonus(SkillElement element) => _bonusByElement[(int)element];
 
+        /// <summary>True when the element's set is at its top (4-piece) tier.</summary>
+        public static bool IsTopTierActive(SkillElement element)
+        {
+            SetBonusSO bonus = _bonusByElement[(int)element];
+            return bonus != null && bonus.TierCount > 0 && _tierIndex[(int)element] == bonus.TopTierIndex;
+        }
+
+        /// <summary>
+        /// The element's unlocked signature effect, or <see cref="SetSignatureType.None"/>
+        /// unless the top tier is active and the set actually defines one.
+        /// </summary>
+        public static SetSignatureType GetSignature(SkillElement element)
+        {
+            SetBonusSO bonus = _bonusByElement[(int)element];
+            if (bonus == null || !IsTopTierActive(element))
+            {
+                return SetSignatureType.None;
+            }
+
+            return bonus.Signature;
+        }
+
         /// <summary>Potency multiplier for a status about to be applied to an enemy.</summary>
         public static float GetStatusPotencyMultiplier(StatusEffectType status)
         {
@@ -135,6 +166,7 @@ namespace SurveHive.Progression
         private static void RecomputeMultipliers()
         {
             _attackDamageMultiplier = 1f;
+            _executeThresholdFraction = 0f;
             for (int i = 0; i < ElementCount; i++)
             {
                 SetBonusSO bonus = _bonusByElement[i];
@@ -154,6 +186,13 @@ namespace SurveHive.Progression
                 if (row.AttackDamageBonusPercent > 0f)
                 {
                     _attackDamageMultiplier *= 1f + (row.AttackDamageBonusPercent / 100f);
+                }
+
+                // Physical top-tier Execute signature: cache its HP threshold for
+                // the basic-attack hot path (SignaturePotency is a percent).
+                if (tier == bonus.TopTierIndex && bonus.Signature == SetSignatureType.Execute)
+                {
+                    _executeThresholdFraction = bonus.SignaturePotency / 100f;
                 }
             }
         }
