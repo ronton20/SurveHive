@@ -308,7 +308,22 @@ order chosen 2026-07-09: **layout/text → click sounds → motion → health ba
   panel fades for pause/menus) — tween via coroutines or a tiny easing helper, no allocations.
 - **Touch:** `UI/LevelUpUIController.cs`, pause/menu panels, a small easing helper.
 
-#### 3B-2d — Health-bar readability ☐
+#### 3B-2d — Health-bar readability ✅
+- **Shipped 2026-07-10:** a readability pass across all three health bars, driven by the additive
+  idempotent `HealthBarPolishBuilder` (finds the already-built bars — never rebuilds — and wires
+  the new fields). **Player bar:** bigger + framed for contrast, fill now **health-graded**
+  green→amber→red via the pure, EditMode-tested `HealthColorGradient` so danger reads from colour
+  not just length, a **numeric HP readout** ("87 / 100", alloc-free `StringBuilder`+TMP `SetText`,
+  only rebuilt when the integer changes), a **critical pulse** under 25% HP, and a lagging
+  **damage trail**. **Boss bar:** the same damage trail (dramatic on big hits) plus a low-HP
+  colour shift from its authored purple toward danger red under 35%. **Enemy bars:** bigger canvas
+  (100×14 → 120×18), opaque background, and an inset fill so a dark frame always shows for contrast
+  — shield tints untouched. The trail is a shared, zero-GC `UIBarTrail` helper owned by the player +
+  boss bars: a second image behind the fill that holds briefly then eases down to the new value on
+  **unscaled** time (so it animates on the paused level-up screen), snapping up instantly on heals;
+  its Update early-outs once settled. EditMode covers the gradient (endpoints + monotonic red rise)
+  and the trail (hold-then-drain on damage, snap-up on heal); the validator now asserts the player
+  readout/trail and the boss trail are wired.
 - **Health bars:** readability pass on player + enemy bars (size, contrast, shield-tint clarity
   from Phase 3B-old); boss bar polish.
 - **Touch:** `UI/HealthBarUI.cs`, `UI/EnemyHealthBarUI.cs`, `UI/BossHealthBarUI.cs`, HUD prefabs.

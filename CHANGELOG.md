@@ -7,6 +7,31 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 3B-2d — Health-bar readability (2026-07-10)
+
+Final slice of the #25 UI overhaul: the health bars now communicate danger at a glance. All
+driven by the additive, idempotent `HealthBarPolishBuilder`, which finds the already-built bars
+and wires the new fields — it never rebuilds the scene or prefabs from scratch.
+
+- **Player bar.** Bigger and framed (opaque background, inset fill) for contrast; the fill is now
+  **health-graded** green → honey amber → danger red via the new pure `HealthColorGradient`, so low
+  health reads from colour, not just bar length. A **numeric HP readout** ("87 / 100") sits over the
+  bar (allocation-free — a cached `StringBuilder` + TMP `SetText`, rebuilt only when the integer
+  changes), and the fill **pulses** below 25% HP for a peripheral-vision "about to die" cue.
+- **Boss bar.** A lagging **damage trail** (dramatic on big boss hits) plus a low-HP colour shift
+  from the authored royal purple toward danger red under 35%.
+- **Enemy bars.** Size/contrast bump on all eight enemy prefabs — canvas 100×14 → 120×18, opaque
+  background, inset fill so a dark frame always frames the bar. Shield tints (steel-blue physical /
+  violet magic) left as-is.
+- **Shared damage trail.** New zero-GC `UI/UIBarTrail` — a second image behind the fill that holds
+  briefly then eases down to the new value on **unscaled** time (animates on the paused level-up
+  screen), snapping straight up on heals; its `Tick` early-outs once settled. Owned by the player +
+  boss bars, ticked from their own `Update`.
+- **Tests:** EditMode `HealthColorGradientTests` (green/red endpoints, clamping, monotonic green
+  axis) and `UIBarTrailTests` (hold-then-drain on damage, snap-up on heal). The validator now
+  asserts the player readout/trail and the boss trail are wired.
+- **Verification:** `BeehiveSceneValidator` PASSED, EditMode 150/150.
+
 ### Phase 3B-2c — UI motion / transitions (2026-07-10)
 
 Fourth slice of the #25 UI overhaul: the screens now move instead of snapping.

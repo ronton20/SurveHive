@@ -1351,6 +1351,25 @@ namespace SurveHive.BuildTools
                 GameObject bossBar = FindChildIncludingInactive(canvasGo.transform, "BossHealthBar");
                 ok &= Check(bossBar != null && bossBar.GetComponent<UI.BossHealthBarUI>() != null,
                     "BossHealthBar exists with BossHealthBarUI");
+                if (bossBar != null && bossBar.TryGetComponent(out UI.BossHealthBarUI bossBarUi))
+                {
+                    // PLAN 3B-2d: the damage-trail image is wired.
+                    var bso = new SerializedObject(bossBarUi);
+                    ok &= Check(bso.FindProperty("_trail").FindPropertyRelative("_trailImage").objectReferenceValue != null,
+                        "BossHealthBarUI._trail._trailImage wired (3B-2d)");
+                }
+
+                // PLAN 3B-2d: player HUD bar carries the numeric readout + damage trail.
+                GameObject healthBg = FindChildIncludingInactive(canvasGo.transform, "HealthBarBackground");
+                ok &= Check(healthBg != null, "HealthBarBackground exists on HUD");
+                if (healthBg != null && healthBg.TryGetComponent(out UI.HealthBarUI healthBarUi))
+                {
+                    var hso = new SerializedObject(healthBarUi);
+                    ok &= Check(hso.FindProperty("_readoutText").objectReferenceValue != null,
+                        "HealthBarUI._readoutText wired (3B-2d)");
+                    ok &= Check(hso.FindProperty("_trail").FindPropertyRelative("_trailImage").objectReferenceValue != null,
+                        "HealthBarUI._trail._trailImage wired (3B-2d)");
+                }
 
                 GameObject banner = FindChildIncludingInactive(canvasGo.transform, "BossBanner");
                 ok &= Check(banner != null && banner.GetComponent<UI.BossBannerUI>() != null,
