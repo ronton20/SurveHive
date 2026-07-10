@@ -205,6 +205,12 @@ write("victory_00.wav", fan + [x * 0.8 for x in hold], gain=0.72)
 # UI click: crisp short blip (clean, not buzzy).
 write("uiclick_00.wav", blip(0.045, 820, 720, wave_fn=square, k=60), gain=0.55)
 
+# UI hover: soft, tiny, higher tick — subtler than the click so sweeping the
+# cursor over buttons reads as a light touch, not a second click. Triangle (not
+# square) keeps it gentle; blip uses no RNG so this insert leaves the later
+# noise-based clips byte-identical.
+write("uihover_00.wav", blip(0.028, 900, 1080, wave_fn=tri, k=80), gain=0.32)
+
 # ---- skills (distinct gestures) ------------------------------------------
 # Stinger Barrage: quick sharp buzzy volley "zzt", 2 variants.
 write("skillstingerbarrage_00.wav", buzz(0.11, 360, 240, wing=72, wing_depth=0.5, k=30, atk=0.001), gain=0.8)

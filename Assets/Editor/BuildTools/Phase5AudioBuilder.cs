@@ -83,7 +83,7 @@ namespace SurveHive.BuildTools
 
             var serialized = new SerializedObject(library);
             SerializedProperty sfx = serialized.FindProperty("_sfx");
-            sfx.arraySize = 15;
+            sfx.arraySize = 16;
             // Procedural theme-fitting clips (bee-buzz combat, chiptune positives,
             // distinct skill gestures) generated in-repo — see Assets/Audio/CREDITS.md.
             // Hit/Kill carry a min-interval throttle so an AoE hitting a whole horde
@@ -108,8 +108,11 @@ namespace SurveHive.BuildTools
                 "skillpollencloud_00.wav", "skillpollencloud_01.wav");
             SetSfx(sfx, i++, SfxId.SkillStaticWings, 0.6f, 0.95f, 1.08f, 0f,
                 "skillstaticwings_00.wav", "skillstaticwings_01.wav");
-            SetSfx(sfx, i, SfxId.SkillEmberSting, 0.7f, 0.95f, 1.05f, 0f,
+            SetSfx(sfx, i++, SfxId.SkillEmberSting, 0.7f, 0.95f, 1.05f, 0f,
                 "skillembersting_00.wav", "skillembersting_01.wav");
+            // UI hover: quiet + throttled so sweeping the cursor across a row of
+            // buttons reads as a light texture, not a rattle (3B-2b).
+            SetSfx(sfx, i, SfxId.UIHover, 0.35f, 0.98f, 1.04f, 0.05f, "uihover_00.wav");
 
             SerializedProperty music = serialized.FindProperty("_music");
             music.arraySize = 2;

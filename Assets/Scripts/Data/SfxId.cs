@@ -17,5 +17,7 @@ namespace SurveHive.Data
         SkillPollenCloud,
         SkillStaticWings,
         SkillEmberSting,
+        // Appended (enum is int-serialized in AudioLibrary.asset — never insert).
+        UIHover,
     }
 }

@@ -7,6 +7,29 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 3B-2b — UI click / hover sounds (2026-07-10)
+
+Third slice of the #25 UI overhaul: audible feedback on every interactive control.
+
+- **Click coverage was already complete** — the audit found every button-creating builder already
+  attaches the `UIClickSfx` component (menus, pause, shop, and the level-up cards), so button
+  presses have blanket click SFX. The actual gap was a **hover** cue.
+- **Hover:** `UIClickSfx` now also implements `IPointerEnterHandler` and plays a new
+  `SfxId.UIHover` on pointer-enter, gated on `Button.IsInteractable()` so greyed-out / unaffordable
+  cards stay silent. Routing hover through the same per-button component means it inherits the
+  same blanket coverage for free — no builder rewiring.
+- **New sound:** `uihover_00.wav`, a soft 28 ms triangle tick synthesized by `Tools/Audio/synth.py`
+  — deliberately quieter and higher than the click so sweeping the cursor reads as a light touch,
+  not a second click. Inserted after the click clip in the script; `blip` uses no RNG, so every
+  existing SFX regenerates byte-identical. The library entry (authored by the additive
+  `Phase5AudioBuilder`, SFX array 15→16) sets it quiet (0.35) and **throttled** (0.05 s
+  min-interval via the existing per-id throttle) so a cursor sweep across a button row reads as a
+  light texture rather than a rattle.
+- `SfxId.UIHover` is **appended** to the enum (int-serialized in `AudioLibrary.asset` — never
+  insert).
+- **Verification:** `Phase5AudioBuilder` rebuild + `BeehiveSceneValidator` PASSED + EditMode
+  141/141. (Audio-only — no visual drive pass.)
+
 ### Phase 3B-2a — layout + text fit for PC (2026-07-09)
 
 Second slice of the #25 UI overhaul: fit the UI to a PC (landscape) screen and enlarge in-run

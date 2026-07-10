@@ -35,6 +35,7 @@ Service` to rebuild the `AudioLibrary` asset.
 | `playerdeath_00.wav` | player dies |
 | `victory_00.wav` | Queen defeated / run won |
 | `uiclick_00.wav` | UI button click |
+| `uihover_00.wav` | UI button hover (subtler, throttled) |
 | `bossstinger_00/01.wav` | Queen radial stinger burst |
 | `skillstingerbarrage_00/01.wav` | Stinger Barrage fire |
 | `skillpiercinglance_00/01.wav` | Piercing Lance fire |

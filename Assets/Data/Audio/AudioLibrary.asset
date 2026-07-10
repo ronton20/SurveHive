@@ -129,6 +129,13 @@ MonoBehaviour:
     pitchMin: 0.95
     pitchMax: 1.05
     minInterval: 0
+  - id: 15
+    clips:
+    - {fileID: 8300000, guid: a4d26f2f480b54afd9d5cbf0b2564414, type: 3}
+    volume: 0.35
+    pitchMin: 0.98
+    pitchMax: 1.04
+    minInterval: 0.05
   _music:
   - id: 0
     clip: {fileID: 8300000, guid: 6c8908b0d47f6402ebb23fb12bfc3456, type: 3}

@@ -256,7 +256,20 @@ order chosen 2026-07-09: **layout/text → click sounds → motion → health ba
   legibly and compose correctly at the new scale. The scene validator now asserts every
   scale-with-screen canvas in both scenes uses a landscape reference.
 
-#### 3B-2b — Click / hover sounds ☐
+#### 3B-2b — Click / hover sounds ✅
+- **Shipped 2026-07-10:** audit confirmed **click coverage was already blanket** — every
+  button-creating builder (`BeehiveSceneBuilder`, `CombatOverhaulBuilder`, `Phase4MetaAndMenusBuilder`,
+  `MetaShopExpansionBuilder`, `MetaShopTabsBuilder`) attaches `UIClickSfx`, including the level-up
+  cards. So the work was the missing **hover** cue: `UIClickSfx` now also implements
+  `IPointerEnterHandler` and plays a new `SfxId.UIHover` on pointer-enter (gated on
+  `IsInteractable()` so greyed-out/unaffordable cards stay silent) — routing hover through the
+  same per-button component gives it the same blanket coverage for free, no builder rewiring.
+  New `uihover_00.wav` synthesized via `Tools/Audio/synth.py` (soft 28ms triangle tick, quieter
+  than the click; inserted after the click clip — `blip` uses no RNG so every existing wav stays
+  byte-identical). Library entry authored by the additive `Phase5AudioBuilder` (array 15→16),
+  quiet (0.35) + throttled (0.05s min-interval) so cursor sweeps across a button row read as a
+  light texture, not a rattle. `SfxId.UIHover` **appended** (enum is int-serialized in
+  `AudioLibrary.asset`). Verified: build + `validation PASSED` + EditMode 141/141.
 - **Click/hover sounds** on all interactive UI via the existing `UIClickSfx`/`AudioService`
   path — audit every button (menus, shop, pause, cards) for coverage; add a hover SFX.
 - **Touch:** `UI/UIClickSfx.cs`, `Data/SfxId.cs`, `Core/AudioService.cs`, builder button wiring.
