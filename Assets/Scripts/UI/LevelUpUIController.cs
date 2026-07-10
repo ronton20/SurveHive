@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Text;
 using SurveHive.Combat.Skills;
 using SurveHive.Core;
@@ -32,6 +33,11 @@ namespace SurveHive.UI
             public TMP_Text LaneCounter;
             public TMP_Text SetText;
             public Button RerollButton;
+            // Cached for the 3B-2c pop-in: the button's own RectTransform and its
+            // authored rest position, captured once so the slide/scale animation
+            // has a fixed target to settle onto.
+            public RectTransform Rect;
+            public Vector2 RestPos;
         }
 
         [SerializeField] private SkillDatabaseSO _database;
@@ -93,6 +99,15 @@ namespace SurveHive.UI
         [SerializeField] private int _enhancementCap = 3;
         [SerializeField] private int _abilityCap = 5;
 
+        // Phase 3B-2c motion: cards fade the whole panel in while each card
+        // scales + slides up from below on a small per-card stagger, so the
+        // offer "deals" onto the screen instead of snapping.
+        [Header("Motion (3B-2c)")]
+        [SerializeField] private float _cardPopDuration = 0.22f;
+        [SerializeField] private float _cardStagger = 0.05f;
+        [SerializeField] private float _cardRiseOffset = 44f;
+        [SerializeField] private float _cardStartScale = 0.82f;
+
         // Times each skill (by database index) has been taken this run.
         private int[] _skillLevels;
         // Reused each open: eligible (not-maxed) database indices + their weights.
@@ -121,6 +136,8 @@ namespace SurveHive.UI
         private Card[] _cards;
         private bool _anyRerollButton;
         private CanvasGroup _canvasGroup;
+        private Coroutine _fadeRoutine;
+        private Coroutine _popRoutine;
         private readonly StringBuilder _descriptionBuilder = new StringBuilder(96);
         private readonly StringBuilder _counterBuilder = new StringBuilder(8);
         private readonly System.Random _rng = new System.Random();
@@ -170,7 +187,7 @@ namespace SurveHive.UI
                 _canvasGroup = _panelRoot.AddComponent<CanvasGroup>();
             }
 
-            Hide();
+            HideInstant();
         }
 
         // Bundles the parallel serialized arrays into one Card per choice slot.
@@ -183,9 +200,12 @@ namespace SurveHive.UI
             for (int i = 0; i < n; i++)
             {
                 Button button = _choiceButtons[i];
+                var rect = button.GetComponent<RectTransform>();
                 var card = new Card
                 {
                     Button = button,
+                    Rect = rect,
+                    RestPos = rect.anchoredPosition,
                     Background = button.GetComponent<Image>(),
                     Name = ElementAt(_choiceNameTexts, i),
                     Description = ElementAt(_choiceDescriptionTexts, i),
@@ -723,16 +743,126 @@ namespace SurveHive.UI
 
         private void Show()
         {
-            _canvasGroup.alpha = 1f;
+            // Interactivity is live for the whole fade so the offer is clickable
+            // (and test-clickable) from frame one; only the alpha eases in.
             _canvasGroup.interactable = true;
             _canvasGroup.blocksRaycasts = true;
+            RestartFade(UiAnim.FadeIn(_canvasGroup, UiAnim.FadeDuration));
+            RestartPop();
         }
 
         private void Hide()
         {
+            // Drop input up front — the game is about to unpause, so clicks must
+            // fall through immediately while the panel fades out behind them.
+            _canvasGroup.interactable = false;
+            _canvasGroup.blocksRaycasts = false;
+            StopPop();
+            RestartFade(UiAnim.FadeOut(_canvasGroup, UiAnim.FadeDuration));
+        }
+
+        // Used in Awake (and any path that needs the panel gone this frame with
+        // no tween): snap to hidden and stop any in-flight motion.
+        private void HideInstant()
+        {
+            StopFade();
+            StopPop();
             _canvasGroup.alpha = 0f;
             _canvasGroup.interactable = false;
             _canvasGroup.blocksRaycasts = false;
+        }
+
+        private void RestartFade(IEnumerator routine)
+        {
+            StopFade();
+            _fadeRoutine = StartCoroutine(routine);
+        }
+
+        private void StopFade()
+        {
+            if (_fadeRoutine != null)
+            {
+                StopCoroutine(_fadeRoutine);
+                _fadeRoutine = null;
+            }
+        }
+
+        private void RestartPop()
+        {
+            StopPop();
+            _popRoutine = StartCoroutine(PopCardsIn());
+        }
+
+        private void StopPop()
+        {
+            if (_popRoutine != null)
+            {
+                StopCoroutine(_popRoutine);
+                _popRoutine = null;
+                // A chained level-up can re-show before the pop finished — leave
+                // the cards parked at rest so the next pop starts from a clean base.
+                SnapCardsToRest();
+            }
+        }
+
+        // Deals the active cards in: each starts shrunk and below its rest slot,
+        // then scales/slides up with a slight overshoot on a per-card stagger.
+        // Zero-GC — only value-type vectors, driven on unscaled time (paused run).
+        private IEnumerator PopCardsIn()
+        {
+            for (int i = 0; i < _currentChoiceCount; i++)
+            {
+                Card card = _cards[i];
+                if (card.Rect == null)
+                {
+                    continue;
+                }
+
+                card.Rect.anchoredPosition = card.RestPos + new Vector2(0f, -_cardRiseOffset);
+                card.Rect.localScale = new Vector3(_cardStartScale, _cardStartScale, 1f);
+            }
+
+            float total = _cardPopDuration + _cardStagger * Mathf.Max(0, _currentChoiceCount - 1);
+            float elapsed = 0f;
+            while (elapsed < total)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                for (int i = 0; i < _currentChoiceCount; i++)
+                {
+                    Card card = _cards[i];
+                    if (card.Rect == null)
+                    {
+                        continue;
+                    }
+
+                    float ct = Mathf.Clamp01((elapsed - i * _cardStagger) / _cardPopDuration);
+                    float e = Easing.OutBack(ct);
+                    card.Rect.anchoredPosition = Vector2.LerpUnclamped(
+                        card.RestPos + new Vector2(0f, -_cardRiseOffset), card.RestPos, e);
+                    float s = Mathf.LerpUnclamped(_cardStartScale, 1f, e);
+                    card.Rect.localScale = new Vector3(s, s, 1f);
+                }
+
+                yield return null;
+            }
+
+            SnapCardsToRest();
+            _popRoutine = null;
+        }
+
+        private void SnapCardsToRest()
+        {
+            for (int i = 0; i < _cards.Length; i++)
+            {
+                Card card = _cards[i];
+                if (card.Rect == null)
+                {
+                    continue;
+                }
+
+                card.Rect.anchoredPosition = card.RestPos;
+                card.Rect.localScale = Vector3.one;
+            }
         }
     }
 }

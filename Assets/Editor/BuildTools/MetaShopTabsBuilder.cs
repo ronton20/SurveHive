@@ -239,6 +239,22 @@ namespace SurveHive.BuildTools
 
             TMP_Text balanceText = FindText(shopPanel, "BalanceText");
 
+            // PC landscape relayout: the portrait-era ShopPanel (1060×1880) fell off
+            // both edges of a 1080-tall screen once the canvas was retargeted to
+            // 1920×1080. Fill the screen and re-anchor the preserved chrome (Title /
+            // BalanceText / BackButton) to the new bounds; the tab column / grid /
+            // detail pane below lay out as three side-by-side columns.
+            var shopRect = (RectTransform)shopPanel;
+            shopRect.anchorMin = new Vector2(0.5f, 0.5f);
+            shopRect.anchorMax = new Vector2(0.5f, 0.5f);
+            shopRect.pivot = new Vector2(0.5f, 0.5f);
+            shopRect.anchoredPosition = Vector2.zero;
+            shopRect.sizeDelta = new Vector2(1840f, 1000f);
+
+            RepositionTop(shopPanel, "Title", -36f);
+            RepositionTop(shopPanel, "BalanceText", -120f);
+            RepositionBottom(shopPanel, "BackButton", 34f);
+
             // Remove the previous layout (scroll + baked cards) and our own generated
             // nodes so the rebuild is idempotent. Title/BalanceText/BackButton stay.
             DestroyChild(shopPanel, "ShopScroll");
@@ -302,15 +318,15 @@ namespace SurveHive.BuildTools
             columnRect.anchorMin = new Vector2(0.5f, 0.5f);
             columnRect.anchorMax = new Vector2(0.5f, 0.5f);
             columnRect.pivot = new Vector2(0.5f, 0.5f);
-            columnRect.anchoredPosition = new Vector2(-390f, 220f);
-            columnRect.sizeDelta = new Vector2(240f, 1300f);
+            columnRect.anchoredPosition = new Vector2(-780f, -10f);
+            columnRect.sizeDelta = new Vector2(250f, 680f);
 
             string[] labelKeys = { LocKeys.ShopTabCombat, LocKeys.ShopTabSurvival, LocKeys.ShopTabUtility };
             for (int i = 0; i < MetaShopCategories.Count; i++)
             {
-                var center = new Vector2(0f, 440f - (i * 150f));
+                var center = new Vector2(0f, 190f - (i * 185f));
                 Button tab = CreateButton(columnRect, $"Tab{i}", Loc.Get(labelKeys[i]), font, buttonSprite,
-                    center, new Vector2(230f, 120f), 30f);
+                    center, new Vector2(236f, 130f), 30f);
 
                 Image highlight = CreateStretchedImage((RectTransform)tab.transform, "TabHighlight",
                     panelSprite, new Color(1f, 1f, 1f, 0.4f));
@@ -330,8 +346,8 @@ namespace SurveHive.BuildTools
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot = new Vector2(0.5f, 0.5f);
-            panelRect.anchoredPosition = new Vector2(130f, 380f);
-            panelRect.sizeDelta = new Vector2(740f, 760f);
+            panelRect.anchoredPosition = new Vector2(620f, -40f);
+            panelRect.sizeDelta = new Vector2(560f, 660f);
 
             Image bg = panelGo.AddComponent<Image>();
             bg.sprite = panelSprite;
@@ -347,17 +363,17 @@ namespace SurveHive.BuildTools
             iconRect.anchorMin = new Vector2(0.5f, 1f);
             iconRect.anchorMax = new Vector2(0.5f, 1f);
             iconRect.pivot = new Vector2(0.5f, 1f);
-            iconRect.anchoredPosition = new Vector2(0f, -30f);
-            iconRect.sizeDelta = new Vector2(130f, 130f);
+            iconRect.anchoredPosition = new Vector2(0f, -28f);
+            iconRect.sizeDelta = new Vector2(120f, 120f);
             Image iconImage = iconGo.AddComponent<Image>();
             iconImage.preserveAspect = true;
             iconImage.raycastTarget = false;
 
-            TMP_Text nameText = CreateTopText(panelRect, "Name", font, 46f, HoneyGold, -180f, 64f, 700f, TextAlignmentOptions.Center);
-            TMP_Text descText = CreateTopText(panelRect, "Description", font, 26f, Wax, -256f, 170f, 660f, TextAlignmentOptions.Top);
-            TMP_Text rankText = CreateTopText(panelRect, "Rank", font, 30f, Amber, -448f, 44f, 700f, TextAlignmentOptions.Center);
-            TMP_Text effectText = CreateTopText(panelRect, "Effect", font, 30f, HoneyGold, -502f, 44f, 700f, TextAlignmentOptions.Center);
-            TMP_Text costText = CreateTopText(panelRect, "Cost", font, 34f, Amber, -560f, 48f, 700f, TextAlignmentOptions.Center);
+            TMP_Text nameText = CreateTopText(panelRect, "Name", font, 44f, HoneyGold, -164f, 60f, 520f, TextAlignmentOptions.Center);
+            TMP_Text descText = CreateTopText(panelRect, "Description", font, 26f, Wax, -232f, 180f, 500f, TextAlignmentOptions.Top);
+            TMP_Text rankText = CreateTopText(panelRect, "Rank", font, 30f, Amber, -428f, 44f, 520f, TextAlignmentOptions.Center);
+            TMP_Text effectText = CreateTopText(panelRect, "Effect", font, 30f, HoneyGold, -482f, 44f, 520f, TextAlignmentOptions.Center);
+            TMP_Text costText = CreateTopText(panelRect, "Cost", font, 34f, Amber, -540f, 48f, 520f, TextAlignmentOptions.Center);
 
             Button buyButton = CreateButton(panelRect, "BuyButton", Loc.Get(LocKeys.ShopBuy), font, buttonSprite,
                 Vector2.zero, new Vector2(320f, 96f), 36f);
@@ -392,18 +408,18 @@ namespace SurveHive.BuildTools
             gridRect.anchorMin = new Vector2(0.5f, 0.5f);
             gridRect.anchorMax = new Vector2(0.5f, 0.5f);
             gridRect.pivot = new Vector2(0.5f, 0.5f);
-            gridRect.anchoredPosition = new Vector2(130f, -520f);
-            gridRect.sizeDelta = new Vector2(740f, 500f);
+            gridRect.anchoredPosition = new Vector2(-160f, -10f);
+            gridRect.sizeDelta = new Vector2(950f, 600f);
 
             var grid = gridGo.AddComponent<GridLayoutGroup>();
-            grid.cellSize = new Vector2(210f, 220f);
-            grid.spacing = new Vector2(16f, 16f);
+            grid.cellSize = new Vector2(172f, 186f);
+            grid.spacing = new Vector2(14f, 14f);
             grid.startCorner = GridLayoutGroup.Corner.UpperLeft;
             grid.startAxis = GridLayoutGroup.Axis.Horizontal;
             grid.childAlignment = TextAnchor.UpperCenter;
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            grid.constraintCount = 3;
-            grid.padding = new RectOffset(10, 10, 10, 10);
+            grid.constraintCount = 5;
+            grid.padding = new RectOffset(12, 12, 12, 12);
 
             return gridRect;
         }
@@ -527,6 +543,40 @@ namespace SurveHive.BuildTools
             tmp.raycastTarget = false;
             tmp.text = name;
             return tmp;
+        }
+
+        // Re-anchor a preserved chrome child to the panel's top edge at the given
+        // offset (keeps its own size). Used after the panel is resized so Title /
+        // BalanceText don't drift off the top of the new landscape bounds.
+        private static void RepositionTop(Transform parent, string name, float offsetY)
+        {
+            Transform child = parent.Find(name);
+            if (child == null)
+            {
+                return;
+            }
+
+            var rect = (RectTransform)child;
+            rect.anchorMin = new Vector2(0.5f, 1f);
+            rect.anchorMax = new Vector2(0.5f, 1f);
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.anchoredPosition = new Vector2(0f, offsetY);
+        }
+
+        // Re-anchor a preserved chrome child to the panel's bottom edge (BackButton).
+        private static void RepositionBottom(Transform parent, string name, float offsetY)
+        {
+            Transform child = parent.Find(name);
+            if (child == null)
+            {
+                return;
+            }
+
+            var rect = (RectTransform)child;
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, offsetY);
         }
 
         private static void DestroyChild(Transform parent, string name)

@@ -27,11 +27,25 @@ namespace SurveHive.UI
 
         [SerializeField] private string _beehiveSceneName = "Beehive";
 
+        // 3B-2c: the newly shown panel fades in on every switch (get-or-add a
+        // CanvasGroup so no scene wiring is needed). One handle — only one panel
+        // is ever active/fading at a time.
+        private CanvasGroup _mainGroup;
+        private CanvasGroup _worldSelectGroup;
+        private CanvasGroup _shopGroup;
+        private CanvasGroup _settingsGroup;
+        private Coroutine _fadeRoutine;
+
         private void Awake()
         {
             // The menu can be entered from a paused run (results screen) — never
             // carry a frozen timescale into the menu.
             GamePause.SetPaused(false);
+
+            _mainGroup = GetOrAddGroup(_mainPanel);
+            _worldSelectGroup = GetOrAddGroup(_worldSelectPanel);
+            _shopGroup = GetOrAddGroup(_shopPanel);
+            _settingsGroup = GetOrAddGroup(_settingsPanel);
 
             _playButton.onClick.AddListener(ShowWorldSelect);
             _shopButton.onClick.AddListener(ShowShop);
@@ -88,6 +102,49 @@ namespace SurveHive.UI
             _worldSelectPanel.SetActive(panel == _worldSelectPanel);
             _shopPanel.SetActive(panel == _shopPanel);
             _settingsPanel.SetActive(panel == _settingsPanel);
+
+            FadeIn(GroupFor(panel));
+        }
+
+        private CanvasGroup GroupFor(GameObject panel)
+        {
+            if (panel == _worldSelectPanel)
+            {
+                return _worldSelectGroup;
+            }
+
+            if (panel == _shopPanel)
+            {
+                return _shopGroup;
+            }
+
+            if (panel == _settingsPanel)
+            {
+                return _settingsGroup;
+            }
+
+            return _mainGroup;
+        }
+
+        private void FadeIn(CanvasGroup group)
+        {
+            group.alpha = 0f;
+            if (_fadeRoutine != null)
+            {
+                StopCoroutine(_fadeRoutine);
+            }
+
+            _fadeRoutine = StartCoroutine(UiAnim.FadeIn(group, UiAnim.FadeDuration));
+        }
+
+        private static CanvasGroup GetOrAddGroup(GameObject panel)
+        {
+            if (!panel.TryGetComponent(out CanvasGroup group))
+            {
+                group = panel.AddComponent<CanvasGroup>();
+            }
+
+            return group;
         }
 
         private static void QuitGame()

@@ -188,7 +188,9 @@ in `Assets/Editor/BuildTools/`:
 `BeehiveSceneBuilder` (full build) → `Phase1LookAndFeelBuilder` → `Phase2CombatDepthBuilder` →
 `Phase3RunStructureBuilder` → `Phase4MetaAndMenusBuilder` → `Phase5AudioBuilder`, plus additive
 passes (`CombatOverhaulBuilder`, `EnemyVarietyBuilder`, `DifficultyBuilder`,
-`MetaShopExpansionBuilder`, `SetSignatureBuilder`, `LocalizationBuilder`, `HeroBee*SkinBuilder`).
+`MetaShopExpansionBuilder`, `MetaShopTabsBuilder`, `SetSignatureBuilder`, `LocalizationBuilder`,
+`PcLayoutBuilder` (canvas reference retarget), `PcMenuLayoutBuilder` (landscape menu relayout),
+`UISoundCoverageBuilder` (fills any button missing `UIClickSfx`), `HeroBee*SkinBuilder`).
 Validated by `BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
 
 > ⚠️ **Builder caution (from `PLAN.md` and project memory):** the scenes/data have since been

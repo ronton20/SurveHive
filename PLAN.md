@@ -255,6 +255,11 @@ order chosen 2026-07-09: **layout/text → click sounds → motion → health ba
   level-up offer (all three lane card types + set-tier line), and the death results screen all read
   legibly and compose correctly at the new scale. The scene validator now asserts every
   scale-with-screen canvas in both scenes uses a landscape reference.
+  **Correction (3B-2c follow-up, 2026-07-10):** this retarget changed only the *reference
+  resolution* — it did **not** reposition any element, so panels authored in portrait coordinates
+  (the meta shop, the menu panels) still overflowed / read as narrow mobile columns on a landscape
+  screen. The actual element relayout landed in the 3B-2c follow-up (`MetaShopTabsBuilder` rework +
+  new `PcMenuLayoutBuilder`).
 
 #### 3B-2b — Click / hover sounds ✅
 - **Shipped 2026-07-10:** audit confirmed **click coverage was already blanket** — every
@@ -274,7 +279,31 @@ order chosen 2026-07-09: **layout/text → click sounds → motion → health ba
   path — audit every button (menus, shop, pause, cards) for coverage; add a hover SFX.
 - **Touch:** `UI/UIClickSfx.cs`, `Data/SfxId.cs`, `Core/AudioService.cs`, builder button wiring.
 
-#### 3B-2c — UI motion / transitions ☐
+#### 3B-2c — UI motion / transitions ✅
+- **Shipped 2026-07-10:** a shared, zero-GC motion layer — `Core/Easing.cs` (pure `OutCubic` /
+  `OutBack` curves, EditMode-tested for pinned endpoints + the pop's overshoot) and `UI/UiAnim.cs`
+  (reusable `FadeIn`/`FadeOut` coroutines on **unscaled** time so they play at `timeScale 0` on the
+  paused level-up/pause screens). The **level-up offer** now deals its cards in: the panel
+  CanvasGroup fades while each active card scales (0.82→1) and slides up from below on a per-card
+  stagger, all value-type/`LerpUnclamped` math with a clean interrupt path for chained level-ups
+  (snap-to-rest). **Pause** (pause/settings/power-ups) and **main-menu** (home/world/shop/settings)
+  panels fade in on every switch — controllers get-or-add a `CanvasGroup` at runtime and host the
+  coroutine themselves, so **no scene/builder wiring changed** (validator untouched); hides stay
+  instant to avoid swap races. All tests click via `onClick.Invoke`, so the motion is transparent to
+  them. Verified: `validation PASSED`, EditMode green, drive capture of the animated offer/menus.
+- **Playtest follow-up (2026-07-10):** fixed two things the PC pass missed. (1) Most MainMenu
+  buttons were **silent** — the scene predated the `UIClickSfx` line in its builder and was never
+  rebuilt; new additive `UISoundCoverageBuilder` sweeps both scenes and adds the component wherever
+  missing (12 MainMenu + 14 Beehive buttons were silent, so the 3B-2b "blanket coverage" claim was
+  wrong). (2) The **meta shop fell off-screen** and the menus were mobile-narrow — 3B-2a only
+  retargeted the canvas *reference resolution*, never the element coordinates, so the portrait-era
+  ShopPanel and the ~900-wide menu panels didn't fit/PC-read on 1920×1080. Reworked
+  `MetaShopTabsBuilder` to a landscape 3-column shop (tabs · 5-wide icon grid · detail pane) and
+  added `PcMenuLayoutBuilder` to widen WorldSelect/Settings and re-lay the home screen (title
+  top-left, buttons in a bottom-left vertical stack at 75% size, panel made transparent so a
+  background can show). Also fixed the world-select **difficulty dropdown** having no sound —
+  `UIClickSfx` requires a Button, so added `UISelectableSfx` (click/hover on any Selectable) and
+  swept it onto dropdowns in `UISoundCoverageBuilder`. All verified by drive capture.
 - **Motion:** consistent, cheap UI transitions (card slide/scale-in on the level-up screen,
   panel fades for pause/menus) — tween via coroutines or a tiny easing helper, no allocations.
 - **Touch:** `UI/LevelUpUIController.cs`, pause/menu panels, a small easing helper.

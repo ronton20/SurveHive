@@ -7,6 +7,60 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 3B-2c — UI motion / transitions (2026-07-10)
+
+Fourth slice of the #25 UI overhaul: the screens now move instead of snapping.
+
+- **Shared motion layer.** New `Core/Easing.cs` holds two pure, allocation-free curves —
+  `OutCubic` (smooth settle, used for fades) and `OutBack` (a slight overshoot past 1, the card
+  "pop"). New `UI/UiAnim.cs` exposes reusable `FadeIn`/`FadeOut` coroutines. Both run on
+  **`Time.unscaledDeltaTime`** so they animate correctly while the run is frozen at `timeScale 0`
+  (the level-up and pause screens both pause the game).
+- **Level-up offer deals its cards in.** The panel `CanvasGroup` fades while each active card
+  starts shrunk (0.82×) and below its slot, then scales/slides up to rest with an overshoot on a
+  per-card stagger (`LevelUpUIController`). All value-type vector math + `LerpUnclamped` (zero GC),
+  with a clean interrupt: a chained level-up snaps the previous cards to rest before re-dealing.
+  Interactivity is live from frame one, so the offer is clickable (and test-clickable) throughout
+  the fade.
+- **Panel fades for pause + main menu.** Pause (pause/settings/power-ups) and main-menu
+  (home/world-select/shop/settings) panels now fade in on every switch. The controllers get-or-add
+  a `CanvasGroup` at runtime and host the fade coroutine themselves — **no scene or builder wiring
+  changed**, so the validator is untouched. Hides stay instant `SetActive(false)` to avoid racing
+  the panel swaps.
+- **Tests:** EditMode `EasingTests` pins the curve endpoints (0→0, 1→1) and asserts `OutBack`
+  actually overshoots. Every existing UI test clicks via `onClick.Invoke`, so the motion is
+  transparent to them.
+- **Verification:** `BeehiveSceneValidator` PASSED, EditMode 145/145, PlayMode smoke/pause flows
+  green, drive capture of the animated offer and menus.
+
+#### Follow-up fixes (playtest, 2026-07-10)
+
+Two issues the PC pass had missed:
+
+- **Silent menu buttons.** Despite the 3B-2b "blanket coverage" claim, the MainMenu scene was
+  authored before `UIClickSfx` was added to the menu builder's button factory and was never rebuilt,
+  so most of its buttons had no click/hover sound. New additive `UISoundCoverageBuilder` sweeps both
+  scenes and adds `UIClickSfx` to any `Button` missing it — **12 in MainMenu, 14 in Beehive** were
+  silent. Idempotent (only ever adds where missing), so no clobber of the tuned scenes.
+- **Meta shop off-screen + mobile layout.** 3B-2a only swapped the canvas *reference resolution* to
+  1920×1080 — it never repositioned anything, so the portrait-era ShopPanel (1060×**1880**, a
+  **1300px-tall** tab strip, grid at `y=-520`) fell off both edges of a 1080-tall screen. Reworked
+  `MetaShopTabsBuilder` to a true landscape layout: the panel fills the screen and the contents are
+  three side-by-side columns — **tabs left, a 5-wide icon grid centre, the detail pane + BUY right** —
+  with the Title/Balance/Back chrome re-anchored to the new bounds. New additive `PcMenuLayoutBuilder`
+  widens WorldSelect / Settings into full-width landscape "windows" and re-lays the **home screen**:
+  title top-left, the four primary buttons in a **bottom-left vertical stack** at 75% size (font
+  unchanged), and the panel image disabled so the home is a transparent full-screen container with the
+  centre/right open for future background art (only RectTransforms + the panel-image toggle + title
+  alignment rewritten; the difficulty picker and settings controls ride along untouched).
+  `ShopVerifyDriver` now also captures the home screen.
+- **Silent difficulty dropdown.** `UIClickSfx` `[RequireComponent(Button)]`s, so it couldn't ride the
+  world-select `TMP_Dropdown`. New `UISelectableSfx` (click + hover on any `Selectable` via
+  `IPointerClickHandler`/`IPointerEnterHandler`, gated on interactable) is added by
+  `UISoundCoverageBuilder` to every dropdown and its option-list template item.
+- **Verified:** drive capture (bottom-left home layout + 3-column shop, both on-screen), validator
+  PASSED, PlayMode menu-flow green.
+
 ### Phase 3B-2b — UI click / hover sounds (2026-07-10)
 
 Third slice of the #25 UI overhaul: audible feedback on every interactive control.

@@ -31,10 +31,25 @@ namespace SurveHive.UI
 
         private bool _isOpen;
 
+        // 3B-2c: panels fade in when shown (get-or-add a CanvasGroup so no scene
+        // wiring is needed). Hides stay instant — a fade-out would race the panel
+        // swaps. One handle is enough: only one panel is ever fading in at a time.
+        private CanvasGroup _pauseGroup;
+        private CanvasGroup _settingsGroup;
+        private CanvasGroup _powerUpsGroup;
+        private Coroutine _fadeRoutine;
+
         public bool IsOpen => _isOpen;
 
         private void Awake()
         {
+            _pauseGroup = GetOrAddGroup(_pausePanel);
+            _settingsGroup = GetOrAddGroup(_settingsPanel);
+            if (_powerUpsPanel != null)
+            {
+                _powerUpsGroup = GetOrAddGroup(_powerUpsPanel);
+            }
+
             _pauseButton.onClick.AddListener(TogglePause);
             _resumeButton.onClick.AddListener(Close);
             _settingsButton.onClick.AddListener(OpenSettings);
@@ -111,13 +126,13 @@ namespace SurveHive.UI
             }
 
             _isOpen = true;
-            _pausePanel.SetActive(true);
             _settingsPanel.SetActive(false);
             if (_powerUpsPanel != null)
             {
                 _powerUpsPanel.SetActive(false);
             }
 
+            Reveal(_pausePanel, _pauseGroup);
             GamePause.SetPaused(true);
         }
 
@@ -153,13 +168,13 @@ namespace SurveHive.UI
             // Swap, don't stack — the pause panel would show through the
             // settings panel's translucent frame.
             _pausePanel.SetActive(false);
-            _settingsPanel.SetActive(true);
+            Reveal(_settingsPanel, _settingsGroup);
         }
 
         private void CloseSettings()
         {
             _settingsPanel.SetActive(false);
-            _pausePanel.SetActive(true);
+            Reveal(_pausePanel, _pauseGroup);
         }
 
         private void OpenPowerUps()
@@ -172,7 +187,7 @@ namespace SurveHive.UI
             _pausePanel.SetActive(false);
             if (_powerUpsPanel != null)
             {
-                _powerUpsPanel.SetActive(true);
+                Reveal(_powerUpsPanel, _powerUpsGroup);
             }
         }
 
@@ -183,7 +198,31 @@ namespace SurveHive.UI
                 _powerUpsPanel.SetActive(false);
             }
 
-            _pausePanel.SetActive(true);
+            Reveal(_pausePanel, _pauseGroup);
+        }
+
+        // Show a panel with a quick fade-in. Reused by every open/back path so the
+        // pause flow reads consistently; hides remain instant SetActive(false).
+        private void Reveal(GameObject panel, CanvasGroup group)
+        {
+            panel.SetActive(true);
+            group.alpha = 0f;
+            if (_fadeRoutine != null)
+            {
+                StopCoroutine(_fadeRoutine);
+            }
+
+            _fadeRoutine = StartCoroutine(UiAnim.FadeIn(group, UiAnim.FadeDuration));
+        }
+
+        private static CanvasGroup GetOrAddGroup(GameObject panel)
+        {
+            if (!panel.TryGetComponent(out CanvasGroup group))
+            {
+                group = panel.AddComponent<CanvasGroup>();
+            }
+
+            return group;
         }
 
         private void AbandonRun()

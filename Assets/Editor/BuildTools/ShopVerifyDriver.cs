@@ -6,11 +6,11 @@ using UnityEngine;
 namespace SurveHive.BuildTools
 {
     /// <summary>
-    /// One-off visual check for the data-driven Hive Upgrades shop: opens
-    /// MainMenu in play mode, shows the shop panel, screenshots the spawned grid,
-    /// then quits. Run with a GUI (no -batchmode) so the game view renders:
+    /// One-off visual check for the Hive Upgrades menus: opens MainMenu in play
+    /// mode, screenshots the home screen, then the shop panel, then quits. Run with
+    /// a GUI (no -batchmode) so the game view renders:
     /// <c>unity.sh drive SurveHive.BuildTools.ShopVerifyDriver.Run</c>.
-    /// Screenshot lands in <c>VerifyShots/shop-grid.png</c>.
+    /// Screenshots land in <c>VerifyShots/menu-home.png</c> + <c>shop-grid.png</c>.
     /// </summary>
     [InitializeOnLoad]
     public static class ShopVerifyDriver
@@ -53,11 +53,17 @@ namespace SurveHive.BuildTools
 
             double elapsed = EditorApplication.timeSinceStartup - _playStartTime;
 
-            // Give the scene a beat to boot, then open the shop; a few seconds
-            // later capture (rows spawn on the panel's first activation), then quit.
+            // Give the scene a beat to boot, capture the home screen, then open the
+            // shop; a few seconds later capture it (rows spawn on the panel's first
+            // activation), then quit.
             if (_stage == 0 && elapsed > 1.5)
             {
                 _stage = 1;
+                Capture("menu-home.png");
+            }
+            else if (_stage == 1 && elapsed > 3.0)
+            {
+                _stage = 2;
                 var controller = Object.FindAnyObjectByType<MainMenuController>();
                 if (controller == null)
                 {
@@ -69,17 +75,22 @@ namespace SurveHive.BuildTools
                 controller.ShowShop();
                 Debug.Log("ShopVerifyDriver: shop panel opened.");
             }
-            else if (_stage == 1 && elapsed > 3.5)
-            {
-                _stage = 2;
-                string path = System.IO.Path.Combine(OutputDir, "shop-grid.png");
-                ScreenCapture.CaptureScreenshot(path);
-                Debug.Log($"ShopVerifyDriver: captured {path}");
-            }
             else if (_stage == 2 && elapsed > 5.0)
+            {
+                _stage = 3;
+                Capture("shop-grid.png");
+            }
+            else if (_stage == 3 && elapsed > 6.5)
             {
                 Finish();
             }
+        }
+
+        private static void Capture(string fileName)
+        {
+            string path = System.IO.Path.Combine(OutputDir, fileName);
+            ScreenCapture.CaptureScreenshot(path);
+            Debug.Log($"ShopVerifyDriver: captured {path}");
         }
 
         private static void Finish()
