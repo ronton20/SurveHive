@@ -155,6 +155,11 @@ namespace SurveHive.BuildTools
             var canvasGo = GameObject.Find("Canvas");
             ok &= Check(canvasGo != null, "Canvas GameObject exists");
 
+            // 3B-2: every scale-with-screen canvas must use a landscape PC
+            // reference (portrait was the mobile-era default that shrank UI on
+            // desktop). Assert across all scalers so a stray portrait one fails.
+            ok &= Check(AllScalersLandscape(), "Beehive scale-with-screen canvases use a landscape reference");
+
             GameObject levelUpPanel = canvasGo != null ? FindChildIncludingInactive(canvasGo.transform, "LevelUpPanel") : null;
             ok &= Check(levelUpPanel != null, "LevelUpPanel exists");
             // Active by design: LevelUpUIController subscribes in OnEnable and hides
@@ -535,6 +540,9 @@ namespace SurveHive.BuildTools
 
             ok &= Check(GameObject.Find("EventSystem") != null, "MainMenu has EventSystem");
             ok &= Check(GameObject.FindWithTag("MainCamera") != null, "MainMenu has camera");
+
+            // 3B-2: menu canvases scale from the same landscape PC reference.
+            ok &= Check(AllScalersLandscape(), "MainMenu scale-with-screen canvases use a landscape reference");
 
             var controllerGo = GameObject.Find("MainMenuController");
             var controller = controllerGo != null ? controllerGo.GetComponent<MainMenuController>() : null;
@@ -1692,6 +1700,30 @@ namespace SurveHive.BuildTools
         {
             Data.DifficultySO.UnlockRequirement[] requirements = difficulty.GetSettings(tier).unlockRequirements;
             return requirements != null ? requirements.Length : 0;
+        }
+
+        // True when every ScaleWithScreenSize canvas in the open scene uses a
+        // landscape reference (width >= height) — the 3B-2 PC-fit invariant.
+        private static bool AllScalersLandscape()
+        {
+            UnityEngine.UI.CanvasScaler[] scalers = Object.FindObjectsByType<UnityEngine.UI.CanvasScaler>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (UnityEngine.UI.CanvasScaler scaler in scalers)
+            {
+                if (scaler.uiScaleMode != UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize)
+                {
+                    continue;
+                }
+
+                if (scaler.referenceResolution.x < scaler.referenceResolution.y)
+                {
+                    Debug.LogError($"[FAIL] portrait scaler on '{scaler.gameObject.name}' " +
+                        $"({scaler.referenceResolution.x}x{scaler.referenceResolution.y})");
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool Check(bool condition, string label)

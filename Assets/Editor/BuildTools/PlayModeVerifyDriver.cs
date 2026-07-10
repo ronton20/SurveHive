@@ -88,52 +88,62 @@ namespace SurveHive.BuildTools
                     AdvanceStage();
                     break;
 
-                // A ring of tanky guards around the player — the status
-                // demo subjects (90 HP each survives the auto-attack long
-                // enough to read every capture).
+                // 3B-2 layout/text fit capture: populate the HUD (equip the
+                // actives, drop a cluster of weak workers so the auto-attack
+                // racks up kills and damage numbers fly) then read every UI
+                // surface at the new landscape canvas scale.
                 case 1 when elapsed > 1.0:
-                    SpawnEnemyRing("Assets/Data/Enemies/QueensGuard.asset", 6, 8f);
+                    EquipAllActiveSkills(3);
                     AdvanceStage();
                     break;
 
+                // Pause + owned power-ups build view FIRST — before any kills
+                // grant EXP, so no level-up offer is up to block the pause.
                 case 2 when elapsed > 0.4:
-                    ApplySingleStatusesToRing();
+                    OpenPauseMenu();
                     AdvanceStage();
                     break;
 
                 case 3 when elapsed > 0.6:
-                    Capture("shot1_single_status_tints.png");
+                    Capture("layout2_pause_owned.png");
+                    ClosePauseMenu();
                     AdvanceStage();
                     break;
 
-                // Second status on each subject → the two-tone pulse. Two
-                // captures a beat apart must show different blends.
-                case 4 when elapsed > 0.4:
-                    StackSecondStatusesOnRing();
+                // Now drop a worker cluster and let combat populate the HUD.
+                case 4 when elapsed > 0.3:
+                    SpawnEnemyCluster("Assets/Data/Enemies/WorkerBee.asset", 20, 5f);
                     AdvanceStage();
                     break;
 
-                case 5 when elapsed > 0.6:
-                    Capture("shot2_stacked_pulse_a.png");
+                case 5 when elapsed > 4.0:
+                    Capture("layout1_hud.png");
+                    ForceLevelUp();
                     AdvanceStage();
                     break;
 
-                case 6 when elapsed > 0.3:
-                    Capture("shot3_stacked_pulse_b.png");
+                case 6 when elapsed > 0.8:
+                    Capture("layout3_levelup_cards.png");
+                    ClickFirstLevelUpChoice();
                     AdvanceStage();
                     break;
 
-                // Hit the burning subject: the flash should read ember-tinted,
-                // not pure white (capture lands within the 0.12s flash).
-                case 7 when elapsed > 0.4:
-                    DamageStatusSubject(0);
-                    Capture("shot4_hit_flash_keeps_hue.png");
+                // Death overrides the queued level-up pause (verified: results
+                // draw over the faded offer panel).
+                case 7 when elapsed > 0.3:
+                    KillPlayer();
                     AdvanceStage();
                     break;
 
-                case 8 when elapsed > 2.0:
+                // Death results screen composition.
+                case 8 when elapsed > 1.2:
+                    Capture("layout4_results.png");
+                    AdvanceStage();
+                    break;
+
+                case 9 when elapsed > 1.5:
                     SessionState.SetBool(ActiveFlag, false);
-                    Debug.Log("VerifyDriver: capture complete, exiting.");
+                    Debug.Log("VerifyDriver: layout capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
             }

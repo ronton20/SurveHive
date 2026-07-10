@@ -240,19 +240,38 @@ list. Sliced into ship-and-verify units; do them in any order.
   `MetaShopTabsBuilder` (removes the old scroll+cards, rebuilds tab column / detail / grid).
   Validator + PlayMode flow test updated to the new components; EditMode covers the category map.
 
-#### 3B-2 — Remaining PC polish ☐
-- Layout fit pass at common desktop resolutions (1080p/1440p): HUD margins, meter sizes,
-  results/menu composition; enlarge in-run text (damage numbers, counters, card text).
+"Remaining PC polish" is four independent workstreams — sliced below and taken in the
+order chosen 2026-07-09: **layout/text → click sounds → motion → health bars**.
+
+#### 3B-2a — Layout + text fit (landscape PC) ✅
+- **Shipped 2026-07-09:** retargeted both canvases (MainMenu + Beehive HUD) from the mobile-era
+  **portrait** reference resolution (1080×1920) to a **landscape** PC one (**1920×1080, match
+  height**) via the additive idempotent `PcLayoutBuilder` pass. On a 16:9 desktop the old
+  portrait reference shrank every canvas to ~56% scale — the exact "text too small / doesn't fit
+  PC" playtest complaint — so this single retarget restores ~1.0 scale at 1080p (and scales up
+  cleanly to 1440p), enlarging all in-run text (damage numbers, counters, card text) and meters
+  to their authored size without per-element bumps. Verified by a repurposed `PlayModeVerifyDriver`
+  layout capture: HUD chrome (corner-anchored bars / timer / stage progress / counters), the
+  level-up offer (all three lane card types + set-tier line), and the death results screen all read
+  legibly and compose correctly at the new scale. The scene validator now asserts every
+  scale-with-screen canvas in both scenes uses a landscape reference.
+
+#### 3B-2b — Click / hover sounds ☐
+- **Click/hover sounds** on all interactive UI via the existing `UIClickSfx`/`AudioService`
+  path — audit every button (menus, shop, pause, cards) for coverage; add a hover SFX.
+- **Touch:** `UI/UIClickSfx.cs`, `Data/SfxId.cs`, `Core/AudioService.cs`, builder button wiring.
+
+#### 3B-2c — UI motion / transitions ☐
 - **Motion:** consistent, cheap UI transitions (card slide/scale-in on the level-up screen,
   panel fades for pause/menus) — tween via coroutines or a tiny easing helper, no allocations.
-- **Click/hover sounds** on all interactive UI via the existing `UIClickSfx`/`AudioService`
-  path — audit every button (menus, shop, pause, cards) for coverage.
+- **Touch:** `UI/LevelUpUIController.cs`, pause/menu panels, a small easing helper.
+
+#### 3B-2d — Health-bar readability ☐
 - **Health bars:** readability pass on player + enemy bars (size, contrast, shield-tint clarity
   from Phase 3B-old); boss bar polish.
-- **Touch:** `UI/*` broadly, level-up card + HUD prefabs, `Core/AudioService.cs` hooks,
-  a new additive builder pass for prefab/scene wiring.
-- **Done when:** a full run (menu → run → level-ups → pause → death/victory → shop) looks
-  deliberate at 1080p, every click makes a sound, and text is comfortably readable.
+- **Touch:** `UI/HealthBarUI.cs`, `UI/EnemyHealthBarUI.cs`, `UI/BossHealthBarUI.cs`, HUD prefabs.
+- **Done when (3B overall):** a full run (menu → run → level-ups → pause → death/victory → shop)
+  looks deliberate at 1080p, every click makes a sound, and text is comfortably readable.
 
 ### 3C — Enhanced options — TODO #36 ☐
 - Settings toggles for feedback layers: **enemy HP bars**, **damage numbers**, screen shake,

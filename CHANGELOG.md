@@ -7,6 +7,30 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 3B-2a — layout + text fit for PC (2026-07-09)
+
+Second slice of the #25 UI overhaul: fit the UI to a PC (landscape) screen and enlarge in-run
+text. Root-caused the "text too small / doesn't fit PC" playtest complaint to a mobile-era
+leftover — both canvases (MainMenu + Beehive HUD) still scaled from a **portrait** reference
+resolution (1080×1920).
+
+- **The fix:** retarget every scale-with-screen canvas to a **landscape** reference
+  (**1920×1080, match height**). On a 16:9 desktop the old portrait reference shrank each canvas
+  to ~56% scale; the landscape reference restores ~1.0 scale at 1080p and scales up cleanly to
+  1440p — so all in-run text (damage numbers, counters, card text) and HUD meters read at their
+  authored size with **no per-element font bumps**. Applied by the new additive, idempotent
+  `PcLayoutBuilder` pass (menu item *SurveHive/Fit UI To PC (Landscape Canvas)*), which only
+  rewrites the `CanvasScaler` values — no hierarchy or data-asset edits, safe to re-run.
+- **Verification:** the `PlayModeVerifyDriver` staged capture was repurposed for a layout pass —
+  HUD chrome (corner-anchored health/EXP bars, timer, stage-progress markers, honey/kill
+  counters), the level-up offer (all three lane card types + the set-tier line), and the death
+  results screen all read legibly and compose correctly at the new scale.
+- **Validator:** `BeehiveSceneValidator` now asserts every scale-with-screen canvas in both the
+  Beehive and MainMenu scenes uses a landscape reference (via a new `AllScalersLandscape` helper),
+  so a stray portrait scaler fails the pass. EditMode 141/141 green.
+- **Scope note:** 3B-2 is split into four slices — this is the layout/text one. Click/hover
+  sounds, UI motion/transitions, and the health-bar readability pass remain (PLAN 3B-2b–d).
+
 ### Phase 3B-1 — meta-shop tab rework (2026-07-09)
 
 First slice of the #25 UI overhaul: the Hive Upgrades shop moves from a flat scrolling card grid
