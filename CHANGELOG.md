@@ -7,6 +7,57 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 3C — Enhanced options: feedback-layer toggles (2026-07-10)
+
+Closes TODO #36 (and with it Phase 3, the PC-first UI overhaul): players can now switch the
+noisier feedback layers off — **ENEMY HP BARS / DAMAGE NUMBERS / SCREEN SHAKE / HIT-STOP /
+STATUS COLORS** — from either settings panel (main menu or pause), live and persistently.
+
+- **Live gate layer.** New static `Core/FeedbackSettings` mirrors the saved toggles; the
+  persistent store pushes it on save load and after every settings save, so gameplay hot paths
+  gate on plain static bools (zero save-file reads in combat). Each system is gated at its one
+  choke point: `DamagePopupSpawner.Spawn`, `CameraShaker.Shake`, `HitStop.Request`,
+  `StatusEffectReceiver.RefreshTint` (parks the sprite on its base tint and repaints next frame
+  when re-enabled), and `EnemyHealthBarUI`, which hides by disabling its Canvas and re-checks on
+  the `FeedbackSettings.Changed` event — flipping bars back on mid-run reaches every pooled
+  enemy instantly.
+- **UI.** New reusable `UI/FeedbackToggleUI` row ("NAME: ON/OFF" button, new localized
+  `settings.*` keys); the additive idempotent `EnhancedOptionsBuilder` builds five rows into both
+  settings panels and relays each into two columns — audio/general controls left, feedback
+  toggles right — widening the portrait-era pause settings panel to a 1500×900 landscape window.
+- **Persistence.** Save schema bumped to **v4**: five default-true bools on `SettingsData`;
+  field initializers double as the migration, so pre-3C saves load with every layer on.
+- **Tests:** EditMode 155/155 — save round-trip with toggles off, v3→v4 migration defaults, and
+  `FeedbackSettings` apply/`Changed`-only-on-flip semantics. Validator asserts all ten toggle
+  rows (5 × 2 scenes) exist and are fully wired. PlayMode 4/4.
+- **Verification:** builder + validation PASSED headless; play-mode drive captured the two-column
+  panels, rows flipping to ": OFF", a fight with bars/numbers hidden, and the live mid-run
+  re-enable restoring them.
+- **Playtest follow-up (same day):** settings-screen cleanup — controls shrunk (500-wide
+  buttons/sliders, 28–30pt labels, shorter slider handles so a mid-track handle stays clear of the
+  MUSIC/SFX captions), both columns dropped below the panel title (the first toggle had clipped
+  "SETTINGS"), and every menu BACK button (world select / shop / menu settings / pause settings)
+  moved to its panel's top-left corner — the old bottom-center spot sat flush with the panel edge.
+  Same idempotent `EnhancedOptionsBuilder` pass; validation PASSED, drive captures of all four
+  panels confirmed.
+- **Shared tooltip system (same day).** The locked-difficulty unlock-task tooltip was pinned "just
+  right of" the world-select panel and went off-screen once the panel was widened for PC. Replaced
+  with a game-wide hover tooltip: new `UI/TooltipUI` (one per scene, on a dedicated top-sorted
+  overlay canvas without a GraphicRaycaster so it renders above all UI but never blocks the
+  pointer) that shows on hover, sizes itself to its text, **follows the mouse**, and clamps to the
+  screen via the pure, EditMode-tested `TooltipLayout`. Difficulty unlock tasks now route through
+  it (rows hide it on teardown, so it can't stick after the dropdown closes); the generic
+  `TooltipTrigger` component (Inspector text or `SetText` at bind time) makes any UI element
+  hoverable — ready for the status-effect/set-effect info panes later. Also fixed the hover relay
+  having been dead since 1B: `TMP_Dropdown` instantiates its row clones at the scene root and only
+  parents them afterwards, so `DifficultyItemHover`'s Awake-cached `GetComponentInParent` lookup
+  was permanently null — hover did nothing and only the click path (which then stuck forever)
+  worked. The lookup is lazy at event time now, and hide paths call `TooltipUI.Hide()` directly so
+  hiding never depends on a lookup; the drive exercises the real pointer-enter path on an open
+  dropdown row and proves teardown auto-hide on panel switch. Built by the additive
+  `TooltipBuilder`, which also deletes the legacy pinned panel; the validator asserts the tooltip
+  canvas wiring in both scenes.
+
 ### Phase 3B-2d — Health-bar readability (2026-07-10)
 
 Final slice of the #25 UI overhaul: the health bars now communicate danger at a glance. All

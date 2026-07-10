@@ -9,7 +9,7 @@ namespace SurveHive.Persistence
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int version = CurrentVersion;
         public int bankedCurrency;
@@ -36,6 +36,14 @@ namespace SurveHive.Persistence
         public bool vibration = true;
         // -1 = use the project's default quality level.
         public int qualityLevel = -1;
+        // v4: feedback-layer toggles (PLAN 3C). Initializers double as the v3
+        // migration — JsonUtility leaves missing fields at their default, so
+        // old saves land with every layer on.
+        public bool showEnemyHealthBars = true;
+        public bool showDamageNumbers = true;
+        public bool screenShake = true;
+        public bool hitStop = true;
+        public bool statusTints = true;
     }
 
     [Serializable]

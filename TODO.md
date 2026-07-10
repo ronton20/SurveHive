@@ -163,7 +163,7 @@ above are locked so new content drops into a stable framework rather than a movi
 33. **Achievements system** — including Steam achievements; unlocks cosmetics and rewards premium currency.
 34. **Rotating cosmetics shop** — daily rotating cosmetics for purchase.
 35. **Codex** — all info on power-ups / set effects / enemies / items / etc. that the player has encountered or picked up.
-36. **Enhanced options** — toggles for enemy HP bars, damage numbers, and similar feedback layers.
+36. ~~**Enhanced options** — toggles for enemy HP bars, damage numbers, and similar feedback layers.~~ *(done in Phase 3C, 2026-07-10: five toggles — enemy HP bars, damage numbers, screen shake, hit-stop, status colors — in both settings panels (two-column relayout via `EnhancedOptionsBuilder`), gated at each system's single entry point through the static `FeedbackSettings` live copy; persisted in save v4 with old saves migrating to all-on, applied live mid-run including already-pooled enemy bars.)*
 
 ## Suggestions / additions to consider
 - ~~**Pause & settings menu** — in-run pause (audio/vibration/quality toggles); useful early for testing and expected on mobile.~~ *(done in Phase 4C: ESC/HUD-button pause with resume/settings/abandon; settings shared with the main menu, applied live and saved.)*

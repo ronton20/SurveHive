@@ -105,3 +105,17 @@ MonoBehaviour:
     value: BUY
   - key: shop.cost_prefix
     value: 'COST: '
+  - key: settings.on_suffix
+    value: ': ON'
+  - key: settings.off_suffix
+    value: ': OFF'
+  - key: settings.enemy_hp_bars
+    value: ENEMY HP BARS
+  - key: settings.damage_numbers
+    value: DAMAGE NUMBERS
+  - key: settings.screen_shake
+    value: SCREEN SHAKE
+  - key: settings.hit_stop
+    value: HIT-STOP
+  - key: settings.status_tints
+    value: STATUS COLORS

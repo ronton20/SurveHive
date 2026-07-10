@@ -1,3 +1,4 @@
+using SurveHive.Core;
 using SurveHive.Enemies;
 using SurveHive.Health;
 using UnityEngine;
@@ -5,6 +6,7 @@ using UnityEngine.UI;
 
 namespace SurveHive.UI
 {
+    [RequireComponent(typeof(Canvas))]
     public sealed class EnemyHealthBarUI : MonoBehaviour
     {
         [SerializeField] private Image _fillImage;
@@ -17,6 +19,7 @@ namespace SurveHive.UI
         private static readonly Color MagicShieldTint = new Color(0.85f, 0.55f, 1f);
 
         private EnemyDefense _defense;
+        private Canvas _canvas;
         private Color _baseFillColor = Color.white;
 
         private void Awake()
@@ -32,6 +35,8 @@ namespace SurveHive.UI
             {
                 _baseFillColor = _fillImage.color;
             }
+
+            TryGetComponent(out _canvas);
         }
 
         private void OnEnable()
@@ -42,16 +47,31 @@ namespace SurveHive.UI
                 _defense.OnShieldAbsorbed += HandleShieldAbsorbed;
             }
 
+            // PLAN 3C: enemy bars are a player-toggleable feedback layer —
+            // hide by disabling the Canvas (the GO stays active so a live
+            // re-enable reaches pooled bars mid-run).
+            FeedbackSettings.Changed += ApplyVisibility;
+            ApplyVisibility();
+
             HandleHealthChanged(_health.CurrentHealth, _health.MaxHealth);
             RefreshShieldTint();
         }
 
         private void OnDisable()
         {
+            FeedbackSettings.Changed -= ApplyVisibility;
             _health.OnHealthChanged -= HandleHealthChanged;
             if (_defense != null)
             {
                 _defense.OnShieldAbsorbed -= HandleShieldAbsorbed;
+            }
+        }
+
+        private void ApplyVisibility()
+        {
+            if (_canvas != null)
+            {
+                _canvas.enabled = FeedbackSettings.EnemyHealthBars;
             }
         }
 

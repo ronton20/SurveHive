@@ -196,9 +196,9 @@ namespace SurveHive.BuildTools
                 select = worldPanel.gameObject.AddComponent<DifficultySelectUI>();
             }
 
-            // Unlock-task tooltip (locked tiers) + the hover relay on the
-            // dropdown's item template so every cloned row reports itself.
-            TMPro.TMP_Text tooltipText = EnsureUnlockTooltip(worldPanel, out GameObject tooltipPanel);
+            // Hover relay on the dropdown's item template so every cloned row
+            // reports itself. (The unlock tooltip itself is the shared
+            // mouse-following TooltipUI, built by TooltipBuilder.)
             GameObject templateItem = dropdown.transform.Find("Template/Viewport/Content/Item").gameObject;
             if (!templateItem.TryGetComponent(out DifficultyItemHover _))
             {
@@ -210,8 +210,6 @@ namespace SurveHive.BuildTools
             selectSo.FindProperty("_dropdown").objectReferenceValue = dropdown;
             selectSo.FindProperty("_difficulty").objectReferenceValue = difficulty;
             selectSo.FindProperty("_store").objectReferenceValue = store;
-            selectSo.FindProperty("_tooltipPanel").objectReferenceValue = tooltipPanel;
-            selectSo.FindProperty("_tooltipText").objectReferenceValue = tooltipText;
             selectSo.ApplyModifiedPropertiesWithoutUndo();
 
             dropdown.RefreshShownValue();
@@ -252,53 +250,6 @@ namespace SurveHive.BuildTools
 
             var captionLabel = (RectTransform)dropdown.transform.Find("Label");
             captionLabel.offsetMin = new Vector2(84f, captionLabel.offsetMin.y);
-        }
-
-        // Task panel floating just right of the menu panel, level with the
-        // dropdown (plenty of off-panel room on PC's landscape canvas).
-        private static TMPro.TMP_Text EnsureUnlockTooltip(Transform worldPanel, out GameObject panel)
-        {
-            Transform existing = worldPanel.Find("DifficultyTooltip");
-            if (existing != null)
-            {
-                panel = existing.gameObject;
-                return existing.GetComponentInChildren<TMPro.TMP_Text>(true);
-            }
-
-            panel = new GameObject("DifficultyTooltip", typeof(RectTransform), typeof(Image));
-            var rect = (RectTransform)panel.transform;
-            rect.SetParent(worldPanel, false);
-            rect.anchorMin = new Vector2(1f, 0.5f);
-            rect.anchorMax = new Vector2(1f, 0.5f);
-            rect.pivot = new Vector2(0f, 0.5f);
-            rect.anchoredPosition = new Vector2(16f, -300f);
-            rect.sizeDelta = new Vector2(560f, 200f);
-
-            var image = panel.GetComponent<Image>();
-            image.sprite = Phase4MetaAndMenusBuilder.LoadUiKitSprite("PixelPanel");
-            image.type = Image.Type.Sliced;
-            image.pixelsPerUnitMultiplier = 2f;
-            image.color = DeepBrown;
-            image.raycastTarget = false;
-
-            var textGo = new GameObject("Text", typeof(RectTransform));
-            var textRect = (RectTransform)textGo.transform;
-            textRect.SetParent(rect, false);
-            textRect.anchorMin = Vector2.zero;
-            textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(20f, 16f);
-            textRect.offsetMax = new Vector2(-20f, -16f);
-
-            var text = textGo.AddComponent<TMPro.TextMeshProUGUI>();
-            text.font = AssetDatabase.LoadAssetAtPath<TMPro.TMP_FontAsset>(FontAssetPath);
-            text.fontSize = 26f;
-            text.color = Wax;
-            text.alignment = TMPro.TextAlignmentOptions.TopLeft;
-            text.textWrappingMode = TMPro.TextWrappingModes.Normal;
-            text.raycastTarget = false;
-
-            panel.SetActive(false);
-            return text;
         }
 
         private static RectTransform EnsureIconSlot(RectTransform parent, string name, Vector2 anchoredPosition)

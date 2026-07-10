@@ -9,7 +9,7 @@
 # Author is the repo's configured user (Ron Ariel); this only guarantees the
 # trailer. Never runs push — pushing is a separate, explicit step (see SKILL.md).
 set -euo pipefail
-TRAILER="Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+TRAILER="Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 
 addall=0
 if [[ "${1:-}" == "-a" ]]; then addall=1; shift; fi

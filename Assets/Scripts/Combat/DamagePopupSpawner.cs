@@ -21,7 +21,8 @@ namespace SurveHive.Combat
 
         public static void Spawn(Vector3 worldPosition, float amount, Color color, float sizeMultiplier)
         {
-            if (PoolManager.Instance == null)
+            // PLAN 3C: damage numbers are a player-toggleable feedback layer.
+            if (!FeedbackSettings.DamageNumbers || PoolManager.Instance == null)
             {
                 return;
             }

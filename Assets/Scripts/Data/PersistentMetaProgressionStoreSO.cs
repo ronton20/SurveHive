@@ -1,3 +1,4 @@
+using SurveHive.Core;
 using SurveHive.Persistence;
 using UnityEngine;
 
@@ -155,6 +156,8 @@ namespace SurveHive.Data
         {
             EnsureLoaded();
             Persist();
+            // Settings edits go live immediately (feedback toggles, PLAN 3C).
+            FeedbackSettings.Apply(_save.settings);
         }
 
         private void EnsureLoaded()
@@ -167,6 +170,10 @@ namespace SurveHive.Data
             _save = SaveFileStore.Load() ?? new SaveData();
             _state = new MetaProgressionState();
             _state.LoadFrom(_save);
+            // First touch of the save each session (AudioService reads settings
+            // at scene boot) — push the feedback toggles live before any
+            // gameplay system checks them.
+            FeedbackSettings.Apply(_save.settings);
         }
 
         private void Persist()

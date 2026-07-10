@@ -64,6 +64,13 @@ namespace SurveHive.Core
             new KeyValuePair<string, string>(LocKeys.SettingsVibrationOff, "VIBRATION: OFF"),
             new KeyValuePair<string, string>(LocKeys.SettingsQualityPrefix, "QUALITY: "),
             new KeyValuePair<string, string>(LocKeys.SettingsQualityDefault, "DEFAULT"),
+            new KeyValuePair<string, string>(LocKeys.SettingsOnSuffix, ": ON"),
+            new KeyValuePair<string, string>(LocKeys.SettingsOffSuffix, ": OFF"),
+            new KeyValuePair<string, string>(LocKeys.SettingsEnemyHpBars, "ENEMY HP BARS"),
+            new KeyValuePair<string, string>(LocKeys.SettingsDamageNumbers, "DAMAGE NUMBERS"),
+            new KeyValuePair<string, string>(LocKeys.SettingsScreenShake, "SCREEN SHAKE"),
+            new KeyValuePair<string, string>(LocKeys.SettingsHitStop, "HIT-STOP"),
+            new KeyValuePair<string, string>(LocKeys.SettingsStatusTints, "STATUS COLORS"),
 
             new KeyValuePair<string, string>(LocKeys.ResultsTime, "Time  "),
             new KeyValuePair<string, string>(LocKeys.ResultsKills, "Kills  "),

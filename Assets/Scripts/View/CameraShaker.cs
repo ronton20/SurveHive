@@ -1,3 +1,4 @@
+using SurveHive.Core;
 using UnityEngine;
 
 namespace SurveHive.View
@@ -21,6 +22,12 @@ namespace SurveHive.View
 
         public void Shake(float amplitude)
         {
+            // PLAN 3C: screen shake is a player-toggleable feedback layer.
+            if (!FeedbackSettings.ScreenShake)
+            {
+                return;
+            }
+
             _amplitude = Mathf.Min(_maxAmplitude, Mathf.Max(_amplitude, amplitude));
         }
 

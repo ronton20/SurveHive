@@ -65,6 +65,14 @@ namespace SurveHive.Core
         public const string SettingsVibrationOff = "settings.vibration_off";
         public const string SettingsQualityPrefix = "settings.quality_prefix";
         public const string SettingsQualityDefault = "settings.quality_default";
+        // Feedback-layer toggles (PLAN 3C): per-toggle name + shared ON/OFF suffixes.
+        public const string SettingsOnSuffix = "settings.on_suffix";
+        public const string SettingsOffSuffix = "settings.off_suffix";
+        public const string SettingsEnemyHpBars = "settings.enemy_hp_bars";
+        public const string SettingsDamageNumbers = "settings.damage_numbers";
+        public const string SettingsScreenShake = "settings.screen_shake";
+        public const string SettingsHitStop = "settings.hit_stop";
+        public const string SettingsStatusTints = "settings.status_tints";
 
         // Run results
         public const string ResultsTime = "results.time";

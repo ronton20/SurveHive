@@ -398,6 +398,9 @@ namespace SurveHive.BuildTools
             // 4C: in-run pause menu.
             ok &= ValidatePauseMenu(canvas);
 
+            // Shared hover tooltip (status/set-effect info later).
+            ok &= ValidateTooltipCanvas("Beehive");
+
             // 4B: build settings boot the menu first, run scene second.
             EditorBuildSettingsScene[] buildScenes = EditorBuildSettings.scenes;
             ok &= Check(buildScenes.Length == 2, $"Build settings list 2 scenes (found {buildScenes.Length})");
@@ -488,6 +491,41 @@ namespace SurveHive.BuildTools
                     $"{label} SettingsPanelUI.{field} wired");
             }
 
+            // PLAN 3C: the five feedback-layer toggle rows.
+            string[] toggleNames =
+            {
+                "EnemyHpBarsToggle", "DamageNumbersToggle", "ScreenShakeToggle",
+                "HitStopToggle", "StatusTintsToggle",
+            };
+            for (int i = 0; i < toggleNames.Length; i++)
+            {
+                Transform row = holder.transform.Find(toggleNames[i]);
+                ok &= Check(row != null, $"{label} settings panel has {toggleNames[i]}");
+                if (row == null)
+                {
+                    continue;
+                }
+
+                var toggleUi = row.GetComponent<UI.FeedbackToggleUI>();
+                ok &= Check(toggleUi != null, $"{label} {toggleNames[i]} has FeedbackToggleUI");
+                ok &= Check(row.GetComponent<UI.UIClickSfx>() != null,
+                    $"{label} {toggleNames[i]} has UIClickSfx");
+                if (toggleUi == null)
+                {
+                    continue;
+                }
+
+                var toggleSo = new SerializedObject(toggleUi);
+                ok &= Check(toggleSo.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                    $"{label} {toggleNames[i]}._store wired to the persistent store");
+                ok &= Check(toggleSo.FindProperty("_kind").intValue == i,
+                    $"{label} {toggleNames[i]}._kind is {i}");
+                ok &= Check(toggleSo.FindProperty("_button").objectReferenceValue != null,
+                    $"{label} {toggleNames[i]}._button wired");
+                ok &= Check(toggleSo.FindProperty("_label").objectReferenceValue != null,
+                    $"{label} {toggleNames[i]}._label wired");
+            }
+
             return ok;
         }
 
@@ -531,6 +569,47 @@ namespace SurveHive.BuildTools
             return ok;
         }
 
+        // The shared mouse-following tooltip: its own overlay canvas, sorted
+        // above everything, no GraphicRaycaster (must never block the pointer),
+        // panel hidden at rest, TooltipUI fully wired.
+        private static bool ValidateTooltipCanvas(string sceneLabel)
+        {
+            bool ok = true;
+
+            GameObject canvasGo = GameObject.Find("TooltipCanvas");
+            ok &= Check(canvasGo != null, $"{sceneLabel} has TooltipCanvas");
+            if (canvasGo == null)
+            {
+                return false;
+            }
+
+            var canvas = canvasGo.GetComponent<Canvas>();
+            // Must outsort TMP_Dropdown's spawned list/blocker (hardcoded 30000),
+            // or tooltips render behind an open dropdown.
+            ok &= Check(canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay
+                    && canvas.sortingOrder > 30000,
+                $"{sceneLabel} TooltipCanvas outsorts dropdown lists (>30000)");
+            ok &= Check(canvasGo.GetComponent<UnityEngine.UI.GraphicRaycaster>() == null,
+                $"{sceneLabel} TooltipCanvas has no GraphicRaycaster");
+
+            var tooltip = canvasGo.GetComponent<UI.TooltipUI>();
+            ok &= Check(tooltip != null, $"{sceneLabel} TooltipCanvas has TooltipUI");
+            if (tooltip != null)
+            {
+                var so = new SerializedObject(tooltip);
+                ok &= Check(so.FindProperty("_canvasRect").objectReferenceValue != null,
+                    $"{sceneLabel} TooltipUI._canvasRect wired");
+                var panel = so.FindProperty("_panel").objectReferenceValue as RectTransform;
+                ok &= Check(panel != null, $"{sceneLabel} TooltipUI._panel wired");
+                ok &= Check(so.FindProperty("_text").objectReferenceValue != null,
+                    $"{sceneLabel} TooltipUI._text wired");
+                ok &= Check(panel != null && !panel.gameObject.activeSelf,
+                    $"{sceneLabel} tooltip panel hidden at rest");
+            }
+
+            return ok;
+        }
+
         private static bool ValidateMainMenuScene()
         {
             bool ok = true;
@@ -543,6 +622,9 @@ namespace SurveHive.BuildTools
 
             // 3B-2: menu canvases scale from the same landscape PC reference.
             ok &= Check(AllScalersLandscape(), "MainMenu scale-with-screen canvases use a landscape reference");
+
+            // Shared hover tooltip (difficulty unlock tasks live here now).
+            ok &= ValidateTooltipCanvas("MainMenu");
 
             var controllerGo = GameObject.Find("MainMenuController");
             var controller = controllerGo != null ? controllerGo.GetComponent<MainMenuController>() : null;
@@ -614,13 +696,12 @@ namespace SurveHive.BuildTools
                             ok &= Check(
                                 selectSo.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
                                 "DifficultySelectUI._store wired to the persistent store");
-                            // Unlock gating UI: tooltip + per-row hover relay.
-                            ok &= Check(selectSo.FindProperty("_tooltipPanel").objectReferenceValue != null,
-                                "DifficultySelectUI._tooltipPanel wired");
-                            ok &= Check(selectSo.FindProperty("_tooltipText").objectReferenceValue != null,
-                                "DifficultySelectUI._tooltipText wired");
-                            GameObject tooltip = FindChildIncludingInactive(worldPanel.transform, "DifficultyTooltip");
-                            ok &= Check(tooltip != null && !tooltip.activeSelf, "DifficultyTooltip present, hidden at rest");
+                            // Unlock gating UI: the shared tooltip carries the
+                            // task list now — only the per-row hover relay is
+                            // difficulty-specific. The old pinned panel must
+                            // stay gone (it sat off-screen after the PC widen).
+                            GameObject legacyTooltip = FindChildIncludingInactive(worldPanel.transform, "DifficultyTooltip");
+                            ok &= Check(legacyTooltip == null, "legacy DifficultyTooltip panel removed");
                             Transform templateItem = dropdownGo.transform.Find("Template/Viewport/Content/Item");
                             ok &= Check(templateItem != null && templateItem.GetComponent<DifficultyItemHover>() != null,
                                 "dropdown item template has DifficultyItemHover");

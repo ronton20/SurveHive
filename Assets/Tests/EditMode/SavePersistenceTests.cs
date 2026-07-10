@@ -43,6 +43,11 @@ namespace SurveHive.Tests
             data.settings.sfxVolume = 0.75f;
             data.settings.vibration = false;
             data.settings.qualityLevel = 2;
+            data.settings.showEnemyHealthBars = false;
+            data.settings.showDamageNumbers = false;
+            data.settings.screenShake = false;
+            data.settings.hitStop = false;
+            data.settings.statusTints = false;
             data.bestRun.bestTimeSeconds = 600;
             data.bestRun.bestKills = 999;
             data.bestRun.bestLevel = 21;
@@ -60,6 +65,11 @@ namespace SurveHive.Tests
             Assert.AreEqual(0.75f, loaded.settings.sfxVolume);
             Assert.IsFalse(loaded.settings.vibration);
             Assert.AreEqual(2, loaded.settings.qualityLevel);
+            Assert.IsFalse(loaded.settings.showEnemyHealthBars);
+            Assert.IsFalse(loaded.settings.showDamageNumbers);
+            Assert.IsFalse(loaded.settings.screenShake);
+            Assert.IsFalse(loaded.settings.hitStop);
+            Assert.IsFalse(loaded.settings.statusTints);
             Assert.AreEqual(600, loaded.bestRun.bestTimeSeconds);
             Assert.AreEqual(999, loaded.bestRun.bestKills);
             Assert.AreEqual(21, loaded.bestRun.bestLevel);
@@ -103,6 +113,26 @@ namespace SurveHive.Tests
 
             Assert.IsNotNull(loaded);
             Assert.AreEqual(0, loaded.bankedCurrency);
+        }
+
+        [Test]
+        public void FromJson_PreV4Save_DefaultsFeedbackTogglesOn()
+        {
+            // A v3 save knows nothing of the feedback toggles — the field
+            // initializers must land every layer on.
+            SaveData loaded = SaveDataSerializer.FromJson(
+                "{\"version\":3,\"settings\":{\"musicVolume\":0.5,\"sfxVolume\":0.5,\"vibration\":false,\"qualityLevel\":1}}");
+
+            Assert.IsNotNull(loaded);
+            Assert.AreEqual(SaveData.CurrentVersion, loaded.version);
+            Assert.IsTrue(loaded.settings.showEnemyHealthBars);
+            Assert.IsTrue(loaded.settings.showDamageNumbers);
+            Assert.IsTrue(loaded.settings.screenShake);
+            Assert.IsTrue(loaded.settings.hitStop);
+            Assert.IsTrue(loaded.settings.statusTints);
+            // ...while the fields the old save did carry are kept.
+            Assert.IsFalse(loaded.settings.vibration);
+            Assert.AreEqual(1, loaded.settings.qualityLevel);
         }
 
         [Test]

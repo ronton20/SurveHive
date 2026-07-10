@@ -223,7 +223,7 @@ The #25 wishlist pass. **Do 3A first** — the localization seam only gets more 
 - **Done when:** grep for user-facing literals in `UI/` comes back clean and the game reads
   identically from the table.
 
-### 3B — Complete UI overhaul — TODO #25 ◐
+### 3B — Complete UI overhaul — TODO #25 ✅
 Fit to PC, enlarge text, smoother animations, click sounds, health bars — the playtest polish
 list. Sliced into ship-and-verify units; do them in any order.
 
@@ -330,7 +330,41 @@ order chosen 2026-07-09: **layout/text → click sounds → motion → health ba
 - **Done when (3B overall):** a full run (menu → run → level-ups → pause → death/victory → shop)
   looks deliberate at 1080p, every click makes a sound, and text is comfortably readable.
 
-### 3C — Enhanced options — TODO #36 ☐
+### 3C — Enhanced options — TODO #36 ✅
+- **Shipped 2026-07-10:** five feedback-layer toggles — **enemy HP bars, damage numbers, screen
+  shake, hit-stop, status colors** — in both settings panels (MainMenu + pause), persisted in the
+  save (v4; field initializers migrate old saves to all-on) and applied **live** through the new
+  static `Core/FeedbackSettings` (pushed by the persistent store on load + every settings save, so
+  hot paths gate on plain bools). Gates sit at each system's single entry point:
+  `DamagePopupSpawner.Spawn`, `CameraShaker.Shake`, `HitStop.Request`,
+  `StatusEffectReceiver.RefreshTint` (parks on the base tint, repaints on re-enable), and
+  `EnemyHealthBarUI` (disables the bar's Canvas; re-checks on `FeedbackSettings.Changed`, so a
+  mid-run re-enable reaches pooled bars instantly). UI is a reusable `UI/FeedbackToggleUI` row
+  ("NAME: ON/OFF" button, localized keys) built by the additive idempotent
+  `EnhancedOptionsBuilder`, which also relays both settings panels into two columns (audio/general
+  left, feedback right; the portrait-era pause panel widened to 1500×900). Validator asserts all
+  ten rows wired; EditMode covers the save round-trip, the v3→v4 migration, and the
+  `FeedbackSettings` apply/Changed semantics.
+- **Playtest follow-up (2026-07-10):** settings-screen cleanup — every control shrunk (500-wide
+  buttons/sliders, 28–30pt labels, shorter slider handles so a mid-track handle no longer crowds
+  the MUSIC/SFX captions), both columns start below the panel title (the first toggle had clipped
+  "SETTINGS"), and every menu **BACK button moved to its panel's top-left corner** (world select,
+  shop, menu settings, pause settings — the old bottom-center spot sat flush with the panel edge).
+  All re-asserted idempotently by the same `EnhancedOptionsBuilder`; verified by drive captures of
+  all four panels.
+- **Playtest follow-up 2 (2026-07-10): shared tooltip system.** The locked-difficulty tooltip was a
+  panel pinned "just right of" the world-select panel — off-screen once the panel was widened to
+  1720. Replaced with the game-wide `UI/TooltipUI`: one per scene on a dedicated top-sorted overlay
+  canvas (no GraphicRaycaster, never blocks the pointer), shows on hover, sizes itself to its text,
+  **follows the mouse** (pure `TooltipLayout.Clamp` keeps it on screen — EditMode-tested), hidden on
+  hover-out/row teardown. The difficulty unlock tasks route through it; a generic `TooltipTrigger`
+  (Inspector text or `SetText` at bind time) is ready for status/set-effect info later. Also fixed
+  the row hover relay, dead since 1B: `TMP_Dropdown` instantiates row clones at the scene root
+  before parenting them, so `DifficultyItemHover`'s Awake-cached parent lookup was always null —
+  now lazy at event time, with hides going straight to `TooltipUI.Hide()`. Built by the
+  additive `TooltipBuilder` (also deletes the legacy pinned panel); `DifficultyBuilder` no longer
+  authors one; validator asserts the tooltip canvas in both scenes and that the legacy panel stays
+  gone.
 - Settings toggles for feedback layers: **enemy HP bars**, **damage numbers**, screen shake,
   hit-stop, and (once 2A lands) status tints. Each toggle gates the corresponding system at
   its spawn/update entry point, persisted in `SaveData` alongside existing settings.

@@ -88,62 +88,120 @@ namespace SurveHive.BuildTools
                     AdvanceStage();
                     break;
 
-                // 3B-2 layout/text fit capture: populate the HUD (equip the
-                // actives, drop a cluster of weak workers so the auto-attack
-                // racks up kills and damage numbers fly) then read every UI
-                // surface at the new landscape canvas scale.
+                // 3C enhanced-options capture: the settings panels now carry
+                // the five feedback-layer toggles. Open the pause settings,
+                // flip layers off through the real buttons, show the run
+                // without them, re-enable live through the store, and finish
+                // on the MainMenu settings panel. Captures get a stage of
+                // their own — CaptureScreenshot writes at end of frame, so an
+                // action in the same stage would leak into the shot.
                 case 1 when elapsed > 1.0:
-                    EquipAllActiveSkills(3);
-                    AdvanceStage();
-                    break;
-
-                // Pause + owned power-ups build view FIRST — before any kills
-                // grant EXP, so no level-up offer is up to block the pause.
-                case 2 when elapsed > 0.4:
                     OpenPauseMenu();
+                    OpenPauseSettings();
                     AdvanceStage();
                     break;
 
-                case 3 when elapsed > 0.6:
-                    Capture("layout2_pause_owned.png");
+                // Two-column pause settings, everything ON.
+                case 2 when elapsed > 0.8:
+                    Capture("options1_pause_settings.png");
+                    AdvanceStage();
+                    break;
+
+                case 3 when elapsed > 0.4:
+                    ClickFeedbackToggle("EnemyHpBarsToggle");
+                    ClickFeedbackToggle("DamageNumbersToggle");
+                    ClickFeedbackToggle("ScreenShakeToggle");
+                    AdvanceStage();
+                    break;
+
+                // Same panel with three rows reading ": OFF".
+                case 4 when elapsed > 0.6:
+                    Capture("options2_toggles_off.png");
+                    AdvanceStage();
+                    break;
+
+                // Auto-attack only (no skill equip) and a wide worker ring so
+                // plenty are still alive for the re-enable shot; the level-up
+                // offer is disabled so it can't freeze over the HUD captures.
+                case 5 when elapsed > 0.3:
                     ClosePauseMenu();
+                    DisableLevelUpOffer();
+                    SpawnEnemyCluster("Assets/Data/Enemies/WorkerBee.asset", 20, 7f);
                     AdvanceStage();
                     break;
 
-                // Now drop a worker cluster and let combat populate the HUD.
-                case 4 when elapsed > 0.3:
-                    SpawnEnemyCluster("Assets/Data/Enemies/WorkerBee.asset", 20, 5f);
+                // Combat with enemy bars + damage numbers gone.
+                case 6 when elapsed > 3.0:
+                    Capture("options3_hud_layers_off.png");
                     AdvanceStage();
                     break;
 
-                case 5 when elapsed > 4.0:
-                    Capture("layout1_hud.png");
-                    ForceLevelUp();
-                    AdvanceStage();
-                    break;
-
-                case 6 when elapsed > 0.8:
-                    Capture("layout3_levelup_cards.png");
-                    ClickFirstLevelUpChoice();
-                    AdvanceStage();
-                    break;
-
-                // Death overrides the queued level-up pause (verified: results
-                // draw over the faded offer panel).
                 case 7 when elapsed > 0.3:
-                    KillPlayer();
+                    ReenableFeedbackToggles();
                     AdvanceStage();
                     break;
 
-                // Death results screen composition.
-                case 8 when elapsed > 1.2:
-                    Capture("layout4_results.png");
+                // The same fight after the live re-enable: bars + numbers back
+                // on the already-pooled enemies, no respawn needed.
+                case 8 when elapsed > 1.5:
+                    Capture("options4_hud_layers_back.png");
                     AdvanceStage();
                     break;
 
-                case 9 when elapsed > 1.5:
+                case 9 when elapsed > 0.5:
+                    UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+                    AdvanceStage();
+                    break;
+
+                case 10 when elapsed > 1.5:
+                    ShowMenuSettings();
+                    AdvanceStage();
+                    break;
+
+                case 11 when elapsed > 0.8:
+                    Capture("options5_menu_settings.png");
+                    AdvanceStage();
+                    break;
+
+                // The other menus with a (now top-left) BACK button.
+                case 12 when elapsed > 0.4:
+                    ShowWorldSelect();
+                    AdvanceStage();
+                    break;
+
+                case 13 when elapsed > 0.6:
+                    Capture("options6_world_select.png");
+                    AdvanceStage();
+                    break;
+
+                case 14 when elapsed > 0.3:
+                    HoverLockedDifficulty();
+                    AdvanceStage();
+                    break;
+
+                // The unlock-task tooltip on the shared mouse-following
+                // TooltipUI — sized to its text and clamped on screen.
+                case 15 when elapsed > 0.6:
+                    Capture("options8_difficulty_tooltip.png");
+                    AdvanceStage();
+                    break;
+
+                // Switching panels tears the dropdown rows down — their
+                // OnDisable must hide the tooltip (no explicit Hide here), so
+                // a lingering tooltip would show up in the shop capture.
+                case 16 when elapsed > 0.3:
+                    BankHoneyAndOpenShop(0);
+                    AdvanceStage();
+                    break;
+
+                case 17 when elapsed > 0.6:
+                    Capture("options7_shop.png");
+                    AdvanceStage();
+                    break;
+
+                case 18 when elapsed > 1.5:
                     SessionState.SetBool(ActiveFlag, false);
-                    Debug.Log("VerifyDriver: layout capture complete, exiting.");
+                    Debug.Log("VerifyDriver: options capture complete, exiting.");
                     EditorApplication.Exit(0);
                     break;
             }
@@ -340,6 +398,103 @@ namespace SurveHive.BuildTools
             if (pause != null)
             {
                 pause.Close();
+            }
+        }
+
+        // A capture run doesn't want the level-up freeze over its HUD shots —
+        // kills still bank EXP, the offer just never opens.
+        private static void DisableLevelUpOffer()
+        {
+            var offer = Object.FindAnyObjectByType<UI.LevelUpUIController>(FindObjectsInactive.Include);
+            if (offer != null)
+            {
+                offer.gameObject.SetActive(false);
+                Debug.Log("VerifyDriver: level-up offer disabled for capture.");
+            }
+        }
+
+        // Clicks a 3C feedback toggle through its real Button (panels may be
+        // inactive mid-transition, so search includes inactive objects).
+        private static void ClickFeedbackToggle(string buttonName)
+        {
+            UI.FeedbackToggleUI[] toggles = Object.FindObjectsByType<UI.FeedbackToggleUI>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (UI.FeedbackToggleUI toggle in toggles)
+            {
+                if (toggle.gameObject.name == buttonName)
+                {
+                    toggle.GetComponent<UnityEngine.UI.Button>().onClick.Invoke();
+                    Debug.Log($"VerifyDriver: clicked {buttonName}.");
+                    return;
+                }
+            }
+
+            Debug.LogError($"VerifyDriver: toggle '{buttonName}' not found.");
+        }
+
+        // Re-enables every feedback layer through the store — the same push
+        // path the UI uses, proving the live mid-run re-enable.
+        private static void ReenableFeedbackToggles()
+        {
+            var store = AssetDatabase.LoadAssetAtPath<PersistentMetaProgressionStoreSO>(
+                "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
+            if (store == null)
+            {
+                Debug.LogError("VerifyDriver: persistent store not found.");
+                return;
+            }
+
+            Persistence.SettingsData settings = store.Settings;
+            settings.showEnemyHealthBars = true;
+            settings.showDamageNumbers = true;
+            settings.screenShake = true;
+            store.SaveSettings();
+            Debug.Log("VerifyDriver: feedback layers re-enabled via the store.");
+        }
+
+        // Opens the dropdown list (spawning the real row clones) and sends a
+        // genuine pointer-enter to the first locked row — the exact event path
+        // a hovering mouse takes, including DifficultyItemHover's lazy parent
+        // lookup on the root-instantiated clone.
+        private static void HoverLockedDifficulty()
+        {
+            TMPro.TMP_Dropdown dropdown = FindDifficultyDropdown();
+            if (dropdown == null)
+            {
+                return;
+            }
+
+            dropdown.Show();
+
+            string lockedSuffix = Core.Loc.Get(Core.LocKeys.DifficultyLockedSuffix);
+            UI.DifficultyItemHover[] rows = Object.FindObjectsByType<UI.DifficultyItemHover>(
+                FindObjectsSortMode.None);
+            foreach (UI.DifficultyItemHover row in rows)
+            {
+                var label = row.GetComponentInChildren<TMPro.TMP_Text>(true);
+                if (label == null || !label.text.EndsWith(lockedSuffix))
+                {
+                    continue;
+                }
+
+                var pointer = new UnityEngine.EventSystems.PointerEventData(
+                    UnityEngine.EventSystems.EventSystem.current);
+                UnityEngine.EventSystems.ExecuteEvents.Execute(
+                    row.gameObject, pointer, UnityEngine.EventSystems.ExecuteEvents.pointerEnterHandler);
+                Debug.Log($"VerifyDriver: pointer-enter sent to row '{label.text}'.");
+                return;
+            }
+
+            Debug.LogWarning("VerifyDriver: no locked difficulty row found in the open list.");
+        }
+
+        private static void ShowMenuSettings()
+        {
+            UI.MainMenuController controller = FindMenuController();
+            if (controller != null)
+            {
+                controller.ShowSettings();
+                Debug.Log("VerifyDriver: menu settings opened.");
             }
         }
 

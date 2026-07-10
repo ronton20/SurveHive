@@ -30,8 +30,10 @@ namespace SurveHive.Core
 
         public void Request(float duration)
         {
-            // A real pause or the boss-death slow-mo owns the time scale.
-            if (GamePause.IsPaused || BossDeathSequence.IsPlaying || duration <= 0f)
+            // A real pause or the boss-death slow-mo owns the time scale; the
+            // player can also switch hit-stop off entirely (PLAN 3C).
+            if (GamePause.IsPaused || BossDeathSequence.IsPlaying || duration <= 0f
+                || !FeedbackSettings.HitStop)
             {
                 return;
             }

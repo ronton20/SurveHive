@@ -1,3 +1,4 @@
+using SurveHive.Core;
 using SurveHive.Health;
 using SurveHive.Progression;
 using SurveHive.View;
@@ -124,6 +125,21 @@ namespace SurveHive.Combat.Status
         {
             if (_renderer == null)
             {
+                return;
+            }
+
+            // PLAN 3C: status tints are a player-toggleable feedback layer.
+            // While off, park on the base tint (key 0 = "no active effects")
+            // so re-enabling mid-effect repaints on the next frame.
+            if (!FeedbackSettings.StatusTints)
+            {
+                if (_lastTintKey != 0)
+                {
+                    _lastTintKey = 0;
+                    WriteTint(_baseTint);
+                    PushFlashColor(Color.white);
+                }
+
                 return;
             }
 

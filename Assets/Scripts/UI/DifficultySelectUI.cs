@@ -12,9 +12,9 @@ namespace SurveHive.UI
     /// difficulty tier table, restores the last-saved selection, and pushes
     /// changes into <see cref="RunSession.SelectedDifficulty"/> + the save.
     /// Locked tiers (unmet <see cref="DifficultyUnlocks"/> gates) show a
-    /// LOCKED suffix, refuse selection, and surface their unlock tasks in a
-    /// tooltip — hovered via <see cref="DifficultyItemHover"/> on the dropdown
-    /// rows, or shown sticky when a locked row is clicked. Lives on the
+    /// LOCKED suffix, refuse selection, and surface their unlock tasks in the
+    /// shared mouse-following <see cref="TooltipUI"/> — hovered via
+    /// <see cref="DifficultyItemHover"/> on the dropdown rows. Lives on the
     /// world-select panel, so Awake runs on first open — before any run starts.
     /// </summary>
     public sealed class DifficultySelectUI : MonoBehaviour
@@ -22,8 +22,6 @@ namespace SurveHive.UI
         [SerializeField] private TMP_Dropdown _dropdown;
         [SerializeField] private DifficultySO _difficulty;
         [SerializeField] private PersistentMetaProgressionStoreSO _store;
-        [SerializeField] private GameObject _tooltipPanel;
-        [SerializeField] private TMP_Text _tooltipText;
 
         private bool[] _unlocked;
         private int _currentIndex;
@@ -71,8 +69,9 @@ namespace SurveHive.UI
 
         private void HandleValueChanged(int index)
         {
-            // Picking a locked tier bounces back to the previous selection and
-            // pins its unlock tasks up so the rejection reads as "not yet".
+            // Picking a locked tier bounces back to the previous selection —
+            // the hover tooltip (already up over the locked row) reads as the
+            // "not yet" explanation.
             if (index >= 0 && index < _unlocked.Length && !_unlocked[index])
             {
                 _dropdown.SetValueWithoutNotify(_currentIndex);
@@ -116,10 +115,7 @@ namespace SurveHive.UI
 
         public void HideUnlockTooltip()
         {
-            if (_tooltipPanel != null)
-            {
-                _tooltipPanel.SetActive(false);
-            }
+            TooltipUI.Hide();
         }
 
         // Task list for a locked tier: met requirements get a green check and
@@ -127,11 +123,6 @@ namespace SurveHive.UI
         // build cost is fine.
         private void ShowUnlockTooltip(int index)
         {
-            if (_tooltipPanel == null || _tooltipText == null)
-            {
-                return;
-            }
-
             DifficultySO.TierSettings tier = _difficulty.GetTierAt(index);
             _tooltipBuilder.Clear();
             _tooltipBuilder.Append(Loc.Get(LocKeys.DifficultyUnlockPrefix));
@@ -157,8 +148,7 @@ namespace SurveHive.UI
                 }
             }
 
-            _tooltipText.text = _tooltipBuilder.ToString();
-            _tooltipPanel.SetActive(true);
+            TooltipUI.Show(_tooltipBuilder.ToString());
         }
 
         private string GetTierName(DifficultyTier tier)
