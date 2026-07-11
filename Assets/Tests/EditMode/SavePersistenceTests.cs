@@ -40,6 +40,8 @@ namespace SurveHive.Tests
                 upgradeIds = new[] { "meta_max_health", "meta_damage" },
                 upgradeRanks = new[] { 3, 7 },
                 codexIds = new[] { "skill:swift_wings", "enemy:WorkerBee", "item:HoneyJar" },
+                ownedCosmeticIds = new[] { "color_ruby", "hat_crown" },
+                equippedCosmeticIds = new[] { "color_ruby", "hat_crown", "" },
             };
             data.settings.musicVolume = 0.25f;
             data.settings.sfxVolume = 0.75f;
@@ -79,6 +81,8 @@ namespace SurveHive.Tests
             Assert.AreEqual(14, loaded.bestRun.runsPlayed);
             Assert.AreEqual(2, loaded.bestRun.victories);
             CollectionAssert.AreEqual(data.codexIds, loaded.codexIds);
+            CollectionAssert.AreEqual(data.ownedCosmeticIds, loaded.ownedCosmeticIds);
+            CollectionAssert.AreEqual(data.equippedCosmeticIds, loaded.equippedCosmeticIds);
         }
 
         [Test]

@@ -99,5 +99,25 @@ namespace SurveHive.Data
                 _ranks.UnlockCodexEntry(entryIds[i]);
             }
         }
+
+        public override bool IsCosmeticOwned(string cosmeticId)
+        {
+            return _ranks.IsCosmeticOwned(cosmeticId);
+        }
+
+        public override void UnlockCosmetic(string cosmeticId)
+        {
+            _ranks.UnlockCosmetic(cosmeticId);
+        }
+
+        public override string GetEquippedCosmetic(int slot)
+        {
+            return _ranks.GetEquippedCosmetic(slot);
+        }
+
+        public override void SetEquippedCosmetic(int slot, string cosmeticId)
+        {
+            _ranks.SetEquippedCosmetic(slot, cosmeticId);
+        }
     }
 }

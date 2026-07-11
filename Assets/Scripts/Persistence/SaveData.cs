@@ -9,7 +9,7 @@ namespace SurveHive.Persistence
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
 
         public int version = CurrentVersion;
         public int bankedCurrency;
@@ -33,6 +33,11 @@ namespace SurveHive.Persistence
         // v6: banked premium currency, Royal Jelly (PLAN 5B). The initializer
         // doubles as the v5 migration (missing → none earned yet).
         public int bankedJelly;
+        // v7: cosmetics (PLAN 5C) — purchased ids plus the equipped id per
+        // (int)Data.CosmeticSlot ("" = default look). Initializers double as
+        // the v6 migration (missing → nothing owned, default appearance).
+        public string[] ownedCosmeticIds = new string[0];
+        public string[] equippedCosmeticIds = new string[0];
     }
 
     [Serializable]

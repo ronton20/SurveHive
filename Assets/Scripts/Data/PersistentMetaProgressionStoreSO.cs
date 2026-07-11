@@ -210,6 +210,39 @@ namespace SurveHive.Data
             }
         }
 
+        public override bool IsCosmeticOwned(string cosmeticId)
+        {
+            EnsureLoaded();
+            return _state.IsCosmeticOwned(cosmeticId);
+        }
+
+        public override void UnlockCosmetic(string cosmeticId)
+        {
+            EnsureLoaded();
+            if (_state.UnlockCosmetic(cosmeticId))
+            {
+                Persist();
+            }
+        }
+
+        public override string GetEquippedCosmetic(int slot)
+        {
+            EnsureLoaded();
+            return _state.GetEquippedCosmetic(slot);
+        }
+
+        public override void SetEquippedCosmetic(int slot, string cosmeticId)
+        {
+            EnsureLoaded();
+            if (_state.GetEquippedCosmetic(slot) == (cosmeticId ?? string.Empty))
+            {
+                return;
+            }
+
+            _state.SetEquippedCosmetic(slot, cosmeticId);
+            Persist();
+        }
+
         /// <summary>Persists settings edits made through <see cref="Settings"/>.</summary>
         public void SaveSettings()
         {

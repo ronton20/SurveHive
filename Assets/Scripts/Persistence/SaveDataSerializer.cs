@@ -117,6 +117,16 @@ namespace SurveHive.Persistence
             {
                 data.bankedJelly = 0;
             }
+
+            if (data.ownedCosmeticIds == null)
+            {
+                data.ownedCosmeticIds = new string[0];
+            }
+
+            if (data.equippedCosmeticIds == null)
+            {
+                data.equippedCosmeticIds = new string[0];
+            }
         }
 
         private static void Migrate(SaveData data)

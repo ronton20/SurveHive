@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2929330162303887217}
   - component: {fileID: 9131114328193639970}
   - component: {fileID: 6904880818609171041}
+  - component: {fileID: 1467770370211233538}
   m_Layer: 0
   m_Name: Stinger
   m_TagString: Untagged
@@ -145,3 +146,16 @@ MonoBehaviour:
   _poolId: 4
   _targetTag: Enemy
   _knockbackImpulse: 2.5
+--- !u!114 &1467770370211233538
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3411792062235515669}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 524bde3ebc2064553943228e4cc9b1fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.View.ProjectileSkin
+  _renderer: {fileID: 2929330162303887217}

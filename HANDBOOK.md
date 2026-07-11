@@ -129,6 +129,8 @@ statuses (`ElementPalette`, `SkillElement`, `SetBonusSO`). `MetaShop`/`MetaUpgra
 `LevelUpUIController`, batched save flush at scene teardown) + the pure `CodexIds` id scheme.
 `RoyalJellyAwards` — the full premium-currency payout table (boss kills, per-tier first clears).
 `CodexSkillLevels` — menu-safe per-level power-up breakdown for the codex detail pane.
+`CosmeticShop` — pure cosmetic transactions (5C): jelly spend + unlock in one op, equip requires
+ownership, `""` = default look.
 
 ### Pickups & currency — `Assets/Scripts/Pickups/`, `Assets/Scripts/Currency/`
 `PickupItem`/`PickupMotion` (one shared magnet system) · `ItemDrop` (Honey Jar / Magnet / Wax
@@ -146,6 +148,8 @@ HUD: `HealthBarUI`, `ExpBarUI`, `CurrencyCounterUI`, `KillCounterUI`, `RunTimerU
 `StageProgressBarUI`, `SetTierHUD`, enemy/boss bars, `WaveWarningBanner`, `BossBannerUI`.
 Screens/flow: `MainMenuController`, `DifficultySelectUI`, `MetaShopUI`+`MetaShopCardUI`,
 `CodexUI`+`CodexEntryUI` (tabbed encyclopedia, silhouettes until discovered),
+`CosmeticsUI`+`CosmeticEntryUI` (Hive Style: buy/equip cosmetics for jelly, try-before-you-buy
+hero preview, stinger grid sectioned by shape),
 `LevelUpUIController`, `RunResultsUI`, `PauseMenuController`, `SettingsPanelUI`, `OwnedPowerUpsView`.
 **Almost all UI is generated directly into the scenes by the editor builders — see §6 and §7.**
 
@@ -164,7 +168,10 @@ by settings sliders. `SfxId`/`MusicId` map 1:1 to clips in `AudioLibrarySO`. SFX
 
 ### View / game-feel — `Assets/Scripts/View/`
 `HitFlash` (custom `SurveHive/SpriteFlash` URP shader via MaterialPropertyBlock), `CameraShaker`,
-`CharacterAnimator`, `DeathAnimation` (plays the rig's death frames on an inert corpse), `PooledVfx`.
+`CharacterAnimator`, `DeathAnimation` (plays the rig's death frames on an inert corpse), `PooledVfx`,
+`CosmeticApplier` (dresses the hero at spawn: equipped color via the shader's `_Tint`, hat overlay
+child renderer on the Body rig, stinger published to the static `StingerSkin` — 5C),
+`ProjectileSkin` (on the auto-attack Stinger prefab: applies `StingerSkin` per pooled spawn).
 
 ---
 
@@ -200,7 +207,9 @@ passes (`CombatOverhaulBuilder`, `EnemyVarietyBuilder`, `DifficultyBuilder`,
 `UISoundCoverageBuilder` (fills any button missing `UIClickSfx`), `HeroBee*SkinBuilder`,
 `CodexBuilder` (catalog + codex panel + run tracker), `RoyalJellyBuilder` (shop-header jelly
 balance + 5B loc keys), `CurrencyGlyphsBuilder` (currency sprite sheet → TMP default sprite
-asset, so texts inline `<sprite name="honey"/"jelly">` via `Core/CurrencyGlyphs`)).
+asset, so texts inline `<sprite name="honey"/"jelly">` via `Core/CurrencyGlyphs`),
+`CosmeticsBuilder` (5C: placeholder cosmetic sprites (only-if-missing) + `CosmeticSO` roster +
+Hive Style panel + the Player's overlay renderers/applier)).
 Validated by `BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
 
 > ⚠️ **Builder caution (from `PLAN.md` and project memory):** the scenes/data have since been

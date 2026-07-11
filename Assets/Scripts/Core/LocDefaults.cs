@@ -82,6 +82,17 @@ namespace SurveHive.Core
             new KeyValuePair<string, string>(LocKeys.CodexSectionEnhancements, "ENHANCEMENTS"),
             new KeyValuePair<string, string>(LocKeys.CodexSectionAbilities, "ABILITIES"),
 
+            new KeyValuePair<string, string>(LocKeys.CosmeticsTitle, "HIVE STYLE"),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsMenuButton, "STYLE"),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsTabColors, "COLORS"),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsTabHats, "HATS"),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsTabStingers, "STINGERS"),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsDefaultName, "DEFAULT"),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsDefaultDescription, "The hero's natural look for this slot."),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsBuyPrefix, "BUY "),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsEquip, "EQUIP"),
+            new KeyValuePair<string, string>(LocKeys.CosmeticsEquipped, "EQUIPPED"),
+
             new KeyValuePair<string, string>(LocKeys.ResultsTime, "Time  "),
             new KeyValuePair<string, string>(LocKeys.ResultsKills, "Kills  "),
             new KeyValuePair<string, string>(LocKeys.ResultsLevel, "Level  "),

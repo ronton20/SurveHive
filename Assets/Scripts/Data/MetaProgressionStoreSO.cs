@@ -55,5 +55,26 @@ namespace SurveHive.Data
         public virtual void UnlockCodexEntries(System.Collections.Generic.List<string> entryIds)
         {
         }
+
+        /// <summary>Whether a cosmetic has been purchased (PLAN 5C); false by default.</summary>
+        public virtual bool IsCosmeticOwned(string cosmeticId)
+        {
+            return false;
+        }
+
+        /// <summary>Records a cosmetic purchase/grant; no-op by default.</summary>
+        public virtual void UnlockCosmetic(string cosmeticId)
+        {
+        }
+
+        /// <summary>Equipped cosmetic id per (int)CosmeticSlot; "" = default look.</summary>
+        public virtual string GetEquippedCosmetic(int slot)
+        {
+            return string.Empty;
+        }
+
+        public virtual void SetEquippedCosmetic(int slot, string cosmeticId)
+        {
+        }
     }
 }

@@ -212,6 +212,8 @@ namespace SurveHive.BuildTools
             ok &= ValidatePhase3RunStructure(canvasGo);
             // 5A: must run while Beehive is still open (Phase4 ends on MainMenu).
             ok &= ValidateCodexTracker();
+            // 5C: ditto — the cosmetic applier lives on the Beehive Player.
+            ok &= ValidateCosmeticApplier(player);
             ok &= ValidatePhase4MetaAndMenus(player);
             ok &= ValidateEnemyVariety();
             ok &= ValidateLocalization();
@@ -235,6 +237,65 @@ namespace SurveHive.BuildTools
                 ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
                     "CodexTracker._store wired to the persistent store");
             }
+
+            return ok;
+        }
+
+        // --- Phase 5C (PLAN.md): cosmetic applier on the Beehive Player ---
+        private static bool ValidateCosmeticApplier(GameObject player)
+        {
+            bool ok = true;
+
+            var applier = player != null ? player.GetComponent<View.CosmeticApplier>() : null;
+            ok &= Check(applier != null, "Player has CosmeticApplier");
+            if (applier == null)
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(applier);
+            ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                "CosmeticApplier._store wired to the persistent store");
+            ok &= Check(so.FindProperty("_catalog").objectReferenceValue is Data.CosmeticCatalogSO,
+                "CosmeticApplier._catalog wired");
+            ok &= Check(so.FindProperty("_bodyRenderer").objectReferenceValue != null,
+                "CosmeticApplier._bodyRenderer wired");
+
+            // The hat overlay rests disabled on the Body so a default look
+            // costs nothing at spawn.
+            var overlay = so.FindProperty("_hatRenderer").objectReferenceValue as SpriteRenderer;
+            ok &= Check(overlay != null, "CosmeticApplier._hatRenderer wired");
+            if (overlay != null)
+            {
+                ok &= Check(!overlay.enabled, "CosmeticApplier._hatRenderer disabled at rest");
+                ok &= Check(overlay.transform.parent == player.transform.Find("Body"),
+                    "CosmeticApplier._hatRenderer parented under Body");
+            }
+
+            // 5C-followup: stinger cosmetics re-skin the auto-attack projectile,
+            // not the body — the legacy overlay node must be gone and the
+            // Stinger prefab must carry the pooled-safe skin hook.
+            Transform bodyTransform = player.transform.Find("Body");
+            ok &= Check(bodyTransform == null || bodyTransform.Find("Stinger") == null,
+                "legacy Body/Stinger overlay removed");
+
+            var stingerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Prefabs/Projectiles/Stinger.prefab");
+            var projectileSkin = stingerPrefab != null
+                ? stingerPrefab.GetComponent<View.ProjectileSkin>()
+                : null;
+            ok &= Check(projectileSkin != null, "Stinger prefab has ProjectileSkin");
+            if (projectileSkin != null)
+            {
+                var skinSo = new SerializedObject(projectileSkin);
+                ok &= Check(skinSo.FindProperty("_renderer").objectReferenceValue != null,
+                    "ProjectileSkin._renderer wired");
+            }
+
+            var enemyStinger = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/Prefabs/Projectiles/EnemyStinger.prefab");
+            ok &= Check(enemyStinger != null && enemyStinger.GetComponent<View.ProjectileSkin>() == null,
+                "EnemyStinger prefab has no ProjectileSkin");
 
             return ok;
         }
@@ -845,6 +906,10 @@ namespace SurveHive.BuildTools
                 // 5A codex: panel + button wired on the controller, CodexUI fully
                 // wired, catalog carrying all four categories.
                 ok &= ValidateCodexPanel(so);
+
+                // 5C cosmetics: Hive Style panel + STYLE button, CosmeticsUI
+                // fully wired, roster carrying all three slots.
+                ok &= ValidateCosmeticsPanel(so);
             }
 
             return ok;
@@ -940,6 +1005,125 @@ namespace SurveHive.BuildTools
                         && !string.IsNullOrEmpty(row.FindPropertyRelative("DisplayName").stringValue),
                         $"CodexCatalog item [{i}] has icon + name");
                 }
+            }
+
+            return ok;
+        }
+
+        // --- Phase 5C (PLAN.md): main-menu Hive Style panel ---
+        private static bool ValidateCosmeticsPanel(SerializedObject controllerSo)
+        {
+            bool ok = true;
+
+            var stylePanel = controllerSo.FindProperty("_cosmeticsPanel").objectReferenceValue as GameObject;
+            ok &= Check(stylePanel != null, "MainMenuController._cosmeticsPanel wired");
+            ok &= Check(controllerSo.FindProperty("_cosmeticsButton").objectReferenceValue != null,
+                "MainMenuController._cosmeticsButton wired");
+            ok &= Check(controllerSo.FindProperty("_cosmeticsBackButton").objectReferenceValue != null,
+                "MainMenuController._cosmeticsBackButton wired");
+            if (stylePanel == null)
+            {
+                return false;
+            }
+
+            ok &= Check(!stylePanel.activeSelf, "HiveStylePanel inactive at rest");
+
+            var cosmeticsUi = stylePanel.GetComponent<UI.CosmeticsUI>();
+            ok &= Check(cosmeticsUi != null, "HiveStylePanel has CosmeticsUI");
+            if (cosmeticsUi == null)
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(cosmeticsUi);
+            ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                "CosmeticsUI._store wired to the persistent store");
+            ok &= Check(so.FindProperty("_jellyText").objectReferenceValue != null, "CosmeticsUI._jellyText wired");
+            ok &= Check(so.FindProperty("_entryPrefab").objectReferenceValue != null, "CosmeticsUI._entryPrefab wired");
+            ok &= Check(so.FindProperty("_gridContent").objectReferenceValue != null, "CosmeticsUI._gridContent wired");
+            // Sectioned scroll area + the font its shape headers render with.
+            ok &= Check(so.FindProperty("_scrollRect").objectReferenceValue is UnityEngine.UI.ScrollRect,
+                "CosmeticsUI._scrollRect wired");
+            ok &= Check(so.FindProperty("_sectionFont").objectReferenceValue != null, "CosmeticsUI._sectionFont wired");
+            ok &= Check(so.FindProperty("_swatchSprite").objectReferenceValue != null, "CosmeticsUI._swatchSprite wired");
+            ok &= Check(so.FindProperty("_detailIcon").objectReferenceValue != null, "CosmeticsUI._detailIcon wired");
+            ok &= Check(so.FindProperty("_detailName").objectReferenceValue != null, "CosmeticsUI._detailName wired");
+            ok &= Check(so.FindProperty("_detailDescription").objectReferenceValue != null,
+                "CosmeticsUI._detailDescription wired");
+            ok &= Check(so.FindProperty("_actionButton").objectReferenceValue != null, "CosmeticsUI._actionButton wired");
+            ok &= Check(so.FindProperty("_actionLabel").objectReferenceValue != null, "CosmeticsUI._actionLabel wired");
+            ok &= Check(so.FindProperty("_previewBody").objectReferenceValue != null, "CosmeticsUI._previewBody wired");
+            ok &= Check(so.FindProperty("_previewHat").objectReferenceValue != null, "CosmeticsUI._previewHat wired");
+            ok &= Check(so.FindProperty("_previewStinger").objectReferenceValue != null,
+                "CosmeticsUI._previewStinger wired");
+
+            var tabs = so.FindProperty("_tabButtons");
+            var highlights = so.FindProperty("_tabHighlights");
+            ok &= Check(tabs.arraySize == Data.CosmeticSlots.Count,
+                $"CosmeticsUI has {Data.CosmeticSlots.Count} tabs (found {tabs.arraySize})");
+            ok &= Check(highlights.arraySize == Data.CosmeticSlots.Count,
+                $"CosmeticsUI has {Data.CosmeticSlots.Count} tab highlights (found {highlights.arraySize})");
+            for (int i = 0; i < tabs.arraySize; i++)
+            {
+                ok &= Check(tabs.GetArrayElementAtIndex(i).objectReferenceValue != null,
+                    $"CosmeticsUI tab button [{i}] wired");
+            }
+
+            // The roster: 5 colors + 3 hats + 3 stingers, every entry carrying
+            // an id + name + cost, overlays carrying a sprite.
+            var catalog = so.FindProperty("_catalog").objectReferenceValue as Data.CosmeticCatalogSO;
+            ok &= Check(catalog != null, "CosmeticsUI._catalog wired");
+            if (catalog != null)
+            {
+                int colorCount = 0;
+                int hatCount = 0;
+                int stingerCount = 0;
+                var catalogSo = new SerializedObject(catalog);
+                var list = catalogSo.FindProperty("_cosmetics");
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    var cosmetic = list.GetArrayElementAtIndex(i).objectReferenceValue as Data.CosmeticSO;
+                    ok &= Check(cosmetic != null, $"CosmeticCatalog[{i}] wired");
+                    if (cosmetic == null)
+                    {
+                        continue;
+                    }
+
+                    ok &= Check(!string.IsNullOrEmpty(cosmetic.CosmeticId)
+                        && !string.IsNullOrEmpty(cosmetic.DisplayName) && cosmetic.JellyCost > 0,
+                        $"Cosmetic '{cosmetic.name}' has id + name + cost");
+
+                    switch (cosmetic.Slot)
+                    {
+                        case Data.CosmeticSlot.Color:
+                            colorCount++;
+                            break;
+                        case Data.CosmeticSlot.Hat:
+                            hatCount++;
+                            break;
+                        case Data.CosmeticSlot.Stinger:
+                            stingerCount++;
+                            break;
+                    }
+
+                    if (cosmetic.Slot != Data.CosmeticSlot.Color)
+                    {
+                        ok &= Check(cosmetic.Sprite != null, $"Cosmetic '{cosmetic.name}' has an overlay sprite");
+                    }
+
+                    // Stinger skins are shape × color: every one must name its
+                    // shape section.
+                    if (cosmetic.Slot == Data.CosmeticSlot.Stinger)
+                    {
+                        ok &= Check(!string.IsNullOrEmpty(cosmetic.ShapeGroup),
+                            $"Stinger '{cosmetic.name}' has a shape group");
+                    }
+                }
+
+                ok &= Check(colorCount == 5, $"CosmeticCatalog has 5 colors (found {colorCount})");
+                ok &= Check(hatCount == 3, $"CosmeticCatalog has 3 hats (found {hatCount})");
+                ok &= Check(stingerCount == 9,
+                    $"CosmeticCatalog has 9 stingers (3 shapes x 3 colors; found {stingerCount})");
             }
 
             return ok;

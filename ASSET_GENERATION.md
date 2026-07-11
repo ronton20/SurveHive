@@ -289,21 +289,39 @@ accents where relevant, dark outline, flat shading, transparent background.
 - **Generation prompt:** "A starter set of ~12 achievement badge icons, circular medal shape with a honeycomb border and a plain unfilled outer ring, each with a distinct central symbol (crown for boss kills, skull for deaths, hourglass for survival time, stinger for kill counts, etc.), pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Icon tier, 32×32 each; hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background. Leave the outer ring a neutral/plain color — the gold/silver/bronze tier is applied as a runtime tint, do not bake it in."
 
 #### 2.10 Character cosmetics
-- **Status:** 🔴 not started (TODO #32) — design grounded now that the humanoid bee-person
-  male base (§1.1) is approved. Still not building the customization system itself yet
-  ("for now i dont think we need those"), just recording the confirmed slots, per the user
-  looking at the actual approved art:
+- **Status:** 🟡 placeholder — the customization **system** shipped in Phase 5C (2026-07-11):
+  a Hive Style panel selling 5 body tints (runtime shader tint — no art needed), 3 hats, and
+  3 stinger skins. The hat/stinger sprites are **code-generated pixel placeholders** in
+  `Assets/Sprites/Cosmetics/` (HatCrown / HatTopHat / HatDaisy / StingerGold / StingerCrystal /
+  StingerThorn, PPU 16, drawn by `CosmeticsBuilder` — **only when the PNG is missing**, so
+  final art can simply overwrite the files; attach offsets are hand-tunable on the
+  `Assets/Data/Cosmetics/*.asset` rosters and survive builder re-runs).
+- **Overlay sprite specs (current placeholder set, replace 1:1):** Sprite tier, tiny — hats
+  ~12×6 px sitting on the head (crown: gold with ruby/sapphire jewels; top hat: near-black
+  with amber band; daisy: white petals, amber center, leaf). Stingers (playtest follow-up
+  2026-07-11) re-skin the **auto-attack projectile**: 3 shape sprites (**Needle / Barb /
+  Blade**, ~12×5–13×7 px, pointing right, drawn **neutral near-white/gray** — the color
+  variant is a runtime tint, so one sprite covers Amber/Sapphire/Venom). Hard pixel edges,
+  transparent background, PPU 16, drawn to read at 1× zoom on the 32 px hero.
+- **Future — "transformable" color sprites (TODO #37):** the 5C color slot is a whole-body
+  tint for now (user-accepted placeholder). Once the 6A hero art lands, colors should become
+  real sprite transformations — per-region recolors over the slots below — via palette
+  masks/swaps, not a flat multiply.
+- **Recolor-slot design for the final bee-person art (§1.1), recorded earlier** — when the 6A
+  humanoid rig lands, the color slot should evolve from a whole-body tint into per-region
+  recolors, per the user looking at the approved art ("for now i dont think we need those"
+  — said of building these as generated assets; the confirmed future slots are):
   - **Base color** — the yellow body/skin
   - **Stripes color** — the black stinger/body stripes
   - **Antlers color** — the yellow dots at the antler tips
   - **Wings color**
   (Supersedes an earlier speculative list — shirt/pants/hair/shoes color, hair style — drafted
   before there was an approved design to check it against; drop that list, this is current.)
-- **Spec:** all four are almost certainly pure recolors → one neutral base + runtime tint per
-  §0.4, not regenerated variants. Not yet built — still a placeholder for a design decision,
-  not a ready-to-generate asset list. Female variant (also §1.1) needs designing before this
-  can extend to both.
-- **Usage:** future character customization screen (male + female, once both exist)
+- **Spec (recolor slots):** all four are almost certainly pure recolors → one neutral base +
+  runtime tint per §0.4, not regenerated variants. The `_Tint` channel the 5C color slot uses
+  is the natural home; per-region tinting needs shader/palette work sized with the final art.
+  Female variant (also §1.1) needs designing before this can extend to both.
+- **Usage:** the Hive Style panel (live since 5C) + the in-run hero overlays
 
 #### 2.11 Meta-shop upgrade icons (13 exist)
 - **Status:** 🟡 placeholder (`_icon` slot exists on `MetaUpgradeSO`; each of the 13 upgrades

@@ -87,6 +87,18 @@ namespace SurveHive.Core
         public const string CodexSectionEnhancements = "codex.section_enhancements";
         public const string CodexSectionAbilities = "codex.section_abilities";
 
+        // Cosmetics / Hive Style (PLAN 5C)
+        public const string CosmeticsTitle = "cosmetics.title";
+        public const string CosmeticsMenuButton = "cosmetics.menu_button";
+        public const string CosmeticsTabColors = "cosmetics.tab_colors";
+        public const string CosmeticsTabHats = "cosmetics.tab_hats";
+        public const string CosmeticsTabStingers = "cosmetics.tab_stingers";
+        public const string CosmeticsDefaultName = "cosmetics.default_name";
+        public const string CosmeticsDefaultDescription = "cosmetics.default_desc";
+        public const string CosmeticsBuyPrefix = "cosmetics.buy_prefix";
+        public const string CosmeticsEquip = "cosmetics.equip";
+        public const string CosmeticsEquipped = "cosmetics.equipped";
+
         // Run results
         public const string ResultsTime = "results.time";
         public const string ResultsKills = "results.kills";

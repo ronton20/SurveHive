@@ -7,6 +7,62 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Playtest polish — Hive Style preview + stinger skins that matter (2026-07-11)
+
+Same-day feedback on 5C: the preview only showed owned gear, the colors are (accepted)
+placeholder tints, and the stinger slot pasted a floating triangle behind the hero instead of
+changing anything real.
+
+- **Try-before-you-buy preview.** Clicking any entry now dresses the hero preview in it
+  immediately — before buying or equipping — while the other slots keep showing the equipped
+  set. Selecting DEFAULT previews the natural look the same way.
+- **Stinger skins re-skin the auto-attack.** The body-overlay stinger is gone (node removed
+  from the Player rig). Equipping a stinger now swaps the **auto-attack projectile's** look:
+  a static `View/StingerSkin` (set once per run by `CosmeticApplier`) is applied by a new
+  pooled-safe `View/ProjectileSkin` on the Stinger prefab every spawn — zero-GC, restores the
+  prefab default when nothing's equipped, and enemy/skill projectiles are untouched.
+- **Shape × color roster.** The 3 old stinger items were replaced by **9 skins**: 3 shapes
+  (**Needle / Barb / Blade** — one neutral near-white sprite each) × 3 colors (**Amber /
+  Sapphire / Venom** — runtime tints). Cost scales on both axes: shape base 6/10/14 + color
+  premium 0/+2/+4. The stinger tab sections its grid under one header per shape (the grid
+  became a scrollable section stack in the codex mold); cells and the detail icon render the
+  tinted shape exactly as it fires in-run. Legacy `stinger_gold/crystal/thorn` assets are
+  deleted by the builder; saves that owned them just fall back to the default look.
+- **Recorded for later:** body colors stay whole-model tints for now (user-accepted
+  placeholder) — the plan is real **"transformable" sprite variants** (per-region recolors /
+  swapped art) once the final hero art lands (`ASSET_GENERATION.md` §2.10, TODO #37).
+
+### Phase 5C — Hive Style: character customization (2026-07-11)
+
+Royal Jelly's first sink (TODO #32): purely-visual hero cosmetics, bought and equipped in a
+new main-menu panel and worn in-run.
+
+- **Hive Style panel.** New **STYLE** home button opens a panel in the shop's tabbed mold:
+  **COLORS / HATS / STINGERS** slot tabs, an icon grid per slot (each tab leads with a free
+  **DEFAULT** cell), a detail pane whose single action button reads context — `BUY <jelly>N`
+  (greyed when unaffordable) → `EQUIP` → `EQUIPPED` — and a **live hero preview** compositing
+  the equipped tint + overlays at their exact rig offsets. Buying auto-equips; the equipped
+  entry in each tab wears a gold badge; the panel header shows the jelly balance.
+- **The roster** (`CosmeticSO` assets + `CosmeticCatalogSO`, new `Assets/Data/Cosmetics/`):
+  5 body tints (Ruby/Sapphire/Emerald/Amethyst 3, Onyx 5), 3 hats (Daisy Clip 8, Dapper Top
+  Hat 10, Honey Crown 15), 3 stinger skins (Rose Thorn 8, Crystal 10, Golden 12) — priced for
+  an economy that pays +1/miniboss, +3/Queen, 10–25 per first clear.
+- **In-run application.** `View/CosmeticApplier` on the Player dresses the hero once at Awake:
+  the color tints the body via the SpriteFlash shader's `_Tint` (animation clips keyframe
+  renderer color, so shader tint is the clip-proof channel; property blocks merge with
+  hit-flash), hats/stingers are overlay child renderers on the Body rig — they flip with
+  facing and ride whatever skin the Player wears, so the 6A hero-art swap won't break them.
+- **Transactions + persistence.** Pure `Progression/CosmeticShop` (EditMode-tested): buy =
+  jelly spend + unlock in one op, double-buy/unaffordable/equip-unowned all rejected, `""`
+  equips the default look. Save schema **v7** (`ownedCosmeticIds`, `equippedCosmeticIds` per
+  slot) — initializers double as the v6 migration, so old saves land on the default look.
+- **Tooling.** Additive idempotent `CosmeticsBuilder` (menu: *Build Cosmetics (5C)*):
+  placeholder pixel-art PNGs written **only when missing** (final art drops in per
+  `ASSET_GENERATION.md` §2.10), roster display/cost/offset fields authored **only on create**
+  (hand tuning survives re-runs), panel/home-button/controller wiring, and the Beehive Player's
+  overlay renderers + applier. `BeehiveSceneValidator` asserts the full wiring on both scenes;
+  `CosmeticsVerifyDriver` captures the panel and the dressed-up in-run hero.
+
 ### Playtest polish — shop price clarity + codex depth (2026-07-11)
 
 Two playtest asks: the shop never showed what an upgrade costs, and the codex was too thin.

@@ -15,6 +15,10 @@ namespace SurveHive.Persistence
         private readonly Dictionary<string, int> _stageClearMasks = new Dictionary<string, int>();
         // Codex unlock flags (PLAN 5A): ids formatted by Progression.CodexIds.
         private readonly HashSet<string> _codexUnlocks = new HashSet<string>();
+        // Cosmetics (PLAN 5C): purchased ids + equipped id per (int)CosmeticSlot
+        // ("" = the default look for that slot).
+        private readonly HashSet<string> _ownedCosmetics = new HashSet<string>();
+        private readonly string[] _equippedCosmetics = new string[Data.CosmeticSlots.Count];
         private int _bankedCurrency;
         // Premium currency, Royal Jelly (PLAN 5B) — separate pool from honey.
         private int _bankedJelly;
@@ -113,11 +117,41 @@ namespace SurveHive.Persistence
 
         public int CodexUnlockCount => _codexUnlocks.Count;
 
+        /// <summary>Records a cosmetic purchase; returns true when newly owned.</summary>
+        public bool UnlockCosmetic(string cosmeticId)
+        {
+            return !string.IsNullOrEmpty(cosmeticId) && _ownedCosmetics.Add(cosmeticId);
+        }
+
+        public bool IsCosmeticOwned(string cosmeticId)
+        {
+            return !string.IsNullOrEmpty(cosmeticId) && _ownedCosmetics.Contains(cosmeticId);
+        }
+
+        /// <summary>Equipped cosmetic id for a slot; "" means the default look.</summary>
+        public string GetEquippedCosmetic(int slot)
+        {
+            return slot >= 0 && slot < _equippedCosmetics.Length && _equippedCosmetics[slot] != null
+                ? _equippedCosmetics[slot]
+                : string.Empty;
+        }
+
+        public void SetEquippedCosmetic(int slot, string cosmeticId)
+        {
+            if (slot < 0 || slot >= _equippedCosmetics.Length)
+            {
+                return;
+            }
+
+            _equippedCosmetics[slot] = cosmeticId ?? string.Empty;
+        }
+
         public void LoadFrom(SaveData data)
         {
             _ranks.Clear();
             _stageClearMasks.Clear();
             _codexUnlocks.Clear();
+            _ownedCosmetics.Clear();
             _bankedCurrency = data.bankedCurrency;
             _bankedJelly = data.bankedJelly;
 
@@ -137,6 +171,18 @@ namespace SurveHive.Persistence
             for (int i = 0; i < data.codexIds.Length; i++)
             {
                 UnlockCodexEntry(data.codexIds[i]);
+            }
+
+            for (int i = 0; i < data.ownedCosmeticIds.Length; i++)
+            {
+                UnlockCosmetic(data.ownedCosmeticIds[i]);
+            }
+
+            for (int i = 0; i < _equippedCosmetics.Length; i++)
+            {
+                _equippedCosmetics[i] = i < data.equippedCosmeticIds.Length && data.equippedCosmeticIds[i] != null
+                    ? data.equippedCosmeticIds[i]
+                    : string.Empty;
             }
         }
 
@@ -172,6 +218,20 @@ namespace SurveHive.Persistence
             {
                 data.codexIds[index] = entryId;
                 index++;
+            }
+
+            data.ownedCosmeticIds = new string[_ownedCosmetics.Count];
+            index = 0;
+            foreach (string cosmeticId in _ownedCosmetics)
+            {
+                data.ownedCosmeticIds[index] = cosmeticId;
+                index++;
+            }
+
+            data.equippedCosmeticIds = new string[_equippedCosmetics.Length];
+            for (int i = 0; i < _equippedCosmetics.Length; i++)
+            {
+                data.equippedCosmeticIds[i] = _equippedCosmetics[i] ?? string.Empty;
             }
         }
     }

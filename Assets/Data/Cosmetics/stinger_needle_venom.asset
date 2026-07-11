@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d97999bd169147efa166ec3140b31ee, type: 3}
+  m_Name: stinger_needle_venom
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.CosmeticSO
+  _cosmeticId: stinger_needle_venom
+  _slot: 2
+  _displayName: Venom Needle
+  _description: Glows a mean, toxic green.
+  _jellyCost: 10
+  _tint: {r: 0.45, g: 1, b: 0.4, a: 1}
+  _sprite: {fileID: 21300000, guid: e115c9c4e5bab4d8581ef9869fed0573, type: 3}
+  _attachOffset: {x: 0.9, y: 0}
+  _sortingOffset: 0
+  _shapeGroup: NEEDLE

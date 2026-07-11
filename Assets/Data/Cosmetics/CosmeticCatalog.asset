@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01ec8ef148d7d44bb8a0f7107e4a6d55, type: 3}
+  m_Name: CosmeticCatalog
+  m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.CosmeticCatalogSO
+  _cosmetics:
+  - {fileID: 11400000, guid: 503a3ca4823444195834108d29de5d1a, type: 2}
+  - {fileID: 11400000, guid: 875ecc5ba28254523bd70f59403d5cc6, type: 2}
+  - {fileID: 11400000, guid: 18a59f1ba0aca4c3495e91eb6a1e1638, type: 2}
+  - {fileID: 11400000, guid: 88b314d3f379142eeaa3d1c5b4772462, type: 2}
+  - {fileID: 11400000, guid: 5aafce49ad67e4d6f9ed0b8057cd7f8d, type: 2}
+  - {fileID: 11400000, guid: 991279fc2a6c74271b6eb72f1bcbb78e, type: 2}
+  - {fileID: 11400000, guid: d14a08c9936b748b29f5d806378208a5, type: 2}
+  - {fileID: 11400000, guid: 13753695df2574ee2b0b2a8b0622db3a, type: 2}
+  - {fileID: 11400000, guid: 6dde41cf3123545bbb5835ef97c91237, type: 2}
+  - {fileID: 11400000, guid: 5324325a40f734ac194f9f8c2eae928c, type: 2}
+  - {fileID: 11400000, guid: 2a17bd291596b462aaef1147ae4ab2fe, type: 2}
+  - {fileID: 11400000, guid: 680495a8389a647998c9240051e70511, type: 2}
+  - {fileID: 11400000, guid: 10a3c8970d84745e5be82d541ca37de2, type: 2}
+  - {fileID: 11400000, guid: 39a48bd37dfdc4462a41af5e08a589b0, type: 2}
+  - {fileID: 11400000, guid: bd151735a31884182a3a51354af1174b, type: 2}
+  - {fileID: 11400000, guid: 2244fb321339047f1b9aa85bdd2aa064, type: 2}
+  - {fileID: 11400000, guid: 8a34dcdb06eec44359f09ea0d498d77b, type: 2}

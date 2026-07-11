@@ -151,3 +151,23 @@ MonoBehaviour:
     value: ENHANCEMENTS
   - key: codex.section_abilities
     value: ABILITIES
+  - key: cosmetics.title
+    value: HIVE STYLE
+  - key: cosmetics.menu_button
+    value: STYLE
+  - key: cosmetics.tab_colors
+    value: COLORS
+  - key: cosmetics.tab_hats
+    value: HATS
+  - key: cosmetics.tab_stingers
+    value: STINGERS
+  - key: cosmetics.default_name
+    value: DEFAULT
+  - key: cosmetics.default_desc
+    value: The hero's natural look for this slot.
+  - key: cosmetics.buy_prefix
+    value: 'BUY '
+  - key: cosmetics.equip
+    value: EQUIP
+  - key: cosmetics.equipped
+    value: EQUIPPED

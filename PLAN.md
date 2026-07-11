@@ -484,7 +484,34 @@ anywhere. This phase can start any time after Phase 1 (it only touches meta/menu
   `UI/CurrencyCounterUI.cs` variant, award hooks in `Stage/BossSpawner.cs` / results flow.
 - **Done when:** jelly is earned, displayed, banked, and spendable (by 5C).
 
-### 5C — Character customization — TODO #32 ☐
+### 5C — Character customization — TODO #32 ✅
+- **Shipped 2026-07-11:** the **Hive Style** panel (main-menu STYLE button, shop's tabbed
+  mold) sells purely-visual cosmetics for Royal Jelly across three slots — **Colors** (5 tints,
+  3–5 jelly), **Hats** (crown/top hat/daisy, 8–15) and **Stingers** (gold/crystal/thorn, 8–12).
+  Data: `CosmeticSO` + `CosmeticCatalogSO` authored by the additive `CosmeticsBuilder`
+  (placeholder pixel sprites written only-if-missing; display/cost/offset fields authored only
+  on create so hand tuning survives). Transactions live in the pure, EditMode-tested
+  `Progression/CosmeticShop` (buy = spend jelly + unlock, auto-equip on purchase; equip
+  requires ownership; "" = default look). Save **v7** (`ownedCosmeticIds` +
+  `equippedCosmeticIds` per slot; initializers = migration). In-run, `View/CosmeticApplier`
+  dresses the hero once at Awake: color goes through the SpriteFlash `_Tint` (clip-proof,
+  merges with hit-flash property blocks), hat/stinger are overlay child renderers on the Body
+  so they flip with facing — skin-agnostic, so the 6A hero-art swap won't break it. Panel has
+  per-tab DEFAULT cells, equipped badges, a live hero preview (tint + overlays at exact rig
+  offsets), and a jelly balance; all wiring validator-asserted. Final cosmetic art tracked in
+  `ASSET_GENERATION.md` §2.10.
+- **Playtest follow-up (2026-07-11): preview-on-select + stinger rework.** (1) The hero
+  preview now wears the **selected** entry in its slot before buying/equipping (other slots
+  show what's equipped) — try-before-you-buy. (2) Stinger skins re-skin the **auto-attack
+  projectile** instead of pasting an overlay behind the body: the roster became **3 shapes ×
+  3 colors** (Needle/Barb/Blade × Amber/Sapphire/Venom; one neutral sprite per shape, color =
+  runtime tint; cost = shape base 6/10/14 + color premium 0/2/4), the stinger tab groups
+  skins under one section header per shape (grid became a scrollable section stack, codex
+  mold), and a pooled-safe `View/ProjectileSkin` on the Stinger prefab applies the static
+  `StingerSkin` (set once per run by the applier) on every spawn — enemy/skill projectiles
+  untouched. (3) Recorded for later: color cosmetics are whole-body tints for now; the user
+  wants true **"transformable" sprite variants** once final hero art exists (see
+  `ASSET_GENERATION.md` §2.10 / TODO).
 - Cosmetic layers on the hero: **colors (5 basic)**, hats, stinger skins. Purely visual — a
   `CosmeticSO` catalog, an equipped-set in the save, applied to the rig at spawn
   (`CharacterAnimator`/`View` layer; the HeroBee skin-builder work is the art pipeline for this).
