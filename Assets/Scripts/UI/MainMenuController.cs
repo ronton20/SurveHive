@@ -15,6 +15,9 @@ namespace SurveHive.UI
         [SerializeField] private GameObject _worldSelectPanel;
         [SerializeField] private GameObject _shopPanel;
         [SerializeField] private GameObject _settingsPanel;
+        // PLAN 5A: optional codex panel — the codex builder pass wires these;
+        // every touch is null-guarded so the menu still runs without them.
+        [SerializeField] private GameObject _codexPanel;
 
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _shopButton;
@@ -24,6 +27,8 @@ namespace SurveHive.UI
         [SerializeField] private Button _shopBackButton;
         [SerializeField] private Button _settingsBackButton;
         [SerializeField] private Button _startBeehiveButton;
+        [SerializeField] private Button _codexButton;
+        [SerializeField] private Button _codexBackButton;
 
         [SerializeField] private string _beehiveSceneName = "Beehive";
 
@@ -34,6 +39,7 @@ namespace SurveHive.UI
         private CanvasGroup _worldSelectGroup;
         private CanvasGroup _shopGroup;
         private CanvasGroup _settingsGroup;
+        private CanvasGroup _codexGroup;
         private Coroutine _fadeRoutine;
 
         private void Awake()
@@ -46,6 +52,10 @@ namespace SurveHive.UI
             _worldSelectGroup = GetOrAddGroup(_worldSelectPanel);
             _shopGroup = GetOrAddGroup(_shopPanel);
             _settingsGroup = GetOrAddGroup(_settingsPanel);
+            if (_codexPanel != null)
+            {
+                _codexGroup = GetOrAddGroup(_codexPanel);
+            }
 
             _playButton.onClick.AddListener(ShowWorldSelect);
             _shopButton.onClick.AddListener(ShowShop);
@@ -55,6 +65,15 @@ namespace SurveHive.UI
             _shopBackButton.onClick.AddListener(ShowMain);
             _settingsBackButton.onClick.AddListener(ShowMain);
             _startBeehiveButton.onClick.AddListener(StartBeehiveRun);
+            if (_codexButton != null)
+            {
+                _codexButton.onClick.AddListener(ShowCodex);
+            }
+
+            if (_codexBackButton != null)
+            {
+                _codexBackButton.onClick.AddListener(ShowMain);
+            }
 
             ShowMain();
         }
@@ -69,6 +88,15 @@ namespace SurveHive.UI
             _shopBackButton.onClick.RemoveListener(ShowMain);
             _settingsBackButton.onClick.RemoveListener(ShowMain);
             _startBeehiveButton.onClick.RemoveListener(StartBeehiveRun);
+            if (_codexButton != null)
+            {
+                _codexButton.onClick.RemoveListener(ShowCodex);
+            }
+
+            if (_codexBackButton != null)
+            {
+                _codexBackButton.onClick.RemoveListener(ShowMain);
+            }
         }
 
         public void ShowMain()
@@ -91,6 +119,14 @@ namespace SurveHive.UI
             SetActivePanel(_settingsPanel);
         }
 
+        public void ShowCodex()
+        {
+            if (_codexPanel != null)
+            {
+                SetActivePanel(_codexPanel);
+            }
+        }
+
         public void StartBeehiveRun()
         {
             SceneManager.LoadScene(_beehiveSceneName);
@@ -102,6 +138,10 @@ namespace SurveHive.UI
             _worldSelectPanel.SetActive(panel == _worldSelectPanel);
             _shopPanel.SetActive(panel == _shopPanel);
             _settingsPanel.SetActive(panel == _settingsPanel);
+            if (_codexPanel != null)
+            {
+                _codexPanel.SetActive(panel == _codexPanel);
+            }
 
             FadeIn(GroupFor(panel));
         }
@@ -121,6 +161,11 @@ namespace SurveHive.UI
             if (panel == _settingsPanel)
             {
                 return _settingsGroup;
+            }
+
+            if (panel == _codexPanel && _codexGroup != null)
+            {
+                return _codexGroup;
             }
 
             return _mainGroup;

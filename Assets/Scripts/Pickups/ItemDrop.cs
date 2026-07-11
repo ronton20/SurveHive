@@ -60,6 +60,7 @@ namespace SurveHive.Pickups
             }
 
             ApplyEffect();
+            Progression.CodexTracker.ReportItem(_type);
             ReleaseSelf();
         }
 

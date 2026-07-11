@@ -128,6 +128,10 @@ namespace SurveHive.Spawning
                 loot.Initialize(_playerExperience, _currencyWallet, _player);
             }
 
+            // Every spawn path (drip, waves, bosses, summons) funnels through
+            // here — the single codex "encountered an enemy" hook.
+            Progression.CodexTracker.ReportEnemy(stats);
+
             return instance;
         }
 

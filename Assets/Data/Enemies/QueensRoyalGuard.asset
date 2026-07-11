@@ -32,3 +32,5 @@ MonoBehaviour:
   _deathHitStopSeconds: 0.08
   _prefab: {fileID: 6411342826141867975, guid: 8f5a6226f0e3641e08b54dc688a704f6, type: 3}
   _poolId: 16
+  _codexDescription: "The Queen's champion, gating the mid-stage. Winds up long,
+    punishing charges \u2014 sidestep the rush, then strike."

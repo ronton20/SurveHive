@@ -24,8 +24,15 @@ namespace SurveHive.Tests
         [SetUp]
         public void RedirectSaveFile()
         {
-            Persistence.SaveFileStore.SetPathOverride(
-                System.IO.Path.Combine(Application.temporaryCachePath, "smoke_test_save.json"));
+            string path = System.IO.Path.Combine(Application.temporaryCachePath, "smoke_test_save.json");
+            // Start from a clean save every run — a leftover file from a previous
+            // test session would pre-unlock codex entries and mask discoveries.
+            if (System.IO.File.Exists(path))
+            {
+                System.IO.File.Delete(path);
+            }
+
+            Persistence.SaveFileStore.SetPathOverride(path);
         }
 
         [TearDown]
@@ -96,6 +103,18 @@ namespace SurveHive.Tests
 
             // Let the skills fire and the slow tick out with zero errors.
             yield return RunGameSeconds(4f);
+
+            // --- Phase 5A: the run's encounters queue codex discoveries and
+            // flushing persists them to the (redirected, fresh) save. ---
+            var codex = Progression.CodexTracker.Instance;
+            Assert.IsNotNull(codex, "CodexTracker is up");
+            Assert.Greater(codex.PendingUnlockCount, 0, "Enemy spawns queued codex discoveries");
+            codex.FlushPending();
+            Assert.AreEqual(0, codex.PendingUnlockCount, "Flush drains the pending queue");
+
+            Persistence.SaveData save = Persistence.SaveFileStore.Load();
+            Assert.IsNotNull(save, "Save written by codex flush");
+            Assert.Greater(save.codexIds.Length, 0, "Codex unlocks persisted to the save");
         }
 
         // Advances scaled game time, clicking through any level-up offer that

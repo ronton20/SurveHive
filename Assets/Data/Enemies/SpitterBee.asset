@@ -32,3 +32,5 @@ MonoBehaviour:
   _deathHitStopSeconds: 0
   _prefab: {fileID: 7559816014773411256, guid: d8f6c0c8771a947da8e15ff899e9e9cc, type: 3}
   _poolId: 26
+  _codexDescription: Keeps its distance and spits venom bolts. Weave between the
+    shots or close the gap fast.

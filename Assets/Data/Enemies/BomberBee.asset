@@ -32,3 +32,5 @@ MonoBehaviour:
   _deathHitStopSeconds: 0
   _prefab: {fileID: 6091530853131248646, guid: 8edc470ab7d52487a8dc5bae4be2d998, type: 3}
   _poolId: 27
+  _codexDescription: "Rushes you and detonates in a damaging burst. Drop it at range
+    \u2014 or don't be there."

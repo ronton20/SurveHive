@@ -35,6 +35,9 @@ namespace SurveHive.Data
         [SerializeField] private float _deathHitStopSeconds;
         [SerializeField] private GameObject _prefab;
         [SerializeField] private int _poolId;
+        // Codex behavior blurb (playtest follow-up 2026-07-11): what this enemy
+        // does, since raw HP/damage numbers shift with difficulty and run time.
+        [SerializeField, TextArea] private string _codexDescription;
 
         public string DisplayName => _displayName;
 
@@ -75,5 +78,7 @@ namespace SurveHive.Data
         public GameObject Prefab => _prefab;
 
         public int PoolId => _poolId;
+
+        public string CodexDescription => _codexDescription;
     }
 }

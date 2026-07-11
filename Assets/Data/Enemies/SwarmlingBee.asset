@@ -32,3 +32,5 @@ MonoBehaviour:
   _deathHitStopSeconds: 0
   _prefab: {fileID: 7003591529282060060, guid: 819bede811e5f4cc6acdbb13ee8b9523, type: 3}
   _poolId: 28
+  _codexDescription: "Tiny and frantic. Floods in as a pack from one direction \u2014
+    don't let them box you in."

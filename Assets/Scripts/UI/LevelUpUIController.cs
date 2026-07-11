@@ -727,6 +727,7 @@ namespace SurveHive.UI
                     _skillLevels[dbIndex]++;
                 }
 
+                CodexTracker.ReportSkill(chosen);
                 RefreshElementSets();
             }
 

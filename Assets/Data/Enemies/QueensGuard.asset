@@ -32,3 +32,5 @@ MonoBehaviour:
   _deathHitStopSeconds: 0.05
   _prefab: {fileID: 7770775279293611669, guid: e45e942fab02747dbb958d2b29e76086, type: 3}
   _poolId: 6
+  _codexDescription: "An elite protector of the brood \u2014 tough, quick, and generous
+    with its drops."

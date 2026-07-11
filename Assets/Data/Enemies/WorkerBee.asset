@@ -32,3 +32,5 @@ MonoBehaviour:
   _deathHitStopSeconds: 0
   _prefab: {fileID: 8914865433895963048, guid: 3a0cdd1febd4549faa20f4ebed13217f, type: 3}
   _poolId: 0
+  _codexDescription: "A drone of the corrupted hive. Drifts straight at you \u2014
+    harmless alone, dangerous in a crowd."

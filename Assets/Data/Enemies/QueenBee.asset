@@ -32,3 +32,5 @@ MonoBehaviour:
   _deathHitStopSeconds: 0.12
   _prefab: {fileID: 8788530862494033964, guid: aeecfc76cc6584d369e9defae8a2e3d9, type: 3}
   _poolId: 17
+  _codexDescription: The corrupted heart of the hive. Summons workers to shield her,
+    unleashes stinger patterns, and enrages if the fight drags on.
