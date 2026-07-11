@@ -25,6 +25,8 @@ namespace SurveHive.UI
         [SerializeField] private MetaProgressionStoreSO _store;
         [SerializeField] private MetaUpgradeCatalogSO _catalog;
         [SerializeField] private TMP_Text _balanceText;
+        // Royal Jelly balance (PLAN 5B) — read-only until 5C/5E spend it here.
+        [SerializeField] private TMP_Text _jellyText;
 
         [Header("Tabbed layout")]
         [SerializeField] private MetaShopIconUI _iconPrefab;
@@ -226,7 +228,12 @@ namespace SurveHive.UI
         {
             if (_balanceText != null)
             {
-                _balanceText.text = Loc.Get(LocKeys.ShopHoneyPrefix) + _store.BankedCurrency;
+                _balanceText.text = CurrencyGlyphs.Honey + _store.BankedCurrency;
+            }
+
+            if (_jellyText != null)
+            {
+                _jellyText.text = CurrencyGlyphs.Jelly + _store.BankedJelly;
             }
 
             for (int i = 0; i < _icons.Length; i++)

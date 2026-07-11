@@ -9,8 +9,9 @@ namespace SurveHive.UI
     /// <summary>
     /// The tabbed shop's top-half detail pane: shows everything about the
     /// currently-selected upgrade — icon, name, description, rank, the concrete
-    /// stat-value transition, cost — and owns the BUY button. Purely a view;
-    /// <see cref="MetaShopUI"/> drives it and handles the purchase.
+    /// stat-value transition — and owns the BUY button, whose label is the
+    /// honey price itself (glyph + number; "MAX" when topped out). Purely a
+    /// view; <see cref="MetaShopUI"/> drives it and handles the purchase.
     /// </summary>
     public sealed class MetaShopDetailUI : MonoBehaviour
     {
@@ -20,7 +21,6 @@ namespace SurveHive.UI
         [SerializeField] private TMP_Text _rankText;
         // The concrete value change: "+25 → +50 Max HP".
         [SerializeField] private TMP_Text _effectText;
-        [SerializeField] private TMP_Text _costText;
         [SerializeField] private Button _buyButton;
         [SerializeField] private TMP_Text _buyLabel;
 
@@ -28,14 +28,6 @@ namespace SurveHive.UI
 
         /// <summary>The upgrade currently shown — the one BUY purchases.</summary>
         public MetaUpgradeSO Current { get; private set; }
-
-        private void Awake()
-        {
-            if (_buyLabel != null)
-            {
-                _buyLabel.text = Loc.Get(LocKeys.ShopBuy);
-            }
-        }
 
         /// <summary>Repaints the pane for <paramref name="upgrade"/> at its current rank.</summary>
         public void Bind(MetaUpgradeSO upgrade, IMetaProgressionStore store)
@@ -79,13 +71,13 @@ namespace SurveHive.UI
 
             if (maxed)
             {
-                _costText.text = Loc.Get(LocKeys.Max);
+                _buyLabel.text = Loc.Get(LocKeys.Max);
                 _buyButton.interactable = false;
             }
             else
             {
                 int cost = upgrade.CostForRank(rank);
-                _costText.text = Loc.Get(LocKeys.ShopCostPrefix) + cost;
+                _buyLabel.text = CurrencyGlyphs.Honey + cost;
                 _buyButton.interactable = store.BankedCurrency >= cost;
             }
         }

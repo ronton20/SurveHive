@@ -51,14 +51,12 @@ namespace SurveHive.Core
         public const string WaveIncomingPrefix = "wave.incoming_prefix";
         public const string WaveSecondsSuffix = "wave.seconds_suffix";
 
-        // Meta shop
-        public const string ShopHoneyPrefix = "shop.honey_prefix";
+        // Meta shop. (The honey/jelly balances, the BUY price, and the
+        // costs are icon+number via Core.CurrencyGlyphs — no words to localize.)
         public const string ShopRankPrefix = "shop.rank_prefix";
         public const string ShopTabCombat = "shop.tab_combat";
         public const string ShopTabSurvival = "shop.tab_survival";
         public const string ShopTabUtility = "shop.tab_utility";
-        public const string ShopBuy = "shop.buy";
-        public const string ShopCostPrefix = "shop.cost_prefix";
 
         // Settings
         public const string SettingsVibrationOn = "settings.vibration_on";
@@ -74,11 +72,27 @@ namespace SurveHive.Core
         public const string SettingsHitStop = "settings.hit_stop";
         public const string SettingsStatusTints = "settings.status_tints";
 
+        // Codex (PLAN 5A)
+        public const string CodexTitle = "codex.title";
+        public const string CodexMenuButton = "codex.menu_button";
+        public const string CodexTabPowerUps = "codex.tab_powerups";
+        public const string CodexTabSets = "codex.tab_sets";
+        public const string CodexTabEnemies = "codex.tab_enemies";
+        public const string CodexTabItems = "codex.tab_items";
+        public const string CodexUnknownName = "codex.unknown_name";
+        public const string CodexUnknownDescription = "codex.unknown_desc";
+        public const string CodexDiscoveredPrefix = "codex.discovered_prefix";
+        // Power-up lane section headers (playtest follow-up 2026-07-11).
+        public const string CodexSectionPassives = "codex.section_passives";
+        public const string CodexSectionEnhancements = "codex.section_enhancements";
+        public const string CodexSectionAbilities = "codex.section_abilities";
+
         // Run results
         public const string ResultsTime = "results.time";
         public const string ResultsKills = "results.kills";
         public const string ResultsLevel = "results.level";
         public const string ResultsHoneyBanked = "results.honey_banked";
+        public const string ResultsJellyEarned = "results.jelly_earned";
 
         // Difficulty select
         public const string DifficultyLockedSuffix = "difficulty.locked_suffix";

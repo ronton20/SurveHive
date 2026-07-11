@@ -52,13 +52,10 @@ namespace SurveHive.Core
             new KeyValuePair<string, string>(LocKeys.WaveIncomingPrefix, "INCOMING IN "),
             new KeyValuePair<string, string>(LocKeys.WaveSecondsSuffix, "s"),
 
-            new KeyValuePair<string, string>(LocKeys.ShopHoneyPrefix, "HONEY: "),
             new KeyValuePair<string, string>(LocKeys.ShopRankPrefix, "Rank "),
             new KeyValuePair<string, string>(LocKeys.ShopTabCombat, "COMBAT"),
             new KeyValuePair<string, string>(LocKeys.ShopTabSurvival, "SURVIVAL"),
             new KeyValuePair<string, string>(LocKeys.ShopTabUtility, "UTILITY"),
-            new KeyValuePair<string, string>(LocKeys.ShopBuy, "BUY"),
-            new KeyValuePair<string, string>(LocKeys.ShopCostPrefix, "COST: "),
 
             new KeyValuePair<string, string>(LocKeys.SettingsVibrationOn, "VIBRATION: ON"),
             new KeyValuePair<string, string>(LocKeys.SettingsVibrationOff, "VIBRATION: OFF"),
@@ -72,10 +69,24 @@ namespace SurveHive.Core
             new KeyValuePair<string, string>(LocKeys.SettingsHitStop, "HIT-STOP"),
             new KeyValuePair<string, string>(LocKeys.SettingsStatusTints, "STATUS COLORS"),
 
+            new KeyValuePair<string, string>(LocKeys.CodexTitle, "CODEX"),
+            new KeyValuePair<string, string>(LocKeys.CodexMenuButton, "CODEX"),
+            new KeyValuePair<string, string>(LocKeys.CodexTabPowerUps, "POWER-UPS"),
+            new KeyValuePair<string, string>(LocKeys.CodexTabSets, "SETS"),
+            new KeyValuePair<string, string>(LocKeys.CodexTabEnemies, "ENEMIES"),
+            new KeyValuePair<string, string>(LocKeys.CodexTabItems, "ITEMS"),
+            new KeyValuePair<string, string>(LocKeys.CodexUnknownName, "???"),
+            new KeyValuePair<string, string>(LocKeys.CodexUnknownDescription, "Not yet discovered."),
+            new KeyValuePair<string, string>(LocKeys.CodexDiscoveredPrefix, "DISCOVERED "),
+            new KeyValuePair<string, string>(LocKeys.CodexSectionPassives, "PASSIVES"),
+            new KeyValuePair<string, string>(LocKeys.CodexSectionEnhancements, "ENHANCEMENTS"),
+            new KeyValuePair<string, string>(LocKeys.CodexSectionAbilities, "ABILITIES"),
+
             new KeyValuePair<string, string>(LocKeys.ResultsTime, "Time  "),
             new KeyValuePair<string, string>(LocKeys.ResultsKills, "Kills  "),
             new KeyValuePair<string, string>(LocKeys.ResultsLevel, "Level  "),
             new KeyValuePair<string, string>(LocKeys.ResultsHoneyBanked, "Honey banked  "),
+            new KeyValuePair<string, string>(LocKeys.ResultsJellyEarned, "Royal Jelly  +"),
 
             new KeyValuePair<string, string>(LocKeys.DifficultyLockedSuffix, " - LOCKED"),
             new KeyValuePair<string, string>(LocKeys.DifficultyUnlockPrefix, "UNLOCK "),

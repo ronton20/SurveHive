@@ -124,11 +124,16 @@ strong waves, `BossSpawner` for the Royal Guard miniboss (`ChargeAttack`) at 50%
 (rarity-weighted, `RerollLogic`) constrained by `PowerUpLane` + `LaneEligibility` (lane caps).
 `SkillEffectApplier` applies picks to `PlayerStats`; `ElementSets` counts pieces and amplifies
 statuses (`ElementPalette`, `SkillElement`, `SetBonusSO`). `MetaShop`/`MetaUpgradeMath`,
-`DifficultyUnlocks`, `SkillStatPreview` (readable "10 → 11" card numbers).
+`DifficultyUnlocks`, `SkillStatPreview` (readable "10 → 11" card numbers). Codex discovery:
+`CodexTracker` (run-scoped; static report hooks in `EnemySpawner.SpawnAt`, `ItemDrop`, and
+`LevelUpUIController`, batched save flush at scene teardown) + the pure `CodexIds` id scheme.
+`RoyalJellyAwards` — the full premium-currency payout table (boss kills, per-tier first clears).
+`CodexSkillLevels` — menu-safe per-level power-up breakdown for the codex detail pane.
 
 ### Pickups & currency — `Assets/Scripts/Pickups/`, `Assets/Scripts/Currency/`
 `PickupItem`/`PickupMotion` (one shared magnet system) · `ItemDrop` (Honey Jar / Magnet / Wax
-Shield / Royal Bomb) · `ExpOrbTiers` (merge + restyle by value) · `RunCurrencyWallet`.
+Shield / Royal Bomb) · `ExpOrbTiers` (merge + restyle by value) · `RunCurrencyWallet` (honey with
+gain multipliers + a separate never-multiplied Royal Jelly pool).
 
 ### Meta-progression & save — `Assets/Scripts/Persistence/`, `Assets/Scripts/Data/`
 Versioned JSON save (`SaveData`, `SaveDataSerializer`, `SaveFileStore`, temp-file swap) at
@@ -140,6 +145,7 @@ Versioned JSON save (`SaveData`, `SaveDataSerializer`, `SaveFileStore`, temp-fil
 HUD: `HealthBarUI`, `ExpBarUI`, `CurrencyCounterUI`, `KillCounterUI`, `RunTimerUI`,
 `StageProgressBarUI`, `SetTierHUD`, enemy/boss bars, `WaveWarningBanner`, `BossBannerUI`.
 Screens/flow: `MainMenuController`, `DifficultySelectUI`, `MetaShopUI`+`MetaShopCardUI`,
+`CodexUI`+`CodexEntryUI` (tabbed encyclopedia, silhouettes until discovered),
 `LevelUpUIController`, `RunResultsUI`, `PauseMenuController`, `SettingsPanelUI`, `OwnedPowerUpsView`.
 **Almost all UI is generated directly into the scenes by the editor builders — see §6 and §7.**
 
@@ -173,6 +179,7 @@ by settings sliders. `SfxId`/`MusicId` map 1:1 to clips in `AudioLibrarySO`. SFX
 | `SetBonusSO` | Per-element 2/3/4-piece set tiers + signature. |
 | `MetaUpgradeSO` / `MetaProgressionStoreSO` | Permanent shop upgrades + banked state. |
 | `DifficultySO` | Easy→Extreme tier scaling table. |
+| `CodexCatalogSO` | Everything the codex lists (skill db + enemies + item-drop display rows). |
 | `AudioLibrarySO` | `SfxId`/`MusicId` → clip mapping. |
 
 Enums/value types alongside: `MetaStatType`, `SetSignatureType`, `DifficultyTier`, `SfxId`, `MusicId`.
@@ -190,7 +197,10 @@ in `Assets/Editor/BuildTools/`:
 passes (`CombatOverhaulBuilder`, `EnemyVarietyBuilder`, `DifficultyBuilder`,
 `MetaShopExpansionBuilder`, `MetaShopTabsBuilder`, `SetSignatureBuilder`, `LocalizationBuilder`,
 `PcLayoutBuilder` (canvas reference retarget), `PcMenuLayoutBuilder` (landscape menu relayout),
-`UISoundCoverageBuilder` (fills any button missing `UIClickSfx`), `HeroBee*SkinBuilder`).
+`UISoundCoverageBuilder` (fills any button missing `UIClickSfx`), `HeroBee*SkinBuilder`,
+`CodexBuilder` (catalog + codex panel + run tracker), `RoyalJellyBuilder` (shop-header jelly
+balance + 5B loc keys), `CurrencyGlyphsBuilder` (currency sprite sheet → TMP default sprite
+asset, so texts inline `<sprite name="honey"/"jelly">` via `Core/CurrencyGlyphs`)).
 Validated by `BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
 
 > ⚠️ **Builder caution (from `PLAN.md` and project memory):** the scenes/data have since been

@@ -373,9 +373,10 @@ namespace SurveHive.BuildTools
             TMP_Text descText = CreateTopText(panelRect, "Description", font, 26f, Wax, -232f, 180f, 500f, TextAlignmentOptions.Top);
             TMP_Text rankText = CreateTopText(panelRect, "Rank", font, 30f, Amber, -428f, 44f, 520f, TextAlignmentOptions.Center);
             TMP_Text effectText = CreateTopText(panelRect, "Effect", font, 30f, HoneyGold, -482f, 44f, 520f, TextAlignmentOptions.Center);
-            TMP_Text costText = CreateTopText(panelRect, "Cost", font, 34f, Amber, -540f, 48f, 520f, TextAlignmentOptions.Center);
 
-            Button buyButton = CreateButton(panelRect, "BuyButton", Loc.Get(LocKeys.ShopBuy), font, buttonSprite,
+            // The button label is the price itself (honey glyph + cost, or MAX),
+            // set by MetaShopDetailUI.Bind — this is just a rest-state placeholder.
+            Button buyButton = CreateButton(panelRect, "BuyButton", "BUY", font, buttonSprite,
                 Vector2.zero, new Vector2(320f, 96f), 36f);
             var buyRect = (RectTransform)buyButton.transform;
             buyRect.anchorMin = new Vector2(0.5f, 0f);
@@ -391,7 +392,6 @@ namespace SurveHive.BuildTools
             so.FindProperty("_descriptionText").objectReferenceValue = descText;
             so.FindProperty("_rankText").objectReferenceValue = rankText;
             so.FindProperty("_effectText").objectReferenceValue = effectText;
-            so.FindProperty("_costText").objectReferenceValue = costText;
             so.FindProperty("_buyButton").objectReferenceValue = buyButton;
             so.FindProperty("_buyLabel").objectReferenceValue = buyLabel;
             so.ApplyModifiedPropertiesWithoutUndo();

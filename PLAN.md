@@ -240,6 +240,17 @@ list. Sliced into ship-and-verify units; do them in any order.
   `MetaShopTabsBuilder` (removes the old scroll+cards, rebuilds tab column / detail / grid).
   Validator + PlayMode flow test updated to the new components; EditMode covers the category map.
 
+- **Playtest follow-up (2026-07-11): cost on the BUY button + currency glyphs.** The detail
+  pane's COST line sat at the exact panel offset the bottom-anchored BUY button covers — the
+  shop never visibly showed a price. Folded the price into the BUY button itself (honey glyph +
+  number; "MAX" when topped out) and deleted the dead cost text. Also built the game-wide
+  **currency glyph** system: `CurrencyGlyphsBuilder` authors a two-cell sprite sheet (the
+  shipped honey drop ×4 + a procedural pearly royal-comb jelly cell) into a `TMP_SpriteAsset`
+  registered as the TMP **default sprite asset**, so any text renders a currency as its image
+  via `<sprite name="honey"/"jelly">` (`Core/CurrencyGlyphs` holds the tags). Shop header
+  balances and the results screen's banked/earned lines now lead with the icons; the
+  balance/cost prefixes left the string table (icon+number has no words to translate).
+
 "Remaining PC polish" is four independent workstreams — sliced below and taken in the
 order chosen 2026-07-09: **layout/text → click sounds → motion → health bars**.
 
@@ -427,7 +438,7 @@ The wishlist's long-game features. Ordered by dependency: currency → cosmetics
 achievements that award it → the shop that rotates them. The codex is independent — slot it
 anywhere. This phase can start any time after Phase 1 (it only touches meta/menu surfaces).
 
-### 5A — Codex — TODO #35 ☐
+### 5A — Codex — TODO #35 ✅
 - An encyclopedia of everything **encountered**: power-ups (all lanes), set effects, enemies,
   items — entry unlocks the first time the player meets/picks the thing, persisted in the save.
 - Data comes from existing SOs (`SkillDefinitionSO`, `SetBonusSO`, `EnemyStatsSO`, item types);
@@ -436,7 +447,34 @@ anywhere. This phase can start any time after Phase 1 (it only touches meta/menu
   (unlock flags, version bump), `UI/MainMenuController.cs`, builder pass for the panel.
 - **Done when:** playing a run visibly fills the codex, and unlocks persist.
 
-### 5B — Premium currency "Royal Jelly" — TODO #31 ☐
+- **Playtest follow-up (2026-07-11): codex depth pass.** Three information upgrades, all
+  behind the existing per-entry discovery gate (silhouette + "???" until met, then everything —
+  per user: sets stay exactly on that model). (1) **Power-ups list what every level grants**:
+  new pure `Progression/CodexSkillLevels` (EditMode-tested) formats "Lv n — …" lines menu-safe
+  from the skill assets alone — per-level magnitude increments for passives/enhancements
+  (pierce shows count → ALL), and DMG/count/area/CD/status per level from the active-skill
+  growth tables. (2) **Sectioned tabs**: power-ups group under PASSIVES / ENHANCEMENTS /
+  ABILITIES headers, enemies under one header per world (`CodexCatalogSO` moved from a flat
+  enemy array to named `EnemyGroup`s — Garden+ append as new groups); the entry grid became a
+  ScrollRect of stacked section blocks so grown tabs scroll. (3) **Enemies describe behavior
+  instead of stats**: HP/DMG rows dropped (they scale with difficulty and run time); each
+  `EnemyStatsSO` gained a `_codexDescription` blurb, authored by `CodexBuilder` only where
+  empty so hand edits survive.
+
+### 5B — Premium currency "Royal Jelly" — TODO #31 ✅
+- **Shipped 2026-07-11:** jelly mirrors the honey pipeline end-to-end but stays deliberately
+  scarce — `RunCurrencyWallet` grew a separate jelly pool that **no gain multiplier touches**
+  (meta Currency Gain and difficulty compensation apply to honey only). Payouts live in the
+  pure, EditMode-tested `Progression/RoyalJellyAwards`: **+1 per miniboss kill, +3 per Queen
+  kill** (every kill, hooked in `BossSpawner.CompleteBossDeath` before victory banks), and a
+  **one-time first-clear bonus per stage+difficulty** (10/15/20/25 Easy→Extreme, checked in
+  `RunSession.EndRun` against `HasStageClear` before the clear is recorded). Jelly banks on
+  both death and victory paths alongside honey; save schema **v6** (`bankedJelly`, initializer
+  = migration, negative-clamped). The store seam grew `BankedJelly`/`BankJelly`/`TrySpendJelly`
+  (both store SOs + the interface) — **the spend path is ready for 5C/5E** but nothing sells
+  yet. UI: a pearly-cream **ROYAL JELLY** balance beside the shop's honey readout (additive
+  `RoyalJellyBuilder`, validator-asserted) and a `Royal Jelly  +N` results line that only
+  appears on runs that earned some. Icon still text-only — ASSET_GENERATION §2.8.
 - Second currency, earned in **very small amounts** through gameplay (e.g. first-clear per
   difficulty, boss kills, later achievements from 5D); spent on cosmetics/revives. Icon spec
   lives in `ASSET_GENERATION.md` §2.8 (royal comb cell, distinct from Honey).

@@ -210,11 +210,33 @@ namespace SurveHive.BuildTools
             ok &= ValidatePhase1LookAndFeel(player, canvasGo);
             ok &= ValidatePhase2CombatDepth(player, canvasGo);
             ok &= ValidatePhase3RunStructure(canvasGo);
+            // 5A: must run while Beehive is still open (Phase4 ends on MainMenu).
+            ok &= ValidateCodexTracker();
             ok &= ValidatePhase4MetaAndMenus(player);
             ok &= ValidateEnemyVariety();
             ok &= ValidateLocalization();
+            ok &= ValidateCurrencyGlyphs();
 
             Debug.Log(ok ? "SurveHive Beehive scene validation PASSED." : "SurveHive Beehive scene validation FAILED - see errors above.");
+        }
+
+        // --- Phase 5A (PLAN.md): codex run tracker in the Beehive scene ---
+        private static bool ValidateCodexTracker()
+        {
+            bool ok = true;
+
+            var trackerGo = GameObject.Find("CodexTracker");
+            ok &= Check(trackerGo != null, "CodexTracker GameObject exists");
+            var tracker = trackerGo != null ? trackerGo.GetComponent<Progression.CodexTracker>() : null;
+            ok &= Check(tracker != null, "CodexTracker component present");
+            if (tracker != null)
+            {
+                var so = new SerializedObject(tracker);
+                ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                    "CodexTracker._store wired to the persistent store");
+            }
+
+            return ok;
         }
 
         // --- Phase 3A (PLAN.md): localization string table ---
@@ -244,6 +266,28 @@ namespace SurveHive.BuildTools
             }
 
             ok &= Check(missing == 0, $"StringTable carries every LocKeys default ({missing} missing)");
+            return ok;
+        }
+
+        // --- Currency glyphs: <sprite name="honey"/"jelly"> must resolve ---
+        private static bool ValidateCurrencyGlyphs()
+        {
+            bool ok = true;
+
+            var spriteAsset = AssetDatabase.LoadAssetAtPath<TMPro.TMP_SpriteAsset>(
+                "Assets/Data/UI/CurrencyGlyphs.asset");
+            ok &= Check(spriteAsset != null, "CurrencyGlyphs TMP sprite asset exists (run Build Currency Glyphs)");
+            if (spriteAsset != null)
+            {
+                spriteAsset.UpdateLookupTables();
+                ok &= Check(spriteAsset.GetSpriteIndexFromName("honey") >= 0,
+                    "CurrencyGlyphs carries a 'honey' sprite");
+                ok &= Check(spriteAsset.GetSpriteIndexFromName("jelly") >= 0,
+                    "CurrencyGlyphs carries a 'jelly' sprite");
+            }
+
+            ok &= Check(TMPro.TMP_Settings.defaultSpriteAsset == spriteAsset && spriteAsset != null,
+                "TMP default sprite asset is CurrencyGlyphs");
             return ok;
         }
 
@@ -721,6 +765,9 @@ namespace SurveHive.BuildTools
                         "MetaShopUI._store wired to the persistent store");
                     ok &= Check(shopSo.FindProperty("_balanceText").objectReferenceValue != null,
                         "MetaShopUI._balanceText wired");
+                    // 5B: Royal Jelly balance readout in the shop header.
+                    ok &= Check(shopSo.FindProperty("_jellyText").objectReferenceValue != null,
+                        "MetaShopUI._jellyText wired");
 
                     // Catalog of all 13 upgrades, each carrying a (placeholder) icon.
                     var catalogRef = shopSo.FindProperty("_catalog").objectReferenceValue as Data.MetaUpgradeCatalogSO;
@@ -765,7 +812,8 @@ namespace SurveHive.BuildTools
                     ok &= Check(gridRef != null && gridRef.GetComponent<UnityEngine.UI.GridLayoutGroup>() != null,
                         "Shop icon grid has a GridLayoutGroup");
 
-                    // Detail pane: at least name/rank/cost/buy must be wired.
+                    // Detail pane: at least name/rank/buy(+label — it carries the
+                    // price) must be wired.
                     var detail = shopSo.FindProperty("_detail").objectReferenceValue as MetaShopDetailUI;
                     ok &= Check(detail != null, "MetaShopUI._detail wired");
                     if (detail != null)
@@ -775,10 +823,10 @@ namespace SurveHive.BuildTools
                             "Shop detail name text wired");
                         ok &= Check(detailSo.FindProperty("_rankText").objectReferenceValue != null,
                             "Shop detail rank text wired");
-                        ok &= Check(detailSo.FindProperty("_costText").objectReferenceValue != null,
-                            "Shop detail cost text wired");
                         ok &= Check(detailSo.FindProperty("_buyButton").objectReferenceValue != null,
                             "Shop detail buy button wired");
+                        ok &= Check(detailSo.FindProperty("_buyLabel").objectReferenceValue != null,
+                            "Shop detail buy label wired");
                     }
 
                     // Three category tabs, each with a highlight, all wired.
@@ -792,6 +840,105 @@ namespace SurveHive.BuildTools
                         ok &= Check(tabsProp.GetArrayElementAtIndex(i).objectReferenceValue != null,
                             $"MetaShopUI tab button [{i}] wired");
                     }
+                }
+
+                // 5A codex: panel + button wired on the controller, CodexUI fully
+                // wired, catalog carrying all four categories.
+                ok &= ValidateCodexPanel(so);
+            }
+
+            return ok;
+        }
+
+        // --- Phase 5A (PLAN.md): main-menu codex panel ---
+        private static bool ValidateCodexPanel(SerializedObject controllerSo)
+        {
+            bool ok = true;
+
+            var codexPanel = controllerSo.FindProperty("_codexPanel").objectReferenceValue as GameObject;
+            ok &= Check(codexPanel != null, "MainMenuController._codexPanel wired");
+            ok &= Check(controllerSo.FindProperty("_codexButton").objectReferenceValue != null,
+                "MainMenuController._codexButton wired");
+            ok &= Check(controllerSo.FindProperty("_codexBackButton").objectReferenceValue != null,
+                "MainMenuController._codexBackButton wired");
+            if (codexPanel == null)
+            {
+                return false;
+            }
+
+            ok &= Check(!codexPanel.activeSelf, "CodexPanel inactive at rest");
+
+            var codexUi = codexPanel.GetComponent<UI.CodexUI>();
+            ok &= Check(codexUi != null, "CodexPanel has CodexUI");
+            if (codexUi == null)
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(codexUi);
+            ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                "CodexUI._store wired to the persistent store");
+            ok &= Check(so.FindProperty("_entryPrefab").objectReferenceValue != null, "CodexUI._entryPrefab wired");
+            ok &= Check(so.FindProperty("_gridContent").objectReferenceValue != null, "CodexUI._gridContent wired");
+            // Sectioned scroll area + the font its section headers render with.
+            ok &= Check(so.FindProperty("_scrollRect").objectReferenceValue is UnityEngine.UI.ScrollRect,
+                "CodexUI._scrollRect wired");
+            ok &= Check(so.FindProperty("_sectionFont").objectReferenceValue != null, "CodexUI._sectionFont wired");
+            ok &= Check(so.FindProperty("_detailIcon").objectReferenceValue != null, "CodexUI._detailIcon wired");
+            ok &= Check(so.FindProperty("_detailName").objectReferenceValue != null, "CodexUI._detailName wired");
+            ok &= Check(so.FindProperty("_detailDescription").objectReferenceValue != null,
+                "CodexUI._detailDescription wired");
+            ok &= Check(so.FindProperty("_progressText").objectReferenceValue != null, "CodexUI._progressText wired");
+            ok &= Check(so.FindProperty("_setIcon").objectReferenceValue != null, "CodexUI._setIcon wired");
+
+            var tabs = so.FindProperty("_tabButtons");
+            var highlights = so.FindProperty("_tabHighlights");
+            ok &= Check(tabs.arraySize == UI.CodexUI.CategoryCount,
+                $"CodexUI has {UI.CodexUI.CategoryCount} tabs (found {tabs.arraySize})");
+            ok &= Check(highlights.arraySize == UI.CodexUI.CategoryCount,
+                $"CodexUI has {UI.CodexUI.CategoryCount} tab highlights (found {highlights.arraySize})");
+            for (int i = 0; i < tabs.arraySize; i++)
+            {
+                ok &= Check(tabs.GetArrayElementAtIndex(i).objectReferenceValue != null,
+                    $"CodexUI tab button [{i}] wired");
+            }
+
+            var catalog = so.FindProperty("_catalog").objectReferenceValue as Data.CodexCatalogSO;
+            ok &= Check(catalog != null, "CodexUI._catalog wired");
+            if (catalog != null)
+            {
+                var catalogSo = new SerializedObject(catalog);
+                ok &= Check(catalogSo.FindProperty("_skillDatabase").objectReferenceValue != null,
+                    "CodexCatalog skill database wired");
+                // World-grouped enemies (playtest follow-up 2026-07-11): one
+                // named group per world, every enemy wired with a codex blurb.
+                var groups = catalogSo.FindProperty("_enemyGroups");
+                ok &= Check(groups.arraySize == 1, $"CodexCatalog has 1 enemy group (found {groups.arraySize})");
+                for (int g = 0; g < groups.arraySize; g++)
+                {
+                    SerializedProperty group = groups.GetArrayElementAtIndex(g);
+                    ok &= Check(!string.IsNullOrEmpty(group.FindPropertyRelative("WorldName").stringValue),
+                        $"CodexCatalog enemy group [{g}] has a world name");
+                    SerializedProperty enemies = group.FindPropertyRelative("Enemies");
+                    ok &= Check(g != 0 || enemies.arraySize == 8,
+                        $"CodexCatalog Beehive group has 8 enemies (found {enemies.arraySize})");
+                    for (int i = 0; i < enemies.arraySize; i++)
+                    {
+                        var stats = enemies.GetArrayElementAtIndex(i).objectReferenceValue as Data.EnemyStatsSO;
+                        ok &= Check(stats != null, $"CodexCatalog enemy [{g}][{i}] wired");
+                        ok &= Check(stats != null && !string.IsNullOrEmpty(stats.CodexDescription),
+                            $"CodexCatalog enemy [{g}][{i}] has a codex blurb");
+                    }
+                }
+
+                var items = catalogSo.FindProperty("_items");
+                ok &= Check(items.arraySize == 4, $"CodexCatalog has 4 items (found {items.arraySize})");
+                for (int i = 0; i < items.arraySize; i++)
+                {
+                    SerializedProperty row = items.GetArrayElementAtIndex(i);
+                    ok &= Check(row.FindPropertyRelative("Icon").objectReferenceValue != null
+                        && !string.IsNullOrEmpty(row.FindPropertyRelative("DisplayName").stringValue),
+                        $"CodexCatalog item [{i}] has icon + name");
                 }
             }
 

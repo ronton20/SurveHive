@@ -119,3 +119,35 @@ MonoBehaviour:
     value: HIT-STOP
   - key: settings.status_tints
     value: STATUS COLORS
+  - key: codex.title
+    value: CODEX
+  - key: codex.menu_button
+    value: CODEX
+  - key: codex.tab_powerups
+    value: POWER-UPS
+  - key: codex.tab_sets
+    value: SETS
+  - key: codex.tab_enemies
+    value: ENEMIES
+  - key: codex.tab_items
+    value: ITEMS
+  - key: codex.unknown_name
+    value: ???
+  - key: codex.unknown_desc
+    value: Not yet discovered.
+  - key: codex.discovered_prefix
+    value: 'DISCOVERED '
+  - key: codex.enemy_hp_prefix
+    value: 'HP '
+  - key: codex.enemy_dmg_prefix
+    value: 'DMG '
+  - key: shop.jelly_prefix
+    value: 'ROYAL JELLY: '
+  - key: results.jelly_earned
+    value: Royal Jelly  +
+  - key: codex.section_passives
+    value: PASSIVES
+  - key: codex.section_enhancements
+    value: ENHANCEMENTS
+  - key: codex.section_abilities
+    value: ABILITIES

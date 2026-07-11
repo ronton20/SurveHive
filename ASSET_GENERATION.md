@@ -276,10 +276,10 @@ accents where relevant, dark outline, flat shading, transparent background.
 - **Generation prompt:** "A set of four difficulty badge icons — easy (a single leaf/feather), normal (a bee silhouette), hard (crossed stingers), extreme (a crowned skull), escalating visual intensity, pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Icon tier, 32×32 each; hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background. Honey-gold to danger-red accent progression across the four."
 
 #### 2.8 Premium currency icon — Royal Jelly
-- **Status:** 🔴 not started (TODO #31 — premium currency not yet implemented). Concept: **Royal Jelly**, the rare substance fed only to a queen — reads instantly as "the special one" against common Honey, and fits the game's existing royal-naming convention (Queen's Guard, Royal Guard, Royal Bomb, Royal Focus, royal-purple palette).
-- **Spec:** Icon tier, 32×32
+- **Status:** 🟡 placeholder — the currency is live (Phase 5B) and a **code-generated placeholder icon now renders everywhere** (2026-07-11): `CurrencyGlyphsBuilder` draws a procedural gold-rimmed cream comb cell into the right half of `Assets/Sprites/CurrencyGlyphs.png` (64×32 sheet, honey drop ×4 on the left) and any UI text inlines it via `<sprite name="jelly">` (TMP default sprite asset). **To land final art: overwrite the PNG's right 32×32 cell** (the builder never regenerates an existing file). Concept: **Royal Jelly**, the rare substance fed only to a queen — reads instantly as "the special one" against common Honey, and fits the game's existing royal-naming convention (Queen's Guard, Royal Guard, Royal Bomb, Royal Focus, royal-purple palette).
+- **Spec:** Icon tier, 32×32 (right cell of `CurrencyGlyphs.png`)
 - **Shape:** a hexagonal royal comb cell filled with pearly-white/cream jelly, gold rim highlight — **not** a droplet (droplet is reserved per §0.3.2)
-- **Usage:** premium-currency HUD counter and cosmetic-shop pricing (TODO #31 — not yet implemented)
+- **Usage:** shop-header balance readout, results line, and all future jelly pricing (5C/5E) — one sprite-sheet cell feeds every surface
 - **Generation prompt:** "A premium currency icon: a hexagonal royal comb cell filled with pearly-white/cream royal jelly, gold rim highlight, pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Icon tier, 32×32; hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background. Reads as rarer/more special than the common honey-drop currency icon — not a droplet shape."
 
 #### 2.9 Achievement badges
@@ -326,6 +326,24 @@ accents where relevant, dark outline, flat shading, transparent background.
   survival-action game (Vampire-Survivors-style); Icon tier, 32×32 each; hard pixel edges, no
   anti-aliasing, flat/indexed shading, transparent background. Honey-gold/amber/comb-brown
   palette, thick readable silhouettes, dark outline, no two icons sharing a base shape."
+
+#### 2.12 Codex glyphs (item entries + set-bonus glyph)
+- **Status:** 🟡 placeholder (Phase 5A landed 2026-07-10 — the codex panel is live; its four
+  item-entry icons borrow generic pictos — Flask_01 / Magnetic / Defense / Bomb — authored on
+  `Assets/Data/Progression/CodexCatalog.asset` by `CodexBuilder`, and set-bonus entries share
+  one Sparkle picto tinted per element at runtime)
+- **Spec:** Icon tier, 32×32. The four item icons should simply **reuse §1.7's final item-drop
+  art** (honey jar / magnet / wax shield / royal bomb) once that lands — update the catalog's
+  `Icon` slots, no code change. The set glyph wants one neutral emblem (e.g. a honeycomb hex
+  frame) designed to read through the runtime element tint per §0.4; alternatively reuse §2.4's
+  element badges per set and drop the tint.
+- **Usage:** codex Items/Sets tabs (grid cells + detail pane). Power-up entries reuse the card
+  icons (§2.1–2.3) and enemy entries reuse the live world sprites — no extra art needed there.
+- **Generation prompt:** "A single neutral set-bonus emblem: a honeycomb hexagon frame with a
+  radiant core, designed in light greys/white so a runtime color tint reads cleanly, pixel art
+  for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game
+  (Vampire-Survivors-style); Icon tier, 32×32; hard pixel edges, no anti-aliasing,
+  flat/indexed shading, transparent background."
 
 ---
 

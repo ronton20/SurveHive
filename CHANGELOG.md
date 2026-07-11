@@ -7,6 +7,100 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Playtest polish — shop price clarity + codex depth (2026-07-11)
+
+Two playtest asks: the shop never showed what an upgrade costs, and the codex was too thin.
+
+- **Cost on the BUY button.** Root cause: the detail pane's COST text was authored at the exact
+  offset the bottom-anchored BUY button covers, so the price was always hidden behind it. The
+  BUY button's label now *is* the price — honey glyph + number, "MAX" when topped out — and the
+  dead cost text is gone.
+- **Currency glyphs everywhere.** New `CurrencyGlyphsBuilder`: a two-cell sprite sheet (the
+  shipped honey drop upscaled ×4, plus a procedural pearly royal-comb **jelly** cell) wrapped
+  in a `TMP_SpriteAsset` and registered as TMP's **default sprite asset** — any text can show a
+  currency as its image via `<sprite name="honey"/"jelly">` (tags live in
+  `Core/CurrencyGlyphs`). Applied to the shop header balances, the BUY price, and the results
+  screen's banked/earned lines; the wordless balance/cost prefixes left the localization table.
+- **Codex: per-level power-up details.** Once a power-up is discovered, its detail pane lists
+  what **every level** grants — new pure `Progression/CodexSkillLevels` (EditMode-tested)
+  formats it menu-safe from the skill assets alone: per-level increments for passives and
+  enhancements (pierce reads count → ALL), and DMG / count / area / cooldown / status-chance
+  per level from the active-skill growth tables.
+- **Codex: sectioned tabs.** Power-ups group under **PASSIVES / ENHANCEMENTS / ABILITIES**
+  headers, enemies under **one header per world** (`CodexCatalogSO` restructured from a flat
+  enemy list into named `EnemyGroup`s — future worlds append as new groups). The entry grid
+  became a ScrollRect of stacked section blocks (`CodexUI` spawns a header + sub-grid per
+  section), so grown tabs scroll instead of clipping.
+- **Codex: enemies describe behavior, not stats.** The HP/DMG rows are gone — they scale with
+  difficulty and run time and told the player nothing durable. Each `EnemyStatsSO` now carries
+  a hand-written `_codexDescription` behavior blurb (authored by `CodexBuilder` only where
+  empty, so tuning edits survive re-runs). Sets keep their existing reveal (silhouette until
+  activated once, then the full tier table).
+- **Tests:** EditMode — the per-level formatter (magnitude tables, cooldown reductions read as
+  −, flat vs % units, uncapped collapse, pierce ALL, active growth tables); validator now
+  asserts the glyph asset + TMP default wiring, the BUY label, world-named groups with blurbs
+  on all 8 enemies, and the codex scroll wiring.
+
+### Phase 5B — Royal Jelly premium currency (2026-07-11)
+
+Closes the earning/banking half of TODO #31: **Royal Jelly**, a second, deliberately scarce
+currency alongside Honey — earned in small fixed amounts, spent (later, by 5C/5E) on
+cosmetics/revives.
+
+- **Earning.** All payouts live in the pure, EditMode-tested `Progression/RoyalJellyAwards`:
+  **+1 per miniboss kill** and **+3 per Queen kill** (hooked in `BossSpawner.CompleteBossDeath`,
+  awarded before the victory flow banks), plus a **one-time first-clear bonus per
+  stage+difficulty** — 10/15/20/25 for Easy→Extreme, granted in `RunSession.EndRun` by checking
+  `HasStageClear` before the clear is recorded.
+- **Scarcity by construction.** `RunCurrencyWallet` carries jelly in a separate pool that the
+  honey gain multipliers (meta Currency Gain upgrade, difficulty compensation) never touch.
+  Jelly banks on both death and victory, mirroring honey.
+- **Persistence.** Save schema **v6** (`bankedJelly`; field initializer doubles as the v5
+  migration, negative values clamp to 0). `MetaProgressionState` + both store SOs + the
+  `IMetaProgressionStore` seam grew `BankedJelly` / `BankJelly` / `TrySpendJelly` — the spend
+  path is in place for character customization (5C) and the rotating shop (5E).
+- **UI.** A pearly-cream **ROYAL JELLY** balance readout beside the shop header's honey balance
+  (new additive `RoyalJellyBuilder`, validator-asserted), and a `Royal Jelly  +N` line on the
+  death/victory results block that only appears on runs that earned some. New localized
+  `shop.jelly_prefix` / `results.jelly_earned` keys (StringTable now 66 keys).
+- **Tests:** EditMode — awards table (tier scaling + clamping), separate bank/spend
+  bookkeeping vs honey, save v6 round-trip + v5→v6 migration + negative clamp, and the wallet's
+  jelly path ignoring honey multipliers.
+- Icon still text-only — the §2.8 royal-comb-cell icon spec in `ASSET_GENERATION.md` now reads
+  as needed.
+
+### Phase 5A — Codex (2026-07-10)
+
+Closes TODO #35: a main-menu **CODEX** encyclopedia of everything encountered — undiscovered
+entries render as black silhouettes with a "???" detail until the player meets them in a run.
+
+- **Discovery tracking.** New run-scoped `Progression/CodexTracker` (PlayerContext-mold static
+  entry points): records the first pick of each power-up (`LevelUpUIController`), the first
+  activation of each set tier (via the existing `ElementSets.OnChanged` event), the first spawn
+  of each enemy rank (a single hook in `EnemySpawner.SpawnAt` covers the drip, strong waves,
+  bosses, and Queen summons), and the first pickup of each item drop. First-encounter checks
+  are reference/bool lookups (zero-GC on the spawn hot path); newly-discovered ids batch in
+  memory and flush to the save in **one write at scene teardown** — death, victory, and
+  quit-to-menu all flush; combat frames never touch the file.
+- **Entry ids.** New pure `Progression/CodexIds` scheme (`skill:<id>` / `set:<element>` /
+  `enemy:<asset>` / `item:<type>`), EditMode-tested.
+- **UI.** New `UI/CodexUI` + `UI/CodexEntryUI` panel in the shop's tabbed mold — Power-Ups /
+  Sets / Enemies / Items tabs, a 7-column icon grid, a read-only detail pane (set entries list
+  their tier tables + signature, enemies their HP/DMG), and a `DISCOVERED n/total` counter.
+  The home menu gains a **CODEX** button (bottom-left stack is now Play / Hive Upgrades /
+  Codex / Settings / Quit). New localized `codex.*` keys.
+- **Data & persistence.** New `CodexCatalogSO` (skill database + 8 enemy ranks + 4 item-drop
+  display rows with placeholder pictos); save schema bumped to **v5** (`codexIds` array — the
+  field initializer doubles as the migration, so old saves load with nothing discovered);
+  codex unlock bookkeeping in `MetaProgressionState` + both store SOs (batch `UnlockCodexEntries`).
+- **Builder & validation.** New idempotent `CodexBuilder` (catalog → entry-cell prefab →
+  MainMenu panel/button wiring → Beehive tracker); the scene validator grew codex checks on
+  both scenes (846 asserts green). New `CodexVerifyDriver` captures the panel against a
+  sandboxed save (the real save is never touched).
+- **Tests:** EditMode 166/166 — id formatting, unlock dedupe/round-trip, store batching, v5
+  save round-trip + v4→v5 migration defaults; the PlayMode smoke test now asserts a run queues
+  discoveries and the flush persists them (against a per-run-clean redirected save file).
+
 ### Phase 3C — Enhanced options: feedback-layer toggles (2026-07-10)
 
 Closes TODO #36 (and with it Phase 3, the PC-first UI overhaul): players can now switch the

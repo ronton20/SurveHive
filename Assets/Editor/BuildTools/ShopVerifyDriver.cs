@@ -80,10 +80,42 @@ namespace SurveHive.BuildTools
                 _stage = 3;
                 Capture("shop-grid.png");
             }
-            else if (_stage == 3 && elapsed > 6.5)
+            else if (_stage == 3 && elapsed > 6.0)
+            {
+                // Select an unmaxed upgrade so the BUY button shows its price
+                // (glyph + cost) instead of MAX.
+                _stage = 4;
+                SelectUnmaxedIcon();
+            }
+            else if (_stage == 4 && elapsed > 7.5)
+            {
+                _stage = 5;
+                Capture("shop-detail-price.png");
+            }
+            else if (_stage == 5 && elapsed > 9.0)
             {
                 Finish();
             }
+        }
+
+        private static void SelectUnmaxedIcon()
+        {
+            var icons = Object.FindObjectsByType<MetaShopIconUI>(FindObjectsSortMode.None);
+            var persistentStore = UnityEditor.AssetDatabase.LoadAssetAtPath<SurveHive.Data.PersistentMetaProgressionStoreSO>(
+                "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
+            for (int i = 0; i < icons.Length; i++)
+            {
+                bool unmaxed = icons[i].Upgrade != null && persistentStore != null
+                    && persistentStore.GetUpgradeRank(icons[i].Upgrade.UpgradeId) < icons[i].Upgrade.MaxRank;
+                if (icons[i].isActiveAndEnabled && unmaxed)
+                {
+                    icons[i].Button.onClick.Invoke();
+                    Debug.Log($"ShopVerifyDriver: selected unmaxed upgrade '{icons[i].Upgrade.name}'.");
+                    return;
+                }
+            }
+
+            Debug.Log("ShopVerifyDriver: no unmaxed upgrade icon visible.");
         }
 
         private static void Capture(string fileName)

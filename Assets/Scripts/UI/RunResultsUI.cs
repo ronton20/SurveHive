@@ -58,8 +58,19 @@ namespace SurveHive.UI
 
             if (_wallet != null)
             {
+                _builder.Append(CurrencyGlyphs.Honey);
                 _builder.Append(Loc.Get(LocKeys.ResultsHoneyBanked));
                 _builder.Append(_wallet.TotalCurrency);
+
+                // 5B: Royal Jelly is rare, so the line only appears on runs
+                // that earned some (boss kills / first clears).
+                if (_wallet.TotalJelly > 0)
+                {
+                    _builder.Append('\n');
+                    _builder.Append(CurrencyGlyphs.Jelly);
+                    _builder.Append(Loc.Get(LocKeys.ResultsJellyEarned));
+                    _builder.Append(_wallet.TotalJelly);
+                }
             }
 
             // One end-of-run allocation (not a hot path); .text keeps the value
