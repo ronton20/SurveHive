@@ -36,8 +36,10 @@ namespace SurveHive.Tests
             var data = new SaveData
             {
                 bankedCurrency = 1234,
+                bankedJelly = 17,
                 upgradeIds = new[] { "meta_max_health", "meta_damage" },
                 upgradeRanks = new[] { 3, 7 },
+                codexIds = new[] { "skill:swift_wings", "enemy:WorkerBee", "item:HoneyJar" },
             };
             data.settings.musicVolume = 0.25f;
             data.settings.sfxVolume = 0.75f;
@@ -59,6 +61,7 @@ namespace SurveHive.Tests
             Assert.IsNotNull(loaded);
             Assert.AreEqual(SaveData.CurrentVersion, loaded.version);
             Assert.AreEqual(1234, loaded.bankedCurrency);
+            Assert.AreEqual(17, loaded.bankedJelly);
             CollectionAssert.AreEqual(data.upgradeIds, loaded.upgradeIds);
             CollectionAssert.AreEqual(data.upgradeRanks, loaded.upgradeRanks);
             Assert.AreEqual(0.25f, loaded.settings.musicVolume);
@@ -75,6 +78,45 @@ namespace SurveHive.Tests
             Assert.AreEqual(21, loaded.bestRun.bestLevel);
             Assert.AreEqual(14, loaded.bestRun.runsPlayed);
             Assert.AreEqual(2, loaded.bestRun.victories);
+            CollectionAssert.AreEqual(data.codexIds, loaded.codexIds);
+        }
+
+        [Test]
+        public void FromJson_PreV5Save_DefaultsCodexEmpty()
+        {
+            // A v4 save knows nothing of the codex — the field initializer must
+            // land an empty (never null) unlock list.
+            SaveData loaded = SaveDataSerializer.FromJson("{\"version\":4,\"bankedCurrency\":10}");
+
+            Assert.IsNotNull(loaded);
+            Assert.AreEqual(SaveData.CurrentVersion, loaded.version);
+            Assert.IsNotNull(loaded.codexIds);
+            Assert.AreEqual(0, loaded.codexIds.Length);
+            Assert.AreEqual(10, loaded.bankedCurrency);
+        }
+
+        [Test]
+        public void FromJson_PreV6Save_DefaultsJellyZero()
+        {
+            // A v5 save knows nothing of Royal Jelly — the field initializer
+            // must land a zero balance while keeping everything it did carry.
+            SaveData loaded = SaveDataSerializer.FromJson(
+                "{\"version\":5,\"bankedCurrency\":250,\"codexIds\":[\"enemy:WorkerBee\"]}");
+
+            Assert.IsNotNull(loaded);
+            Assert.AreEqual(SaveData.CurrentVersion, loaded.version);
+            Assert.AreEqual(0, loaded.bankedJelly);
+            Assert.AreEqual(250, loaded.bankedCurrency);
+            Assert.AreEqual(1, loaded.codexIds.Length);
+        }
+
+        [Test]
+        public void FromJson_NegativeJelly_ClampsToZero()
+        {
+            SaveData loaded = SaveDataSerializer.FromJson("{\"version\":6,\"bankedJelly\":-8}");
+
+            Assert.IsNotNull(loaded);
+            Assert.AreEqual(0, loaded.bankedJelly);
         }
 
         [Test]

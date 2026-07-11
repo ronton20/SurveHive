@@ -86,7 +86,17 @@ namespace SurveHive.Core
                 return;
             }
 
+            // 5B: the first clear of this stage on this difficulty pays a
+            // one-time Royal Jelly bonus — checked before RecordStageClear
+            // below marks it, and added to the wallet so it banks with the
+            // run's boss-kill jelly.
+            if (victory && !_metaProgressionStore.HasStageClear(_stageId, (int)SelectedDifficulty))
+            {
+                _currencyWallet.AddJelly(RoyalJellyAwards.FirstClear(SelectedDifficulty));
+            }
+
             _metaProgressionStore.BankRunCurrency(_currencyWallet.TotalCurrency);
+            _metaProgressionStore.BankJelly(_currencyWallet.TotalJelly);
             int level = _playerExperience != null ? _playerExperience.CurrentLevel : 0;
             _metaProgressionStore.RecordRunResult(
                 Mathf.FloorToInt(_elapsedSeconds), _killCount, level, victory);

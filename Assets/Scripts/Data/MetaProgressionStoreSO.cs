@@ -16,6 +16,12 @@ namespace SurveHive.Data
 
         public abstract bool TrySpendCurrency(int amount);
 
+        public abstract int BankedJelly { get; }
+
+        public abstract void BankJelly(int amount);
+
+        public abstract bool TrySpendJelly(int amount);
+
         public abstract int GetUpgradeRank(string upgradeId);
 
         public abstract void SetUpgradeRank(string upgradeId, int rank);
@@ -34,6 +40,20 @@ namespace SurveHive.Data
         public virtual bool HasStageClear(string stageId, int difficulty)
         {
             return false;
+        }
+
+        /// <summary>Whether a codex entry has been discovered; false by default.</summary>
+        public virtual bool IsCodexUnlocked(string entryId)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Records a batch of newly-discovered codex entries in one persist
+        /// (the run tracker flushes once at scene teardown); no-op by default.
+        /// </summary>
+        public virtual void UnlockCodexEntries(System.Collections.Generic.List<string> entryIds)
+        {
         }
     }
 }

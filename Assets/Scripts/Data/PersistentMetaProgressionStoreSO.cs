@@ -104,6 +104,39 @@ namespace SurveHive.Data
             return true;
         }
 
+        public override int BankedJelly
+        {
+            get
+            {
+                EnsureLoaded();
+                return _state.BankedJelly;
+            }
+        }
+
+        public override void BankJelly(int amount)
+        {
+            if (amount <= 0)
+            {
+                return;
+            }
+
+            EnsureLoaded();
+            _state.BankJelly(amount);
+            Persist();
+        }
+
+        public override bool TrySpendJelly(int amount)
+        {
+            EnsureLoaded();
+            if (!_state.TrySpendJelly(amount))
+            {
+                return false;
+            }
+
+            Persist();
+            return true;
+        }
+
         public override int GetUpgradeRank(string upgradeId)
         {
             EnsureLoaded();
@@ -149,6 +182,32 @@ namespace SurveHive.Data
         {
             EnsureLoaded();
             return _state.HasStageClear(stageId, difficulty);
+        }
+
+        public override bool IsCodexUnlocked(string entryId)
+        {
+            EnsureLoaded();
+            return _state.IsCodexUnlocked(entryId);
+        }
+
+        public override void UnlockCodexEntries(System.Collections.Generic.List<string> entryIds)
+        {
+            if (entryIds == null || entryIds.Count == 0)
+            {
+                return;
+            }
+
+            EnsureLoaded();
+            bool changed = false;
+            for (int i = 0; i < entryIds.Count; i++)
+            {
+                changed |= _state.UnlockCodexEntry(entryIds[i]);
+            }
+
+            if (changed)
+            {
+                Persist();
+            }
         }
 
         /// <summary>Persists settings edits made through <see cref="Settings"/>.</summary>

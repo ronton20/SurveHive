@@ -107,6 +107,16 @@ namespace SurveHive.Persistence
                     data.stageClearMasks[i] = 0;
                 }
             }
+
+            if (data.codexIds == null)
+            {
+                data.codexIds = new string[0];
+            }
+
+            if (data.bankedJelly < 0)
+            {
+                data.bankedJelly = 0;
+            }
         }
 
         private static void Migrate(SaveData data)

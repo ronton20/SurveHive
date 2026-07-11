@@ -8,6 +8,13 @@ namespace SurveHive.Core
 
         bool TrySpendCurrency(int amount);
 
+        /// <summary>Banked premium currency, Royal Jelly (PLAN 5B).</summary>
+        int BankedJelly { get; }
+
+        void BankJelly(int amount);
+
+        bool TrySpendJelly(int amount);
+
         int GetUpgradeRank(string upgradeId);
 
         void SetUpgradeRank(string upgradeId, int rank);

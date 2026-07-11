@@ -35,6 +35,12 @@ namespace SurveHive.Tests
 
             public bool TrySpendCurrency(int amount) => _state.TrySpend(amount);
 
+            public int BankedJelly => _state.BankedJelly;
+
+            public void BankJelly(int amount) => _state.BankJelly(amount);
+
+            public bool TrySpendJelly(int amount) => _state.TrySpendJelly(amount);
+
             public int GetUpgradeRank(string upgradeId) => _state.GetRank(upgradeId);
 
             public void SetUpgradeRank(string upgradeId, int rank) => _state.SetRank(upgradeId, rank);

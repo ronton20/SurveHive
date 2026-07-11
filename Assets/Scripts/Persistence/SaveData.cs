@@ -9,7 +9,7 @@ namespace SurveHive.Persistence
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 6;
 
         public int version = CurrentVersion;
         public int bankedCurrency;
@@ -26,6 +26,13 @@ namespace SurveHive.Persistence
         // Initializers double as the v2 migration (missing → no clears).
         public string[] stageClearIds = new string[0];
         public int[] stageClearMasks = new int[0];
+        // v5: codex unlock flags (PLAN 5A) — the ids of every entry the player
+        // has encountered, formatted by Progression.CodexIds. The initializer
+        // doubles as the v4 migration (missing → nothing discovered).
+        public string[] codexIds = new string[0];
+        // v6: banked premium currency, Royal Jelly (PLAN 5B). The initializer
+        // doubles as the v5 migration (missing → none earned yet).
+        public int bankedJelly;
     }
 
     [Serializable]

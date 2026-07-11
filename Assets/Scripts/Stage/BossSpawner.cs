@@ -138,6 +138,15 @@ namespace SurveHive.Stage
                 StageDirector.Instance.SetBossActive(false);
             }
 
+            // 5B: boss kills pay Royal Jelly. Awarded before ShowVictory so the
+            // final boss's jelly is still in the wallet when EndRun banks it.
+            if (RunSession.Instance != null && RunSession.Instance.Currency != null)
+            {
+                RunSession.Instance.Currency.AddJelly(
+                    wasFinal ? Progression.RoyalJellyAwards.FinalBossKill
+                             : Progression.RoyalJellyAwards.MinibossKill);
+            }
+
             if (wasFinal)
             {
                 // Killing the Queen = world clear: first winnable run.

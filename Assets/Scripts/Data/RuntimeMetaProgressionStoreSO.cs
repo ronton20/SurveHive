@@ -12,6 +12,7 @@ namespace SurveHive.Data
     public sealed class RuntimeMetaProgressionStoreSO : MetaProgressionStoreSO
     {
         [SerializeField] private int _bankedTotal;
+        [SerializeField] private int _bankedJelly;
 
         private readonly MetaProgressionState _ranks = new MetaProgressionState();
 
@@ -38,6 +39,29 @@ namespace SurveHive.Data
             return true;
         }
 
+        public override int BankedJelly => _bankedJelly;
+
+        public override void BankJelly(int amount)
+        {
+            if (amount <= 0)
+            {
+                return;
+            }
+
+            _bankedJelly += amount;
+        }
+
+        public override bool TrySpendJelly(int amount)
+        {
+            if (amount <= 0 || amount > _bankedJelly)
+            {
+                return false;
+            }
+
+            _bankedJelly -= amount;
+            return true;
+        }
+
         public override int GetUpgradeRank(string upgradeId)
         {
             return _ranks.GetRank(upgradeId);
@@ -56,6 +80,24 @@ namespace SurveHive.Data
         public override bool HasStageClear(string stageId, int difficulty)
         {
             return _ranks.HasStageClear(stageId, difficulty);
+        }
+
+        public override bool IsCodexUnlocked(string entryId)
+        {
+            return _ranks.IsCodexUnlocked(entryId);
+        }
+
+        public override void UnlockCodexEntries(System.Collections.Generic.List<string> entryIds)
+        {
+            if (entryIds == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < entryIds.Count; i++)
+            {
+                _ranks.UnlockCodexEntry(entryIds[i]);
+            }
         }
     }
 }
