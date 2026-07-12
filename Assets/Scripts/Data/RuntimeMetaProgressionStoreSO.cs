@@ -129,5 +129,20 @@ namespace SurveHive.Data
         {
             _ranks.SetEquippedCosmetic(slot, cosmeticId);
         }
+
+        public override int GetDailyDealDay()
+        {
+            return _ranks.DailyDealDay;
+        }
+
+        public override string[] GetDailyDealIds()
+        {
+            return _ranks.GetDailyDealIds();
+        }
+
+        public override void SetDailyDeals(int dayStamp, System.Collections.Generic.List<string> cosmeticIds)
+        {
+            _ranks.SetDailyDeals(dayStamp, cosmeticIds);
+        }
     }
 }

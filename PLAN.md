@@ -550,7 +550,21 @@ anywhere. This phase can start any time after Phase 1 (it only touches meta/menu
 - **Done when:** a handful of achievements unlock from real play, grant their rewards, persist,
   and the Steam seam compiles without Steamworks present.
 
-### 5E — Rotating cosmetics shop — TODO #34 ☐
+### 5E — Rotating cosmetics shop — TODO #34 ✅
+- **Shipped 2026-07-12:** a main-menu **DEALS** panel featuring up to **3 not-yet-owned
+  cosmetics per local day at 30% off** (round-half-up, min 1 jelly) — the discount is the
+  draw, since the full 5C catalog stays buyable at list price in Hive Style. The pick is
+  date-seeded (yyyymmdd, local, no server) over the unowned catalog slice and **frozen into
+  save v9** (`dailyDealDay`/`dailyDealIds`) on first sight, so it survives restarts and
+  buying one deal never re-rolls the others (bought deals show SOLD until rollover). Cards
+  show icon/name/flavor + struck-through list price → deal price; BUY spends jelly at the
+  deal price (new `CosmeticShop.TryPurchase` price overload) and auto-equips, 5C-style. A
+  once-per-second `NEW DEALS IN HH:MM:SS` countdown tracks local midnight and re-rolls live
+  if the day flips with the panel open; an all-owned catalog shows a "nothing left to
+  discount" line instead. Pure pick/price/rollover logic in `Progression/RotatingShop`
+  (EditMode-tested: determinism, distinctness, caps, price math, migration, discounted
+  purchase); panel built by the additive `RotatingShopBuilder` (8-row home stack); validator
+  asserts panel + all three cards; no new art (reuses 5C sprites + the UI kit).
 - Daily rotation of purchasable cosmetics (spends jelly, from the 5C catalog): a deterministic
   pick from the catalog seeded by the date (no server), e.g. 3 items/day, excluding owned.
   Timer showing time-to-next-rotation.

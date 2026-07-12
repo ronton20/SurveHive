@@ -9,7 +9,7 @@ namespace SurveHive.Persistence
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 8;
+        public const int CurrentVersion = 9;
 
         public int version = CurrentVersion;
         public int bankedCurrency;
@@ -41,6 +41,13 @@ namespace SurveHive.Persistence
         // v8: achievements (PLAN 5D) — the unlocked ids. The initializer
         // doubles as the v7 migration (missing → nothing unlocked yet).
         public string[] unlockedAchievementIds = new string[0];
+        // v9: rotating cosmetics shop (PLAN 5E) — the local day stamp
+        // (yyyymmdd) the current daily deals were picked on plus the picked
+        // cosmetic ids, frozen for the day so buying one deal never re-rolls
+        // the others. Initializers double as the v8 migration (missing →
+        // deals never picked; -1 never matches a real day stamp).
+        public int dailyDealDay = -1;
+        public string[] dailyDealIds = new string[0];
     }
 
     [Serializable]

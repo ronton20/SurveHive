@@ -258,6 +258,25 @@ namespace SurveHive.Data
             Persist();
         }
 
+        public override int GetDailyDealDay()
+        {
+            EnsureLoaded();
+            return _state.DailyDealDay;
+        }
+
+        public override string[] GetDailyDealIds()
+        {
+            EnsureLoaded();
+            return _state.GetDailyDealIds();
+        }
+
+        public override void SetDailyDeals(int dayStamp, System.Collections.Generic.List<string> cosmeticIds)
+        {
+            EnsureLoaded();
+            _state.SetDailyDeals(dayStamp, cosmeticIds);
+            Persist();
+        }
+
         /// <summary>Persists settings edits made through <see cref="Settings"/>.</summary>
         public void SaveSettings()
         {

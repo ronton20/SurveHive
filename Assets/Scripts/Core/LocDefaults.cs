@@ -93,6 +93,13 @@ namespace SurveHive.Core
             new KeyValuePair<string, string>(LocKeys.CosmeticsEquip, "EQUIP"),
             new KeyValuePair<string, string>(LocKeys.CosmeticsEquipped, "EQUIPPED"),
 
+            new KeyValuePair<string, string>(LocKeys.DealsTitle, "DAILY DEALS"),
+            new KeyValuePair<string, string>(LocKeys.DealsMenuButton, "DEALS"),
+            new KeyValuePair<string, string>(LocKeys.DealsTimerPrefix, "NEW DEALS IN "),
+            new KeyValuePair<string, string>(LocKeys.DealsBuy, "BUY"),
+            new KeyValuePair<string, string>(LocKeys.DealsSold, "SOLD"),
+            new KeyValuePair<string, string>(LocKeys.DealsAllOwned, "You own every cosmetic — nothing left to discount!"),
+
             new KeyValuePair<string, string>(LocKeys.AchievementsTitle, "ACHIEVEMENTS"),
             new KeyValuePair<string, string>(LocKeys.AchievementsMenuButton, "AWARDS"),
             new KeyValuePair<string, string>(LocKeys.AchievementsToastTitle, "ACHIEVEMENT UNLOCKED!"),

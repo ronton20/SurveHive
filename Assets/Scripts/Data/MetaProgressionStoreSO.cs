@@ -87,5 +87,22 @@ namespace SurveHive.Data
         public virtual void SetEquippedCosmetic(int slot, string cosmeticId)
         {
         }
+
+        /// <summary>Day stamp the daily deals were picked on (PLAN 5E); -1 = never.</summary>
+        public virtual int GetDailyDealDay()
+        {
+            return -1;
+        }
+
+        /// <summary>The frozen daily-deal ids; treat the returned array as read-only.</summary>
+        public virtual string[] GetDailyDealIds()
+        {
+            return System.Array.Empty<string>();
+        }
+
+        /// <summary>Freezes the day's deal picks (one persist per rollover).</summary>
+        public virtual void SetDailyDeals(int dayStamp, System.Collections.Generic.List<string> cosmeticIds)
+        {
+        }
     }
 }

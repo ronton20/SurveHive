@@ -24,6 +24,11 @@ namespace SurveHive.Persistence
         private int _bankedCurrency;
         // Premium currency, Royal Jelly (PLAN 5B) — separate pool from honey.
         private int _bankedJelly;
+        // Rotating cosmetics shop (PLAN 5E): the local day stamp the current
+        // deals were picked on (-1 = never picked) + the picked ids, frozen
+        // for the day.
+        private int _dailyDealDay = -1;
+        private string[] _dailyDealIds = System.Array.Empty<string>();
 
         public int BankedCurrency => _bankedCurrency;
 
@@ -159,6 +164,31 @@ namespace SurveHive.Persistence
             _equippedCosmetics[slot] = cosmeticId ?? string.Empty;
         }
 
+        /// <summary>Day stamp the current daily deals were picked on (-1 = never).</summary>
+        public int DailyDealDay => _dailyDealDay;
+
+        /// <summary>The frozen daily-deal ids; treat the returned array as read-only.</summary>
+        public string[] GetDailyDealIds()
+        {
+            return _dailyDealIds;
+        }
+
+        public void SetDailyDeals(int dayStamp, List<string> cosmeticIds)
+        {
+            _dailyDealDay = dayStamp;
+            if (cosmeticIds == null || cosmeticIds.Count == 0)
+            {
+                _dailyDealIds = System.Array.Empty<string>();
+                return;
+            }
+
+            _dailyDealIds = new string[cosmeticIds.Count];
+            for (int i = 0; i < cosmeticIds.Count; i++)
+            {
+                _dailyDealIds[i] = cosmeticIds[i] ?? string.Empty;
+            }
+        }
+
         public void LoadFrom(SaveData data)
         {
             _ranks.Clear();
@@ -202,6 +232,13 @@ namespace SurveHive.Persistence
             for (int i = 0; i < data.unlockedAchievementIds.Length; i++)
             {
                 UnlockAchievement(data.unlockedAchievementIds[i]);
+            }
+
+            _dailyDealDay = data.dailyDealDay;
+            _dailyDealIds = new string[data.dailyDealIds.Length];
+            for (int i = 0; i < data.dailyDealIds.Length; i++)
+            {
+                _dailyDealIds[i] = data.dailyDealIds[i] ?? string.Empty;
             }
         }
 
@@ -259,6 +296,13 @@ namespace SurveHive.Persistence
             {
                 data.unlockedAchievementIds[index] = achievementId;
                 index++;
+            }
+
+            data.dailyDealDay = _dailyDealDay;
+            data.dailyDealIds = new string[_dailyDealIds.Length];
+            for (int i = 0; i < _dailyDealIds.Length; i++)
+            {
+                data.dailyDealIds[i] = _dailyDealIds[i] ?? string.Empty;
             }
         }
     }

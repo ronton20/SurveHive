@@ -127,6 +127,16 @@ namespace SurveHive.Persistence
             {
                 data.equippedCosmeticIds = new string[0];
             }
+
+            if (data.unlockedAchievementIds == null)
+            {
+                data.unlockedAchievementIds = new string[0];
+            }
+
+            if (data.dailyDealIds == null)
+            {
+                data.dailyDealIds = new string[0];
+            }
         }
 
         private static void Migrate(SaveData data)

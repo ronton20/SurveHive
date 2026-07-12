@@ -99,6 +99,14 @@ namespace SurveHive.Core
         public const string CosmeticsEquip = "cosmetics.equip";
         public const string CosmeticsEquipped = "cosmetics.equipped";
 
+        // Daily deals / rotating cosmetics shop (PLAN 5E)
+        public const string DealsTitle = "deals.title";
+        public const string DealsMenuButton = "deals.menu_button";
+        public const string DealsTimerPrefix = "deals.timer_prefix";
+        public const string DealsBuy = "deals.buy";
+        public const string DealsSold = "deals.sold";
+        public const string DealsAllOwned = "deals.all_owned";
+
         // Achievements (PLAN 5D)
         public const string AchievementsTitle = "achievements.title";
         public const string AchievementsMenuButton = "achievements.menu_button";

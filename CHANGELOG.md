@@ -7,6 +7,33 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 5E — Daily Deals: rotating cosmetics shop (2026-07-12)
+
+The last Phase 5 retention system (TODO #34): a serverless daily rotation that gives Royal
+Jelly a reason to be checked on every day.
+
+- **Three deals a day, 30% off.** Each local calendar day features up to 3 not-yet-owned
+  cosmetics from the 5C catalog at a discount (round-half-up, never below 1 jelly). The full
+  catalog stays buyable at list price in Hive Style — the deals are a bargain surface, not a
+  gate. Pick, price, and rollover math live in the pure `Progression/RotatingShop`
+  (EditMode-tested).
+- **Deterministic + frozen.** The pick is seeded by the local date (yyyymmdd) over the unowned
+  slice of the catalog — no server, no RNG state — and the chosen ids freeze into the save on
+  first sight (**save v9**: `dailyDealDay` + `dailyDealIds`; initializers = migration), so the
+  selection survives restarts and buying one deal never re-rolls the others. Bought deals show
+  **SOLD** until rollover.
+- **DEALS panel.** New main-menu home button (8-row stack re-asserted) opening a panel with
+  three deal cards — icon, name, flavor text, struck-through list price next to the deal
+  price, BUY (spends jelly at the deal price via a new `CosmeticShop.TryPurchase` price
+  overload, then auto-equips like Hive Style) — plus the jelly balance and a once-per-second
+  `NEW DEALS IN HH:MM:SS` countdown to local midnight that re-rolls live if the day flips
+  with the panel open. Once every cosmetic is owned the panel says so. Built by the additive
+  idempotent `RotatingShopBuilder`; no new art (reuses the 5C sprites + UI kit).
+- Store seam grew `GetDailyDealDay`/`GetDailyDealIds`/`SetDailyDeals` on both store SOs; new
+  `deals.*` string-table keys; the scene validator asserts the panel, controller wiring, and
+  all three cards. EditMode suite covers pick determinism/distinctness/caps, price math, the
+  v8→v9 migration, and the discounted purchase path.
+
 ### Phase 5D — Achievements (2026-07-12)
 
 Local-first achievements (TODO #33): trophies unlock from real play, pay Royal Jelly (and

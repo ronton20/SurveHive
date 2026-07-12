@@ -12,6 +12,12 @@ namespace SurveHive.Progression
     {
         public static bool TryPurchase(MetaProgressionStoreSO store, CosmeticSO cosmetic)
         {
+            return cosmetic != null && TryPurchase(store, cosmetic, cosmetic.JellyCost);
+        }
+
+        /// <summary>List-price override — the daily deals (PLAN 5E) buy at their discounted price.</summary>
+        public static bool TryPurchase(MetaProgressionStoreSO store, CosmeticSO cosmetic, int price)
+        {
             if (store == null || cosmetic == null || string.IsNullOrEmpty(cosmetic.CosmeticId))
             {
                 return false;
@@ -24,7 +30,7 @@ namespace SurveHive.Progression
 
             // Zero-cost entries (achievement-granted skins listed in the shop)
             // unlock without a spend — TrySpendJelly rejects amounts <= 0.
-            if (cosmetic.JellyCost > 0 && !store.TrySpendJelly(cosmetic.JellyCost))
+            if (price > 0 && !store.TrySpendJelly(price))
             {
                 return false;
             }

@@ -181,3 +181,15 @@ MonoBehaviour:
     value: 'REWARD: '
   - key: achievements.unlocked_prefix
     value: 'UNLOCKED '
+  - key: deals.title
+    value: DAILY DEALS
+  - key: deals.menu_button
+    value: DEALS
+  - key: deals.timer_prefix
+    value: 'NEW DEALS IN '
+  - key: deals.buy
+    value: BUY
+  - key: deals.sold
+    value: SOLD
+  - key: deals.all_owned
+    value: "You own every cosmetic \u2014 nothing left to discount!"

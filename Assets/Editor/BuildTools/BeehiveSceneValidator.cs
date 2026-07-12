@@ -975,6 +975,9 @@ namespace SurveHive.BuildTools
 
                 // 5D achievements: panel + AWARDS button, AchievementsUI wired.
                 ok &= ValidateAchievementsPanel(so);
+
+                // 5E rotating shop: panel + DEALS button, DailyDealsUI wired.
+                ok &= ValidateDailyDealsPanel(so);
             }
 
             return ok;
@@ -1130,6 +1133,71 @@ namespace SurveHive.BuildTools
                     ok &= Check(cosmeticCatalog.FindById(achievement.CosmeticRewardId) != null,
                         $"Achievement '{achievement.AchievementId}' cosmetic reward exists in the cosmetic catalog");
                 }
+            }
+
+            return ok;
+        }
+
+        // --- Phase 5E (PLAN.md): main-menu daily-deals panel ---
+        private static bool ValidateDailyDealsPanel(SerializedObject controllerSo)
+        {
+            bool ok = true;
+
+            var dealsPanel = controllerSo.FindProperty("_dealsPanel").objectReferenceValue as GameObject;
+            ok &= Check(dealsPanel != null, "MainMenuController._dealsPanel wired");
+            ok &= Check(controllerSo.FindProperty("_dealsButton").objectReferenceValue != null,
+                "MainMenuController._dealsButton wired");
+            ok &= Check(controllerSo.FindProperty("_dealsBackButton").objectReferenceValue != null,
+                "MainMenuController._dealsBackButton wired");
+            if (dealsPanel == null)
+            {
+                return false;
+            }
+
+            ok &= Check(!dealsPanel.activeSelf, "DailyDealsPanel inactive at rest");
+
+            var dealsUi = dealsPanel.GetComponent<UI.DailyDealsUI>();
+            ok &= Check(dealsUi != null, "DailyDealsPanel has DailyDealsUI");
+            if (dealsUi == null)
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(dealsUi);
+            ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                "DailyDealsUI._store wired to the persistent store");
+            ok &= Check(so.FindProperty("_catalog").objectReferenceValue is Data.CosmeticCatalogSO,
+                "DailyDealsUI._catalog wired");
+            ok &= Check(so.FindProperty("_jellyText").objectReferenceValue != null, "DailyDealsUI._jellyText wired");
+            ok &= Check(so.FindProperty("_timerText").objectReferenceValue != null, "DailyDealsUI._timerText wired");
+            ok &= Check(so.FindProperty("_allOwnedText").objectReferenceValue != null,
+                "DailyDealsUI._allOwnedText wired");
+            ok &= Check(so.FindProperty("_swatchSprite").objectReferenceValue != null,
+                "DailyDealsUI._swatchSprite wired");
+
+            var cards = so.FindProperty("_cards");
+            ok &= Check(cards.arraySize == Progression.RotatingShop.DealsPerDay,
+                $"DailyDealsUI has {Progression.RotatingShop.DealsPerDay} deal cards (found {cards.arraySize})");
+            for (int i = 0; i < cards.arraySize; i++)
+            {
+                var card = cards.GetArrayElementAtIndex(i).objectReferenceValue as UI.DailyDealCardUI;
+                ok &= Check(card != null, $"DailyDealsUI card [{i}] wired");
+                if (card == null)
+                {
+                    continue;
+                }
+
+                var cardSo = new SerializedObject(card);
+                ok &= Check(cardSo.FindProperty("_iconImage").objectReferenceValue != null,
+                    $"Deal card [{i}] icon wired");
+                ok &= Check(cardSo.FindProperty("_nameText").objectReferenceValue != null,
+                    $"Deal card [{i}] name text wired");
+                ok &= Check(cardSo.FindProperty("_priceText").objectReferenceValue != null,
+                    $"Deal card [{i}] price text wired");
+                ok &= Check(cardSo.FindProperty("_buyButton").objectReferenceValue != null,
+                    $"Deal card [{i}] buy button wired");
+                ok &= Check(cardSo.FindProperty("_buyLabel").objectReferenceValue != null,
+                    $"Deal card [{i}] buy label wired");
             }
 
             return ok;
