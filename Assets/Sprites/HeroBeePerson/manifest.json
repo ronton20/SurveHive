@@ -1,0 +1,60 @@
+{
+  "asset_generation_entry": "1.1 Hero bee animation rig — humanoid bee-person direction",
+  "generated": "2026-07-07/08",
+  "pixellab_character_id": "4696ce65-b8f1-4d37-a34b-8cc3fe4a5ea6",
+  "character_name": "Hero Bee-Person (Male)",
+  "status": "LIVE on the Player. Wired via Assets/Editor/BuildTools/HeroBeePersonSkinBuilder.cs into Assets/Sprites/HeroBeePerson/HeroBeePersonGenerated.asset (SpriteLibraryAsset). Confirmed via 92/92 EditMode tests, scene validator PASSED, visual drive screenshots.",
+  "supersedes": "Assets/Sprites/HeroBee/ (insect-bodied direction, rejected 2026-07-08). Left intact, unused.",
+  "generation_params": {
+    "description": "A male humanoid bee-person hero — yellow skin, short black hair, small branching antler-like antennae on his head, wearing a simple shirt and pants, two small translucent insect wings on his back, and a large, prominent bee-abdomen tail extending from his lower body with bold yellow-and-black stripes, tapering to a sharp point. This striped tail is his stinger weapon and must be clearly visible, not a minor detail. Confident heroic stance.",
+    "body_type": "humanoid",
+    "view": "low top-down",
+    "outline": "single color black outline",
+    "detail": "medium detail",
+    "mode": "v3",
+    "size": 24,
+    "note": "output canvas 40x40 — rescale to 32x32 Character tier on import per ASSET_GENERATION.md 0.1"
+  },
+  "direction_split": {
+    "idle": "south",
+    "hit": "south",
+    "death": "south",
+    "run": "west",
+    "attack": "west",
+    "note": "User's explicit choice: south for idle/hit/death, west for run/attack — two different facings from the same character generation, chosen for how well each angle reads that particular motion. RESOLVED in code: user chose 'add code support for 2 facings' over regenerating art. See CharacterAnimator._idleUsesMirroredFacing (set false on the Player only) — Idle stays Fixed to the south pose, Run/Attack still mirror the west pose for movement/aim direction."
+  },
+  "animations": {
+    "idle":   { "template_animation_id": "breathing-idle",     "direction": "south", "frame_count": 4, "job_id": "090f3b4c-611f-47ba-8f85-42d594884a65" },
+    "hit":    { "template_animation_id": "taking-punch",       "direction": "south", "frame_count": 6, "job_id": "72de619c-f88c-4fdc-bb17-8c7f1396bfcc" },
+    "death":  { "template_animation_id": "falling-back-death", "direction": "south", "frame_count": 7, "job_id": "e5f6ab0f-627b-48fe-832a-f4ef0cec7697" },
+    "run":    { "template_animation_id": "walking-6-frames",   "direction": "west",  "frame_count": 6, "job_id": "0eb4457c-2acc-4786-ae18-725d605bba05" },
+    "attack": {
+      "mode": "v3 custom (no template covers a tail-curl attack)",
+      "direction": "west",
+      "frame_count": 9,
+      "job_id": "61e33562-22e0-4ea8-90eb-96c76f3a3b3b",
+      "action_description": "a bee-tail stinger attack: the long striped tail curls forward from behind the body, sweeping under and between the legs, then extends and lengthens forward as if unfurling to deliver a strike, finally thrusting to release a projectile from its tip",
+      "user_fallback_instruction": "if it requires too many frames then remove the expansion part — kept the full curl+expand+release version at 9 frames since it fit within a single v3 call; revisit if it reads as muddled once seen at actual game scale/speed.",
+      "in_engine_frame_selection": "the shared Attack.anim clip only resolves 6 distinct SpriteResolver labels, so HeroBeePersonSkinBuilder down-samples to indices [0,2,3,5,6,8] (keeps first and last frame exact, evenly spreads the middle) rather than using all 9."
+    }
+  },
+  "customization_plan": {
+    "status": "documented only, not built — same as before, saving the design for later",
+    "slots": [
+      "base color (the yellow body/skin)",
+      "stripes color (the black stinger/body stripes)",
+      "antlers color (the yellow dots at the antler tips)",
+      "wings color"
+    ],
+    "supersedes_note": "Replaces the earlier speculative customization list (body/hair/stinger-stripe/shirt/pants/shoes color, hair style) now that there's an actual approved design to base it on — this list is grounded in what's actually visible on the generated character."
+  },
+  "generation_cost": "This character total: 2 (v3 base) + 4 (template clips: idle/hit/death/run) + 1 (v3 custom attack) = 7 generations.",
+  "folder_layout": {
+    "base/south.png, base/west.png": "reference rotation frames (unused directly, idle/run source their own animated frame 0 from these)",
+    "idle/0-3.png": "south-facing idle frames",
+    "hit/0-5.png": "south-facing hit frames",
+    "death/0-6.png": "south-facing death frames",
+    "run/0-5.png": "west-facing run frames",
+    "attack/0-8.png": "west-facing attack frames (frame 0 is the reference pose, 1-8 generated)"
+  }
+}

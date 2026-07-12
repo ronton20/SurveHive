@@ -1,0 +1,41 @@
+{
+  "asset_generation_entry": "1.1 Hero bee animation rig",
+  "generated": "2026-07-07",
+  "pixellab_character_id": "698b84ba-2ef7-4d05-9380-38484f70f3a9",
+  "character_name": "Hero Bee",
+  "iteration_history": {
+    "v1_e10924ba-dc21-44f2-b82e-ed11a7a725af": "REJECTED by user — standard mode, 'heroic' proportions preset. Read as a human in a bee costume: the preset is a human-body template and standard mode's skeleton generation follows it literally. Deleted from PixelLab.",
+    "v2_8b2f94a1-c31a-4e67-8870-ca08ff4e9099": "REJECTED by user — standard mode, custom insectoid proportions (big head, short limbs, wide hips). Rounder and more insect-like but still read as 'a chubby bee-themed man.' Left on PixelLab account (delete call failed transiently, not worth retrying).",
+    "v3_698b84ba-2ef7-4d05-9380-38484f70f3a9": "ACCEPTED — v3 mode instead of standard: not locked to a literal human skeleton, so an explicit 'not a human/person, an actual insect body' description plus 'a sharp stinger it wields as a weapon' actually landed. User picked the 'south' rotation as the best-looking angle."
+  },
+  "generation_params": {
+    "description": "An actual bee insect creature, not a human or person — anthropomorphic insect body with a large round fuzzy honey-gold and black striped thorax and abdomen, four small translucent wings folded on its back, big glossy black compound eyes covering most of its round head, two thin curved antennae, four short stubby insect legs, and a sharp black stinger extending from the tip of the abdomen that it wields as a weapon. Confident heroic stance, distinct from generic hive drones.",
+    "body_type": "humanoid",
+    "view": "low top-down",
+    "outline": "single color black outline",
+    "detail": "medium detail",
+    "mode": "v3",
+    "size": 24,
+    "note": "v3 requires size to be a multiple of 4; ignores n_directions (always 8), proportions, shading, text_guidance_scale. Actual output canvas 44x44 — rescale to 32x32 Character tier on import per ASSET_GENERATION.md 0.1."
+  },
+  "chosen_direction": "south",
+  "direction_note": "User judged 'south' the best-looking angle of the 8 generated. It renders facing left. CharacterAnimator.cs stores a single right-facing base and flips localScale.x for left movement, so every frame in this staging folder (base + all 5 clips) has been mirrored horizontally with `sips --flip horizontal` to face right — this makes the art a drop-in match for the existing contract with zero code changes. The unmirrored east/north/west/diagonal rotations were discarded per user request (only south was wanted).",
+  "animations": {
+    "idle":   { "template_animation_id": "breathing-idle",     "source_direction": "south", "frame_count": 4, "job_id": "a1363367-5954-4c09-a1a6-9a3cd9096ab5" },
+    "run":    { "template_animation_id": "walking-6-frames",   "source_direction": "south", "frame_count": 6, "job_id": "703b2398-7908-4542-98d5-e5f391f1bce1" },
+    "attack": { "template_animation_id": "lead-jab",           "source_direction": "south", "frame_count": 3, "job_id": "886ad649-9180-4d80-bdcc-aa65fccabf71" },
+    "hit":    { "template_animation_id": "taking-punch",       "source_direction": "south", "frame_count": 6, "job_id": "b81ff92e-a2f5-4484-a9ae-471b34f34f3f" },
+    "die":    { "template_animation_id": "falling-back-death", "source_direction": "south", "frame_count": 7, "job_id": "2f24aee6-f8c1-4ba3-be3d-f7edcdbd65ce" }
+  },
+  "hit_animation_caveat": "The current CharacterAnimator/Hit.anim doesn't consume sprite frames for Hit at all today — it's a color flash. These 6 hit frames are staged for a future upgrade, not wired to anything yet.",
+  "folder_layout": {
+    "base/south.png": "mirrored base pose (right-facing)",
+    "idle/0-3.png": "mirrored idle frames",
+    "run/0-5.png": "mirrored run frames",
+    "attack/0-2.png": "mirrored attack frames",
+    "hit/0-5.png": "mirrored hit frames",
+    "die/0-6.png": "mirrored die frames"
+  },
+  "generation_cost": "This iteration (v3, kept): 2 (base) + 5 (south-direction clips) = 7 generations. Session total across all 3 attempts: 14 of 40 trial generations used (v1: 1 body + 5 anims = 6, rejected; v2: 1 body = 1, rejected; v3: 7, kept). 26 remaining.",
+  "status": "staged, not yet imported/wired into Unity (no .meta/import settings, no AnimationClips, no prefab change)"
+}
