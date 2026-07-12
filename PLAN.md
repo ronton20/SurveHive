@@ -520,7 +520,24 @@ anywhere. This phase can start any time after Phase 1 (it only touches meta/menu
   `Persistence/SaveData.cs`, new `UI/` panel, `ASSET_GENERATION.md` entries for each cosmetic.
 - **Done when:** an equipped color/hat/stinger visibly changes the in-run hero and persists.
 
-### 5D — Achievements — TODO #33 ☐
+### 5D — Achievements — TODO #33 ✅
+- **Shipped 2026-07-12:** a roster of **11 achievements** whose conditions all ride existing
+  signals — kills-in-run 1/250/1,000, level 10/20, survive 5 min, any set tier / top set tier
+  (`ElementSets`), and stage clears on any/Hard/Extreme. Data: `AchievementSO` (id, condition
+  type + threshold, jelly + optional cosmetic reward) + `AchievementCatalogSO`, authored by
+  the additive `AchievementsBuilder` (display/threshold/rewards only on create). Rewards stay
+  5B-scarce: 1–15 jelly each (~53 total); the Extreme clear also grants the **Honey Crown**.
+  The Beehive-scoped `AchievementTracker` scans only the still-locked catalog slice (zero-GC
+  in combat), toasts + reports to `AchievementBackends.Active` immediately on unlock, and
+  defers rewards/save writes to run end (`RunSession.EndRun` → `ReportRunEnd`; death, victory,
+  and abandon all route through it) / teardown — codex mold, no mid-combat file IO. Pure
+  EditMode-tested `Progression/AchievementRules` owns threshold checks + the pay-once grant.
+  Save **v8** (`unlockedAchievementIds`, initializer = migration); store seam grew
+  `IsAchievementUnlocked`/`UnlockAchievement`. UI: in-run toast banner (queued, unscaled-time
+  fades) + a main-menu **AWARDS** panel (scroll list, reward lines with the jelly glyph /
+  cosmetic names, `UNLOCKED n/total` counter). The Steam seam (`Core/IAchievementBackend` +
+  no-op `LocalAchievementBackend` default) compiles with no Steamworks present; all wiring
+  validator-asserted, including cosmetic rewards resolving against the 5C catalog.
 - Achievement definitions as SOs (id, name, condition params, rewards: jelly and/or cosmetic
   unlocks). A tracker service listens to existing signals (kills, clears, levels, sets
   completed, difficulty clears) — design conditions around events that already exist.

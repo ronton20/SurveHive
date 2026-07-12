@@ -110,6 +110,16 @@ namespace SurveHive.Data
             _ranks.UnlockCosmetic(cosmeticId);
         }
 
+        public override bool IsAchievementUnlocked(string achievementId)
+        {
+            return _ranks.IsAchievementUnlocked(achievementId);
+        }
+
+        public override void UnlockAchievement(string achievementId)
+        {
+            _ranks.UnlockAchievement(achievementId);
+        }
+
         public override string GetEquippedCosmetic(int slot)
         {
             return _ranks.GetEquippedCosmetic(slot);

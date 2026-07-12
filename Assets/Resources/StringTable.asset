@@ -171,3 +171,13 @@ MonoBehaviour:
     value: EQUIP
   - key: cosmetics.equipped
     value: EQUIPPED
+  - key: achievements.title
+    value: ACHIEVEMENTS
+  - key: achievements.menu_button
+    value: AWARDS
+  - key: achievements.toast_title
+    value: ACHIEVEMENT UNLOCKED!
+  - key: achievements.reward_prefix
+    value: 'REWARD: '
+  - key: achievements.unlocked_prefix
+    value: 'UNLOCKED '

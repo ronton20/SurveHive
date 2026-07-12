@@ -214,6 +214,8 @@ namespace SurveHive.BuildTools
             ok &= ValidateCodexTracker();
             // 5C: ditto — the cosmetic applier lives on the Beehive Player.
             ok &= ValidateCosmeticApplier(player);
+            // 5D: achievement tracker + HUD unlock toast, also Beehive-scoped.
+            ok &= ValidateAchievementTracker();
             ok &= ValidatePhase4MetaAndMenus(player);
             ok &= ValidateEnemyVariety();
             ok &= ValidateLocalization();
@@ -236,6 +238,66 @@ namespace SurveHive.BuildTools
                 var so = new SerializedObject(tracker);
                 ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
                     "CodexTracker._store wired to the persistent store");
+            }
+
+            return ok;
+        }
+
+        // --- Phase 5D (PLAN.md): achievement tracker + toast in the Beehive scene ---
+        private static bool ValidateAchievementTracker()
+        {
+            bool ok = true;
+
+            var trackerGo = GameObject.Find("AchievementTracker");
+            ok &= Check(trackerGo != null, "AchievementTracker GameObject exists");
+            var tracker = trackerGo != null ? trackerGo.GetComponent<Progression.AchievementTracker>() : null;
+            ok &= Check(tracker != null, "AchievementTracker component present");
+            if (tracker != null)
+            {
+                var so = new SerializedObject(tracker);
+                ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                    "AchievementTracker._store wired to the persistent store");
+                var catalog = so.FindProperty("_catalog").objectReferenceValue as Data.AchievementCatalogSO;
+                ok &= Check(catalog != null, "AchievementTracker._catalog wired");
+                ok &= Check(so.FindProperty("_playerExperience").objectReferenceValue != null,
+                    "AchievementTracker._playerExperience wired");
+                if (catalog != null)
+                {
+                    ok &= Check(catalog.Achievements != null && catalog.Achievements.Length > 0,
+                        "AchievementCatalog is non-empty");
+                    var seenIds = new System.Collections.Generic.HashSet<string>();
+                    for (int i = 0; i < catalog.Achievements.Length; i++)
+                    {
+                        Data.AchievementSO achievement = catalog.Achievements[i];
+                        ok &= Check(achievement != null && !string.IsNullOrEmpty(achievement.AchievementId),
+                            $"AchievementCatalog entry [{i}] wired with an id");
+                        ok &= Check(achievement == null || seenIds.Add(achievement.AchievementId),
+                            $"AchievementCatalog entry [{i}] id is unique");
+                    }
+                }
+            }
+
+            // The HUD toast: wired, resting invisible, never blocking clicks.
+            GameObject canvasGo = GameObject.Find("Canvas");
+            Transform toastTransform = canvasGo != null ? canvasGo.transform.Find("AchievementToast") : null;
+            ok &= Check(toastTransform != null, "Canvas/AchievementToast exists");
+            var toast = toastTransform != null ? toastTransform.GetComponent<UI.AchievementToastUI>() : null;
+            ok &= Check(toast != null, "AchievementToast has AchievementToastUI");
+            if (toast != null)
+            {
+                var so = new SerializedObject(toast);
+                var group = so.FindProperty("_root").objectReferenceValue as CanvasGroup;
+                ok &= Check(group != null, "AchievementToastUI._root wired");
+                ok &= Check(group != null && group.alpha == 0f, "AchievementToast alpha 0 at rest");
+                ok &= Check(group != null && !group.blocksRaycasts, "AchievementToast never blocks raycasts");
+                ok &= Check(so.FindProperty("_titleText").objectReferenceValue != null,
+                    "AchievementToastUI._titleText wired");
+                ok &= Check(so.FindProperty("_nameText").objectReferenceValue != null,
+                    "AchievementToastUI._nameText wired");
+                ok &= Check(so.FindProperty("_rewardText").objectReferenceValue != null,
+                    "AchievementToastUI._rewardText wired");
+                ok &= Check(so.FindProperty("_cosmeticCatalog").objectReferenceValue is Data.CosmeticCatalogSO,
+                    "AchievementToastUI._cosmeticCatalog wired");
             }
 
             return ok;
@@ -910,6 +972,9 @@ namespace SurveHive.BuildTools
                 // 5C cosmetics: Hive Style panel + STYLE button, CosmeticsUI
                 // fully wired, roster carrying all three slots.
                 ok &= ValidateCosmeticsPanel(so);
+
+                // 5D achievements: panel + AWARDS button, AchievementsUI wired.
+                ok &= ValidateAchievementsPanel(so);
             }
 
             return ok;
@@ -1004,6 +1069,66 @@ namespace SurveHive.BuildTools
                     ok &= Check(row.FindPropertyRelative("Icon").objectReferenceValue != null
                         && !string.IsNullOrEmpty(row.FindPropertyRelative("DisplayName").stringValue),
                         $"CodexCatalog item [{i}] has icon + name");
+                }
+            }
+
+            return ok;
+        }
+
+        // --- Phase 5D (PLAN.md): main-menu achievements panel ---
+        private static bool ValidateAchievementsPanel(SerializedObject controllerSo)
+        {
+            bool ok = true;
+
+            var achievementsPanel = controllerSo.FindProperty("_achievementsPanel").objectReferenceValue as GameObject;
+            ok &= Check(achievementsPanel != null, "MainMenuController._achievementsPanel wired");
+            ok &= Check(controllerSo.FindProperty("_achievementsButton").objectReferenceValue != null,
+                "MainMenuController._achievementsButton wired");
+            ok &= Check(controllerSo.FindProperty("_achievementsBackButton").objectReferenceValue != null,
+                "MainMenuController._achievementsBackButton wired");
+            if (achievementsPanel == null)
+            {
+                return false;
+            }
+
+            ok &= Check(!achievementsPanel.activeSelf, "AchievementsPanel inactive at rest");
+
+            var achievementsUi = achievementsPanel.GetComponent<UI.AchievementsUI>();
+            ok &= Check(achievementsUi != null, "AchievementsPanel has AchievementsUI");
+            if (achievementsUi == null)
+            {
+                return false;
+            }
+
+            var so = new SerializedObject(achievementsUi);
+            ok &= Check(so.FindProperty("_store").objectReferenceValue is Data.PersistentMetaProgressionStoreSO,
+                "AchievementsUI._store wired to the persistent store");
+            ok &= Check(so.FindProperty("_catalog").objectReferenceValue is Data.AchievementCatalogSO,
+                "AchievementsUI._catalog wired");
+            ok &= Check(so.FindProperty("_cosmeticCatalog").objectReferenceValue is Data.CosmeticCatalogSO,
+                "AchievementsUI._cosmeticCatalog wired");
+            ok &= Check(so.FindProperty("_entryPrefab").objectReferenceValue != null,
+                "AchievementsUI._entryPrefab wired");
+            ok &= Check(so.FindProperty("_listContent").objectReferenceValue != null,
+                "AchievementsUI._listContent wired");
+            ok &= Check(so.FindProperty("_counterText").objectReferenceValue != null,
+                "AchievementsUI._counterText wired");
+
+            // Cosmetic rewards must resolve against the 5C catalog.
+            var catalog = so.FindProperty("_catalog").objectReferenceValue as Data.AchievementCatalogSO;
+            var cosmeticCatalog = so.FindProperty("_cosmeticCatalog").objectReferenceValue as Data.CosmeticCatalogSO;
+            if (catalog != null && cosmeticCatalog != null)
+            {
+                for (int i = 0; i < catalog.Achievements.Length; i++)
+                {
+                    Data.AchievementSO achievement = catalog.Achievements[i];
+                    if (achievement == null || string.IsNullOrEmpty(achievement.CosmeticRewardId))
+                    {
+                        continue;
+                    }
+
+                    ok &= Check(cosmeticCatalog.FindById(achievement.CosmeticRewardId) != null,
+                        $"Achievement '{achievement.AchievementId}' cosmetic reward exists in the cosmetic catalog");
                 }
             }
 

@@ -225,6 +225,21 @@ namespace SurveHive.Data
             }
         }
 
+        public override bool IsAchievementUnlocked(string achievementId)
+        {
+            EnsureLoaded();
+            return _state.IsAchievementUnlocked(achievementId);
+        }
+
+        public override void UnlockAchievement(string achievementId)
+        {
+            EnsureLoaded();
+            if (_state.UnlockAchievement(achievementId))
+            {
+                Persist();
+            }
+        }
+
         public override string GetEquippedCosmetic(int slot)
         {
             EnsureLoaded();

@@ -93,6 +93,12 @@ namespace SurveHive.Core
             new KeyValuePair<string, string>(LocKeys.CosmeticsEquip, "EQUIP"),
             new KeyValuePair<string, string>(LocKeys.CosmeticsEquipped, "EQUIPPED"),
 
+            new KeyValuePair<string, string>(LocKeys.AchievementsTitle, "ACHIEVEMENTS"),
+            new KeyValuePair<string, string>(LocKeys.AchievementsMenuButton, "AWARDS"),
+            new KeyValuePair<string, string>(LocKeys.AchievementsToastTitle, "ACHIEVEMENT UNLOCKED!"),
+            new KeyValuePair<string, string>(LocKeys.AchievementsRewardPrefix, "REWARD: "),
+            new KeyValuePair<string, string>(LocKeys.AchievementsUnlockedPrefix, "UNLOCKED "),
+
             new KeyValuePair<string, string>(LocKeys.ResultsTime, "Time  "),
             new KeyValuePair<string, string>(LocKeys.ResultsKills, "Kills  "),
             new KeyValuePair<string, string>(LocKeys.ResultsLevel, "Level  "),

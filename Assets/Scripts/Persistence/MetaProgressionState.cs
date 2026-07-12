@@ -18,6 +18,8 @@ namespace SurveHive.Persistence
         // Cosmetics (PLAN 5C): purchased ids + equipped id per (int)CosmeticSlot
         // ("" = the default look for that slot).
         private readonly HashSet<string> _ownedCosmetics = new HashSet<string>();
+        // Achievements (PLAN 5D): unlocked ids.
+        private readonly HashSet<string> _unlockedAchievements = new HashSet<string>();
         private readonly string[] _equippedCosmetics = new string[Data.CosmeticSlots.Count];
         private int _bankedCurrency;
         // Premium currency, Royal Jelly (PLAN 5B) — separate pool from honey.
@@ -128,6 +130,17 @@ namespace SurveHive.Persistence
             return !string.IsNullOrEmpty(cosmeticId) && _ownedCosmetics.Contains(cosmeticId);
         }
 
+        /// <summary>Records an achievement unlock; returns true when newly unlocked.</summary>
+        public bool UnlockAchievement(string achievementId)
+        {
+            return !string.IsNullOrEmpty(achievementId) && _unlockedAchievements.Add(achievementId);
+        }
+
+        public bool IsAchievementUnlocked(string achievementId)
+        {
+            return !string.IsNullOrEmpty(achievementId) && _unlockedAchievements.Contains(achievementId);
+        }
+
         /// <summary>Equipped cosmetic id for a slot; "" means the default look.</summary>
         public string GetEquippedCosmetic(int slot)
         {
@@ -152,6 +165,7 @@ namespace SurveHive.Persistence
             _stageClearMasks.Clear();
             _codexUnlocks.Clear();
             _ownedCosmetics.Clear();
+            _unlockedAchievements.Clear();
             _bankedCurrency = data.bankedCurrency;
             _bankedJelly = data.bankedJelly;
 
@@ -183,6 +197,11 @@ namespace SurveHive.Persistence
                 _equippedCosmetics[i] = i < data.equippedCosmeticIds.Length && data.equippedCosmeticIds[i] != null
                     ? data.equippedCosmeticIds[i]
                     : string.Empty;
+            }
+
+            for (int i = 0; i < data.unlockedAchievementIds.Length; i++)
+            {
+                UnlockAchievement(data.unlockedAchievementIds[i]);
             }
         }
 
@@ -232,6 +251,14 @@ namespace SurveHive.Persistence
             for (int i = 0; i < _equippedCosmetics.Length; i++)
             {
                 data.equippedCosmeticIds[i] = _equippedCosmetics[i] ?? string.Empty;
+            }
+
+            data.unlockedAchievementIds = new string[_unlockedAchievements.Count];
+            index = 0;
+            foreach (string achievementId in _unlockedAchievements)
+            {
+                data.unlockedAchievementIds[index] = achievementId;
+                index++;
             }
         }
     }

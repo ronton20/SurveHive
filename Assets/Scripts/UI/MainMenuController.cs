@@ -20,6 +20,8 @@ namespace SurveHive.UI
         [SerializeField] private GameObject _codexPanel;
         // PLAN 5C: optional cosmetics panel, wired by CosmeticsBuilder the same way.
         [SerializeField] private GameObject _cosmeticsPanel;
+        // PLAN 5D: optional achievements panel, wired by AchievementsBuilder.
+        [SerializeField] private GameObject _achievementsPanel;
 
         [SerializeField] private Button _playButton;
         [SerializeField] private Button _shopButton;
@@ -33,6 +35,8 @@ namespace SurveHive.UI
         [SerializeField] private Button _codexBackButton;
         [SerializeField] private Button _cosmeticsButton;
         [SerializeField] private Button _cosmeticsBackButton;
+        [SerializeField] private Button _achievementsButton;
+        [SerializeField] private Button _achievementsBackButton;
 
         [SerializeField] private string _beehiveSceneName = "Beehive";
 
@@ -45,6 +49,7 @@ namespace SurveHive.UI
         private CanvasGroup _settingsGroup;
         private CanvasGroup _codexGroup;
         private CanvasGroup _cosmeticsGroup;
+        private CanvasGroup _achievementsGroup;
         private Coroutine _fadeRoutine;
 
         private void Awake()
@@ -65,6 +70,11 @@ namespace SurveHive.UI
             if (_cosmeticsPanel != null)
             {
                 _cosmeticsGroup = GetOrAddGroup(_cosmeticsPanel);
+            }
+
+            if (_achievementsPanel != null)
+            {
+                _achievementsGroup = GetOrAddGroup(_achievementsPanel);
             }
 
             _playButton.onClick.AddListener(ShowWorldSelect);
@@ -93,6 +103,16 @@ namespace SurveHive.UI
             if (_cosmeticsBackButton != null)
             {
                 _cosmeticsBackButton.onClick.AddListener(ShowMain);
+            }
+
+            if (_achievementsButton != null)
+            {
+                _achievementsButton.onClick.AddListener(ShowAchievements);
+            }
+
+            if (_achievementsBackButton != null)
+            {
+                _achievementsBackButton.onClick.AddListener(ShowMain);
             }
 
             ShowMain();
@@ -126,6 +146,16 @@ namespace SurveHive.UI
             if (_cosmeticsBackButton != null)
             {
                 _cosmeticsBackButton.onClick.RemoveListener(ShowMain);
+            }
+
+            if (_achievementsButton != null)
+            {
+                _achievementsButton.onClick.RemoveListener(ShowAchievements);
+            }
+
+            if (_achievementsBackButton != null)
+            {
+                _achievementsBackButton.onClick.RemoveListener(ShowMain);
             }
         }
 
@@ -165,6 +195,14 @@ namespace SurveHive.UI
             }
         }
 
+        public void ShowAchievements()
+        {
+            if (_achievementsPanel != null)
+            {
+                SetActivePanel(_achievementsPanel);
+            }
+        }
+
         public void StartBeehiveRun()
         {
             SceneManager.LoadScene(_beehiveSceneName);
@@ -184,6 +222,11 @@ namespace SurveHive.UI
             if (_cosmeticsPanel != null)
             {
                 _cosmeticsPanel.SetActive(panel == _cosmeticsPanel);
+            }
+
+            if (_achievementsPanel != null)
+            {
+                _achievementsPanel.SetActive(panel == _achievementsPanel);
             }
 
             FadeIn(GroupFor(panel));
@@ -214,6 +257,11 @@ namespace SurveHive.UI
             if (panel == _cosmeticsPanel && _cosmeticsGroup != null)
             {
                 return _cosmeticsGroup;
+            }
+
+            if (panel == _achievementsPanel && _achievementsGroup != null)
+            {
+                return _achievementsGroup;
             }
 
             return _mainGroup;

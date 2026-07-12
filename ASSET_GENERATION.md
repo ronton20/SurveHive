@@ -283,8 +283,8 @@ accents where relevant, dark outline, flat shading, transparent background.
 - **Generation prompt:** "A premium currency icon: a hexagonal royal comb cell filled with pearly-white/cream royal jelly, gold rim highlight, pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Icon tier, 32×32; hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background. Reads as rarer/more special than the common honey-drop currency icon — not a droplet shape."
 
 #### 2.9 Achievement badges
-- **Status:** 🔴 not started (TODO #33 — achievements system not yet implemented)
-- **Spec:** Icon tier, 32×32 — **one neutral badge per achievement type** (crown for boss kills, skull for deaths, hourglass for survival time, stinger for kill counts, etc.), each with a plain unfilled ring; the gold/silver/bronze tier is a **runtime tint on the ring only** (per §0.4), not three baked variants per badge
+- **Status:** 🟡 system live, art missing (the achievements **system** shipped in Phase 5D, 2026-07-12: 11 achievements — kill counts 1/250/1,000, levels 10/20, 5-min survival, any/top set tier, any/Hard/Extreme clears. The AWARDS panel rows and the in-run unlock toast are **text-only** today; each row's unlocked marker is a plain gold square — wiring badge art in means an icon Image on the AchievementRow prefab/toast plus a sprite field on `AchievementSO`)
+- **Spec:** Icon tier, 32×32 — **one neutral badge per achievement type** (crown for boss/clear feats, hourglass for survival time, stinger for kill counts, wing for levels, elemental ring for set tiers), each with a plain unfilled ring; the gold/silver/bronze tier is a **runtime tint on the ring only** (per §0.4), not three baked variants per badge
 - **Usage:** achievements panel + unlock toast
 - **Generation prompt:** "A starter set of ~12 achievement badge icons, circular medal shape with a honeycomb border and a plain unfilled outer ring, each with a distinct central symbol (crown for boss kills, skull for deaths, hourglass for survival time, stinger for kill counts, etc.), pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Icon tier, 32×32 each; hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background. Leave the outer ring a neutral/plain color — the gold/silver/bronze tier is applied as a runtime tint, do not bake it in."
 
@@ -443,6 +443,12 @@ accents where relevant, dark outline, flat shading, transparent background.
 ---
 
 ## Change log for this document
+
+- **2026-07-12 (5D shipped)** — achievements system landed (Phase 5D), flipping §2.9 from
+  "not started" to "system live, art missing": 11 achievements with a text-only AWARDS panel
+  and unlock toast; badge art (one neutral 32×32 badge per achievement type, tier as a
+  runtime ring tint) is now an active gap — landing it means adding an icon Image to the
+  AchievementRow prefab / toast (builder tweak) and a sprite field on `AchievementSO`.
 
 - **2026-07-08 (wired live)** — the humanoid Hero Bee-Person (§1.1) is now live on the
   Player, replacing the rejected insect rig. Added `CharacterAnimator._idleUsesMirroredFacing`

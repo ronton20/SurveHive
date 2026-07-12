@@ -131,6 +131,11 @@ statuses (`ElementPalette`, `SkillElement`, `SetBonusSO`). `MetaShop`/`MetaUpgra
 `CodexSkillLevels` — menu-safe per-level power-up breakdown for the codex detail pane.
 `CosmeticShop` — pure cosmetic transactions (5C): jelly spend + unlock in one op, equip requires
 ownership, `""` = default look.
+Achievements (5D): `AchievementTracker` (run-scoped; listens to the kill counter, level-ups,
+`ElementSets`, run time, and `RunSession.EndRun` → `ReportRunEnd`; toasts immediately, rewards +
+save writes flush at run end/teardown) over the pure `AchievementRules` (threshold checks +
+pay-once grant of jelly/cosmetic rewards) and `AchievementRunStats`; the platform seam is
+`Core/IAchievementBackend` (no-op `LocalAchievementBackend` default, Steamworks later).
 
 ### Pickups & currency — `Assets/Scripts/Pickups/`, `Assets/Scripts/Currency/`
 `PickupItem`/`PickupMotion` (one shared magnet system) · `ItemDrop` (Honey Jar / Magnet / Wax
@@ -209,7 +214,9 @@ passes (`CombatOverhaulBuilder`, `EnemyVarietyBuilder`, `DifficultyBuilder`,
 balance + 5B loc keys), `CurrencyGlyphsBuilder` (currency sprite sheet → TMP default sprite
 asset, so texts inline `<sprite name="honey"/"jelly">` via `Core/CurrencyGlyphs`),
 `CosmeticsBuilder` (5C: placeholder cosmetic sprites (only-if-missing) + `CosmeticSO` roster +
-Hive Style panel + the Player's overlay renderers/applier)).
+Hive Style panel + the Player's overlay renderers/applier),
+`AchievementsBuilder` (5D: `AchievementSO` roster + catalog, AchievementRow prefab, the
+main-menu AWARDS panel, and the Beehive tracker + HUD unlock toast)).
 Validated by `BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
 
 > ⚠️ **Builder caution (from `PLAN.md` and project memory):** the scenes/data have since been

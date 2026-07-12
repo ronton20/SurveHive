@@ -99,6 +99,13 @@ namespace SurveHive.Core
         public const string CosmeticsEquip = "cosmetics.equip";
         public const string CosmeticsEquipped = "cosmetics.equipped";
 
+        // Achievements (PLAN 5D)
+        public const string AchievementsTitle = "achievements.title";
+        public const string AchievementsMenuButton = "achievements.menu_button";
+        public const string AchievementsToastTitle = "achievements.toast_title";
+        public const string AchievementsRewardPrefix = "achievements.reward_prefix";
+        public const string AchievementsUnlockedPrefix = "achievements.unlocked_prefix";
+
         // Run results
         public const string ResultsTime = "results.time";
         public const string ResultsKills = "results.kills";

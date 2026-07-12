@@ -107,6 +107,10 @@ namespace SurveHive.Core
             {
                 _metaProgressionStore.RecordStageClear(_stageId, (int)SelectedDifficulty);
             }
+
+            // 5D: resolve clear-based achievements and flush this run's unlock
+            // rewards now that the outcome is final.
+            AchievementTracker.ReportRunEnd(victory, (int)SelectedDifficulty);
         }
     }
 }

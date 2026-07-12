@@ -7,6 +7,39 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 5D — Achievements (2026-07-12)
+
+Local-first achievements (TODO #33): trophies unlock from real play, pay Royal Jelly (and
+one cosmetic), persist in the save, and leave a clean seam for Steam later.
+
+- **Roster of 11.** Every condition rides a signal the game already emits — kills in a run
+  (1 / 250 / 1,000), hero level (10 / 20), surviving 5 minutes, activating any elemental set
+  bonus / reaching a set's top tier, and clearing a stage on any / Hard / Extreme difficulty.
+  Rewards stay 5B-scarce (1–15 jelly each, ~53 total); **Apex of the Hive** (Extreme clear)
+  also grants the **Honey Crown** hat outright. Data: one `AchievementSO` per entry +
+  `AchievementCatalogSO`, authored by the additive `AchievementsBuilder` (id/condition
+  re-asserted; names, thresholds, and rewards authored only on create so tuning survives).
+- **Run tracker.** A Beehive-scoped `AchievementTracker` watches the kill counter, level-ups,
+  `ElementSets` changes, scaled run time, and the run's end (death, victory, and abandon all
+  route through `RunSession.EndRun`), checking only the still-locked slice of the catalog —
+  zero-GC on the combat path. Unlocks toast + report to the platform backend immediately, but
+  rewards and save writes defer to run end / scene teardown (codex mold — no mid-combat file
+  IO). The pure `AchievementRules` (EditMode-tested) owns threshold checks and the
+  pay-exactly-once grant.
+- **Steam seam.** `Core/IAchievementBackend` with a no-op `LocalAchievementBackend` default —
+  the save stays the source of truth; a Steamworks backend can be assigned at boot later
+  without touching the tracker. Compiles with no Steamworks present.
+- **UI.** An in-run **toast banner** (top-center, fade in → hold → fade out, unscaled time,
+  queues multiple unlocks) shows the achievement name + reward line; a new main-menu
+  **AWARDS** button opens the Achievements panel — a scrollable list of every entry with its
+  reward (jelly glyph / cosmetic name), gold-vs-dimmed unlocked state, and an
+  `UNLOCKED n/total` counter.
+- **Save v8** (`unlockedAchievementIds`; initializer = migration, old saves land with nothing
+  unlocked). Store seam grew `IsAchievementUnlocked`/`UnlockAchievement` on both store SOs.
+  New EditMode suite covers every condition type, double-grant rejection, cosmetic rewards,
+  and the v7→v8 migration; the scene validator asserts tracker/toast/panel wiring and that
+  cosmetic rewards resolve against the 5C catalog.
+
 ### Playtest polish — Hive Style preview + stinger skins that matter (2026-07-11)
 
 Same-day feedback on 5C: the preview only showed owned gear, the colors are (accepted)

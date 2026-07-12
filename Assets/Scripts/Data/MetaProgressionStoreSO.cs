@@ -67,6 +67,17 @@ namespace SurveHive.Data
         {
         }
 
+        /// <summary>Whether an achievement is unlocked (PLAN 5D); false by default.</summary>
+        public virtual bool IsAchievementUnlocked(string achievementId)
+        {
+            return false;
+        }
+
+        /// <summary>Records an achievement unlock; no-op by default.</summary>
+        public virtual void UnlockAchievement(string achievementId)
+        {
+        }
+
         /// <summary>Equipped cosmetic id per (int)CosmeticSlot; "" = default look.</summary>
         public virtual string GetEquippedCosmetic(int slot)
         {

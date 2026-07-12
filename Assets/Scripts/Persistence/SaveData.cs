@@ -9,7 +9,7 @@ namespace SurveHive.Persistence
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 7;
+        public const int CurrentVersion = 8;
 
         public int version = CurrentVersion;
         public int bankedCurrency;
@@ -38,6 +38,9 @@ namespace SurveHive.Persistence
         // the v6 migration (missing → nothing owned, default appearance).
         public string[] ownedCosmeticIds = new string[0];
         public string[] equippedCosmeticIds = new string[0];
+        // v8: achievements (PLAN 5D) — the unlocked ids. The initializer
+        // doubles as the v7 migration (missing → nothing unlocked yet).
+        public string[] unlockedAchievementIds = new string[0];
     }
 
     [Serializable]
