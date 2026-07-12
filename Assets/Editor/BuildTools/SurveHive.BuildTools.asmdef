@@ -5,6 +5,8 @@
         "SurveHive.Runtime",
         "Unity.InputSystem",
         "Unity.RenderPipelines.Universal.2D.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Runtime",
         "Unity.TextMeshPro",
         "Unity.2D.Animation.Runtime",
         "Unity.2D.Sprite.Editor"

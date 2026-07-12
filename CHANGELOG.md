@@ -7,6 +7,28 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 6C — Bloom "magic honey" glow pass (2026-07-12)
+
+Honey and magic VFX now glow. A high-threshold URP Bloom lights up only the effects that were
+deliberately pushed into HDR, so the pixel art stays crisp everywhere else.
+
+- **Bloom tuned** on the URP default volume profile: high threshold (1.0) + intensity 1.0 +
+  tighter scatter (0.6) + a warm-honey tint. High threshold = only HDR (>1) pixels bloom, so
+  base sprites and the HUD never smear.
+- **Camera post-processing turned on** — the missing gate. The Beehive Main Camera had a
+  PixelPerfectCamera but no `UniversalAdditionalCameraData`, so bloom rendered nothing; it now
+  carries one with `renderPostProcessing = true`.
+- **Curated honey/magic VFX pushed to HDR** so they cross the threshold and glow: the three
+  magic particle bursts (EmberExplosion / HoneySplash / RoyalNuke, start-color ×1.9,
+  hue-preserved) and eight active-skill sprite projectiles/zones (EmberBolt, BallLightningOrb,
+  ZapArc, HoneyGlob, HoneyPuddle, NovaWave, SkillLance, SkillStinger — color ×1.7, uniform
+  brighten of their own palette).
+- **Idempotent build.** All applied by the additive `BloomGlowBuilder`
+  (`SurveHive/Phase 6C — Bloom Glow Pass`): bloom params set to fixed values; HDR brightening
+  guarded on "already > 1.05" so a re-run is a no-op. The scene validator now asserts camera
+  post-processing + an active Bloom with intensity > 0. Per-effect intensity is re-tunable via
+  the builder's factor constants.
+
 ### Menu polish — two-column home + Deals folded into Hive Style (2026-07-12)
 
 A UX pass that reorganizes the main-menu home screen and merges the Style and Deals surfaces.

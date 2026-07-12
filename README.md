@@ -59,7 +59,7 @@ The target look is **2D top-down pixel art** in the Vampire Survivors mould: sid
 **Rendering foundation (locked):**
 - **PPU 16** everywhere; all imported sprites `Point (no filter)`, `Compression: None`, mipmaps off.
 - **URP 2D Pixel Perfect Camera**, reference resolution **320×180** (integer 6× at 1080p), upscale render texture on for crisp VFX rotation.
-- **Bloom** (URP post, Global Volume) with a high threshold so only deliberately-bright VFX pixels bloom — "magic honey" pop without smearing the pixel art. *Deferred — set up but not yet dialled in (see TODO).* Optional later: 2D lights for hive-interior mood.
+- **Bloom** (URP post, Global Volume) with a **high threshold (1.0)** so only deliberately-bright VFX pixels bloom — "magic honey" pop without smearing the pixel art. *Dialled in (Phase 6C):* the Beehive camera now has post-processing enabled and the honey/magic VFX (the three magic particle bursts + eight active-skill projectiles/zones) are pushed into HDR so they — and only they — cross the threshold and glow, while the base sprites and HUD stay crisp. Applied idempotently by `BloomGlowBuilder`; per-effect intensity is re-tunable via its factor constants. Optional later: 2D lights for hive-interior mood.
 
 **Honey / hive palette** (UI retints, VFX tints, backgrounds):
 

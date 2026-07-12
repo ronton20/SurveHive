@@ -60,6 +60,18 @@ PrefabInstance:
       propertyPath: looping
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7864439438791569329, guid: 76df43a3a89f6854491700452bd0ec66, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.b
+      value: 1.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7864439438791569329, guid: 76df43a3a89f6854491700452bd0ec66, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.g
+      value: 1.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7864439438791569329, guid: 76df43a3a89f6854491700452bd0ec66, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
+      value: 1.9
+      objectReference: {fileID: 0}
     - target: {fileID: 7864439438791569331, guid: 76df43a3a89f6854491700452bd0ec66, type: 3}
       propertyPath: m_Name
       value: Explosion_normal

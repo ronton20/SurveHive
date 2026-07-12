@@ -12,6 +12,8 @@ using SurveHive.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 namespace SurveHive.BuildTools
@@ -216,12 +218,45 @@ namespace SurveHive.BuildTools
             ok &= ValidateCosmeticApplier(player);
             // 5D: achievement tracker + HUD unlock toast, also Beehive-scoped.
             ok &= ValidateAchievementTracker();
+            // 6C: bloom glow — camera post-processing (Beehive-scoped) + profile Bloom.
+            ok &= ValidateBloomGlow();
             ok &= ValidatePhase4MetaAndMenus(player);
             ok &= ValidateEnemyVariety();
             ok &= ValidateLocalization();
             ok &= ValidateCurrencyGlyphs();
 
             Debug.Log(ok ? "SurveHive Beehive scene validation PASSED." : "SurveHive Beehive scene validation FAILED - see errors above.");
+        }
+
+        // --- Phase 6C (PLAN.md): bloom "magic honey" glow pass ---
+        private static bool ValidateBloomGlow()
+        {
+            bool ok = true;
+
+            // Post-processing must be ON on the Beehive Main Camera, or bloom renders
+            // nothing (the camera has a PixelPerfectCamera but no additional-camera-data
+            // by default). Assumes Beehive is the active scene at call time.
+            GameObject camGo = GameObject.FindWithTag("MainCamera");
+            ok &= Check(camGo != null, "6C: Beehive Main Camera exists");
+            if (camGo != null && camGo.TryGetComponent(out Camera cam))
+            {
+                bool hasData = cam.TryGetComponent(out UniversalAdditionalCameraData camData);
+                ok &= Check(hasData && camData.renderPostProcessing,
+                    "6C: Main Camera has post-processing enabled");
+            }
+
+            // Bloom override active with positive intensity on the global default profile.
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(
+                "Assets/Settings/DefaultVolumeProfile.asset");
+            ok &= Check(profile != null, "6C: default volume profile exists");
+            if (profile != null)
+            {
+                bool hasBloom = profile.TryGet(out Bloom bloom);
+                ok &= Check(hasBloom && bloom.active && bloom.intensity.value > 0f,
+                    "6C: default profile Bloom is active with intensity > 0");
+            }
+
+            return ok;
         }
 
         // --- Phase 5A (PLAN.md): codex run tracker in the Beehive scene ---

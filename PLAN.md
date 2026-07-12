@@ -597,7 +597,25 @@ interleave with anything; 6D is the real expansion.
   pass — do not regenerate the scene), `ASSET_GENERATION.md`.
 - **Done when:** the hive interior reads as a place, not a void, at gameplay zoom.
 
-### 6C — Bloom / "magic honey" glow pass ☐
+### 6C — Bloom / "magic honey" glow pass ✅
+- **Shipped 2026-07-12:** a "magic honey" glow pass, all applied by the additive idempotent
+  `BloomGlowBuilder` (`SurveHive/Phase 6C — Bloom Glow Pass`). Three coordinated parts: (1)
+  **Bloom tuned** on the URP default volume profile to a **high threshold (1.0)** with
+  intensity 1.0, tighter scatter 0.6, and a warm-honey tint — so only HDR (>1) pixels bloom and
+  the pixel art stays crisp. (2) **Camera post-processing enabled** on the Beehive Main Camera —
+  the missing gate: the camera had a PixelPerfectCamera but no `UniversalAdditionalCameraData`,
+  so bloom rendered nothing; the builder adds it with `renderPostProcessing = true`. (3) A
+  **curated honey/magic VFX set pushed to HDR** by brightening past 1.0 so they (and only they)
+  cross the threshold: the three magic particle bursts (EmberExplosion / HoneySplash / RoyalNuke,
+  start-color ×1.9, hue-preserved) and eight active-skill sprite projectiles/zones (EmberBolt,
+  BallLightningOrb, ZapArc, HoneyGlob, HoneyPuddle, NovaWave, SkillLance, SkillStinger — color
+  ×1.7, uniform brighten of their own palette). Idempotent: bloom params are set to fixed values
+  and HDR brightening is guarded on "already > 1.05", so a re-run is a no-op. Verified: build +
+  `validation PASSED` (new 6C checks assert camera post-processing + an active Bloom with
+  intensity > 0) + EditMode 213/213 + a GUI capture (`BloomGlowVerifyDriver`) showing the magic
+  orbs/bolts/nova glowing while the background and HUD stay crisp. Per-effect intensity is easily
+  re-tuned via the builder's factor constants. 2D hive-interior lights left as an optional
+  follow-on for 6B's tileset pass.
 - Dial in the URP Bloom on the Global Volume: **high threshold** so only deliberately-bright
   VFX pixels bloom without smearing the pixel art; tag the honey/magic VFX with HDR-bright
   colors where they should glow. Optional follow-on: 2D lights for hive-interior mood.

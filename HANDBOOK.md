@@ -221,7 +221,9 @@ Hive Style panel + the Player's overlay renderers/applier),
 main-menu AWARDS panel, and the Beehive tracker + HUD unlock toast),
 `RotatingShopBuilder` (5E: Daily Deals panel + cards),
 `MenuColumnsBuilder` (authoritative-last home relayout into game-left / player-right columns +
-equipped-bee showcase, and the in-Style flashing Daily Deals CTA)).
+equipped-bee showcase, and the in-Style flashing Daily Deals CTA),
+`BloomGlowBuilder` (6C: tunes the high-threshold URP Bloom, enables post-processing on the
+Beehive camera, and pushes the honey/magic VFX into HDR so only they glow)).
 Validated by `BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
 
 > ⚠️ **Builder caution (from `PLAN.md` and project memory):** the scenes/data have since been

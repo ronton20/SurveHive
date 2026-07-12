@@ -116,6 +116,18 @@ PrefabInstance:
       propertyPath: looping
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3389122499625005983, guid: 75fd454ef8ef10f43bc7c1dcf54b9d2b, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.b
+      value: 1.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3389122499625005983, guid: 75fd454ef8ef10f43bc7c1dcf54b9d2b, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.g
+      value: 1.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 3389122499625005983, guid: 75fd454ef8ef10f43bc7c1dcf54b9d2b, type: 3}
+      propertyPath: InitialModule.startColor.maxColor.r
+      value: 1.9
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
