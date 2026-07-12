@@ -154,7 +154,9 @@ HUD: `HealthBarUI`, `ExpBarUI`, `CurrencyCounterUI`, `KillCounterUI`, `RunTimerU
 Screens/flow: `MainMenuController`, `DifficultySelectUI`, `MetaShopUI`+`MetaShopCardUI`,
 `CodexUI`+`CodexEntryUI` (tabbed encyclopedia, silhouettes until discovered),
 `CosmeticsUI`+`CosmeticEntryUI` (Hive Style: buy/equip cosmetics for jelly, try-before-you-buy
-hero preview, stinger grid sectioned by shape),
+hero preview, stinger grid sectioned by shape; a flashing in-panel `UiFlashPulse` CTA opens
+Daily Deals), `DailyDealsUI`+`DailyDealCardUI`,
+`MainMenuBeePreview` (bottom-right home showcase of the equipped body-tint + hat),
 `LevelUpUIController`, `RunResultsUI`, `PauseMenuController`, `SettingsPanelUI`, `OwnedPowerUpsView`.
 **Almost all UI is generated directly into the scenes by the editor builders — see §6 and §7.**
 
@@ -216,7 +218,10 @@ asset, so texts inline `<sprite name="honey"/"jelly">` via `Core/CurrencyGlyphs`
 `CosmeticsBuilder` (5C: placeholder cosmetic sprites (only-if-missing) + `CosmeticSO` roster +
 Hive Style panel + the Player's overlay renderers/applier),
 `AchievementsBuilder` (5D: `AchievementSO` roster + catalog, AchievementRow prefab, the
-main-menu AWARDS panel, and the Beehive tracker + HUD unlock toast)).
+main-menu AWARDS panel, and the Beehive tracker + HUD unlock toast),
+`RotatingShopBuilder` (5E: Daily Deals panel + cards),
+`MenuColumnsBuilder` (authoritative-last home relayout into game-left / player-right columns +
+equipped-bee showcase, and the in-Style flashing Daily Deals CTA)).
 Validated by `BeehiveSceneValidator`; `PlayModeVerifyDriver` drives a headless play capture.
 
 > ⚠️ **Builder caution (from `PLAN.md` and project memory):** the scenes/data have since been

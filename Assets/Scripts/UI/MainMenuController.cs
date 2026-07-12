@@ -132,7 +132,7 @@ namespace SurveHive.UI
 
             if (_dealsBackButton != null)
             {
-                _dealsBackButton.onClick.AddListener(ShowMain);
+                _dealsBackButton.onClick.AddListener(CloseDeals);
             }
 
             ShowMain();
@@ -185,7 +185,7 @@ namespace SurveHive.UI
 
             if (_dealsBackButton != null)
             {
-                _dealsBackButton.onClick.RemoveListener(ShowMain);
+                _dealsBackButton.onClick.RemoveListener(CloseDeals);
             }
         }
 
@@ -238,6 +238,21 @@ namespace SurveHive.UI
             if (_dealsPanel != null)
             {
                 SetActivePanel(_dealsPanel);
+            }
+        }
+
+        // Deals is now reached from a call-to-action inside the Hive Style panel,
+        // so its Back button returns there (falling back to home if Style is
+        // somehow absent).
+        public void CloseDeals()
+        {
+            if (_cosmeticsPanel != null)
+            {
+                SetActivePanel(_cosmeticsPanel);
+            }
+            else
+            {
+                ShowMain();
             }
         }
 

@@ -95,6 +95,7 @@ namespace SurveHive.Core
 
             new KeyValuePair<string, string>(LocKeys.DealsTitle, "DAILY DEALS"),
             new KeyValuePair<string, string>(LocKeys.DealsMenuButton, "DEALS"),
+            new KeyValuePair<string, string>(LocKeys.DealsFlashButton, "DAILY DEALS!"),
             new KeyValuePair<string, string>(LocKeys.DealsTimerPrefix, "NEW DEALS IN "),
             new KeyValuePair<string, string>(LocKeys.DealsBuy, "BUY"),
             new KeyValuePair<string, string>(LocKeys.DealsSold, "SOLD"),

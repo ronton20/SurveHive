@@ -7,6 +7,23 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Menu polish — two-column home + Deals folded into Hive Style (2026-07-12)
+
+A UX pass that reorganizes the main-menu home screen and merges the Style and Deals surfaces.
+
+- **Two-column home.** The home screen now splits by intent: **game actions bottom-left**
+  (Play / Codex / Awards / Settings / Quit) and **player actions bottom-right** — a framed
+  showcase of the currently-equipped bee (body tint + hat, `MainMenuBeePreview`) sitting over
+  the **HIVE UPGRADES** and **STYLE** buttons.
+- **Deals folded into Hive Style.** The old home DEALS button is gone; the Daily Deals shop is
+  now reached from a **flashing "Daily Deals!" call-to-action** in the top-right of the Hive
+  Style panel (`UiFlashPulse` pulses its color on unscaled time), and the Deals panel's Back
+  returns to Style (`MainMenuController.CloseDeals`). The Style jelly readout slid below the
+  new button.
+- **Idempotent build.** All of it is applied by the additive, authoritative-last
+  `MenuColumnsBuilder` (`SurveHive/Split Menu Into Columns`); no cosmetic/deals data or other
+  panels change. New loc key `deals.flash_button` ("DAILY DEALS!"). Validator stays green.
+
 ### Phase 5E — Daily Deals: rotating cosmetics shop (2026-07-12)
 
 The last Phase 5 retention system (TODO #34): a serverless daily rotation that gives Royal

@@ -193,3 +193,5 @@ MonoBehaviour:
     value: SOLD
   - key: deals.all_owned
     value: "You own every cosmetic \u2014 nothing left to discount!"
+  - key: deals.flash_button
+    value: DAILY DEALS!

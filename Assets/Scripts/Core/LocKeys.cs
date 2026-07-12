@@ -102,6 +102,8 @@ namespace SurveHive.Core
         // Daily deals / rotating cosmetics shop (PLAN 5E)
         public const string DealsTitle = "deals.title";
         public const string DealsMenuButton = "deals.menu_button";
+        // The flashing call-to-action tucked into the Hive Style panel.
+        public const string DealsFlashButton = "deals.flash_button";
         public const string DealsTimerPrefix = "deals.timer_prefix";
         public const string DealsBuy = "deals.buy";
         public const string DealsSold = "deals.sold";
