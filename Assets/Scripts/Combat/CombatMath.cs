@@ -64,14 +64,20 @@ namespace SurveHive.Combat
         /// <summary>
         /// Damage multiplier for a piercing basic attack. The penalty starts at
         /// <paramref name="basePenalty"/> and lightens by <paramref name="penaltyStep"/>
-        /// each level, and is removed entirely at max level (pierce everything at
-        /// full damage). e.g. base 0.30 / step 0.10 over 3 levels → −30% / −20% / −0%.
+        /// each level; at max level it settles on a permanent <paramref name="maxLevelPenalty"/>
+        /// (pierce everything, but never at full damage). e.g. base 0.30 / step 0.05 /
+        /// maxPenalty 0.20 over 3 levels → −30% / −25% / −20% (70% / 75% / 80% damage).
         /// </summary>
-        public static float PierceDamageMultiplier(int level, int maxLevel, float basePenalty, float penaltyStep)
+        public static float PierceDamageMultiplier(int level, int maxLevel, float basePenalty, float penaltyStep, float maxLevelPenalty)
         {
-            if (level <= 0 || level >= maxLevel)
+            if (level <= 0)
             {
                 return 1f;
+            }
+
+            if (level >= maxLevel)
+            {
+                return 1f - maxLevelPenalty;
             }
 
             float penalty = Mathf.Max(0f, basePenalty - ((level - 1) * penaltyStep));

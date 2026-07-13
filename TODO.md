@@ -170,6 +170,49 @@ above are locked so new content drops into a stable framework rather than a movi
     palette/mask approach or swapped sprite variants, not a flat multiply over the whole model.
     (Recorded 2026-07-11 from playtest feedback on 5C — tints accepted as the placeholder.)
 
+## Combat feel & power-up depth 2.1 *(added 2026-07-14 from playtest feedback)*
+38. **Abilities feel weak / unimpressive — make them hit harder and *look* impressive.** The 8
+    actives currently read as minor background chip damage rather than build-defining payoffs.
+    Suggested improvements (mix of numbers + juice, pick per-ability):
+    - **Rebalance the damage tables upward** and make Ability Power matter more — abilities
+      should visibly clear trash and dent elites, not tickle. Consider scaling their damage with
+      player level too (see #39) so a leveled ability stays relevant.
+    - **Bigger, punchier VFX + audio**: larger impact bursts, screen-shake/hit-stop on the heavy
+      ones (Honey Bomb, Ember Sting, Ball Lightning), a bloom flash on cast, and the missing
+      skill SFX (`ASSET_GENERATION.md` §4.1) so they *feel* like they land.
+    - **Distinct fantasy per ability**: e.g. Stinger Barrage fires more/faster and knocks back;
+      Frost Nova freezes a wide ring; Static Wings chains further and stuns harder; Pollen Cloud
+      stacks poison fast. Lean into each element's identity rather than "another projectile."
+    - **Scale count/area with level more aggressively** so a high-level ability floods the screen
+      (more projectiles, wider zones) — the Vampire-Survivors "screen-filling" power fantasy.
+    - Consider a **cast/impact telegraph** and a short slow-mo on the biggest hits.
+39. **Status-effect (DoT) damage should scale ONLY with player level + set effects.** Right now
+    burn/poison/etc. tick damage is entangled with attack/ability stats. Re-model status DoT
+    damage so it is driven purely by **(a) player level** and **(b) active elemental set bonuses**
+    — nothing else (attack power, ability power, crit, etc. must not touch it). This makes DoT a
+    clean, predictable investment axis. Leave a **hook for future dedicated upgrades** (a "Venom
+    Potency"-style passive/meta line) that *can* boost status damage, but those don't exist yet —
+    only level + sets feed it for now. Touches `StatusEffect`/`StatusEffectReceiver` tick math and
+    the stinger/ability appliers; add EditMode coverage pinning the formula.
+40. **More power-ups across all three lanes** — add Passives, Enhancements, and Abilities to widen
+    build variety (the lanes have room: passives beyond the current 10, enhancements beyond 7,
+    more per-element abilities). Author via the `/power-up` skill / idempotent builder passes.
+41. **Synergies between power-ups** — pairs/sets of power-ups that combine into something greater
+    than the sum (e.g. Multishot + Piercing = a wall of piercing shots; Frost Stinger + a fire
+    ability = "shatter burns"; crit + lifesteal = burst self-heal). Design a data-driven synergy
+    layer that detects owned combinations and applies a bonus effect, surfaced on the HUD/offer
+    cards so players can *aim* for them. Builds on the existing element set-bonus system.
+42. **Special effects for max-level abilities** — when an ability hits its final level (Lv. 5),
+    unlock a **signature upgrade**: a visual glow-up plus a mechanical twist (e.g. Ember Sting
+    max = leaves a lingering fire pool; Ball Lightning max = orbs split on expiry; Honey Bomb max
+    = double blast). Mirrors the elemental set-signature pattern (`ElementalSetSignatures`) but
+    per-ability, and gives leveling an ability all the way a real payoff.
+43. **Combo skills for certain ability combinations** — owning specific ability *combinations*
+    grants a new emergent "combo" effect or even a fused ability (e.g. Honey Splash + Static
+    Wings = electrified honey that stuns slowed enemies; Frost Nova + Ember Sting = thermal-shock
+    AoE). Related to #41 (synergies) but higher-tier — a distinct combined behavior rather than a
+    stat bonus. Needs a combo registry keyed on owned ability sets + its own VFX/telegraph.
+
 ## Suggestions / additions to consider
 - ~~**Pause & settings menu** — in-run pause (audio/vibration/quality toggles); useful early for testing and expected on mobile.~~ *(done in Phase 4C: ESC/HUD-button pause with resume/settings/abandon; settings shared with the main menu, applied live and saved.)*
 - ~~**Run stats / results screen** — on death or stage clear, show time survived, kills, level, currency earned (feeds naturally into meta progression).~~ *(done in Phase 3: results block on both death and victory screens; currency banks on both paths.)*

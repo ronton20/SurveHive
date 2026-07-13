@@ -9343,7 +9343,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Player.PlayerStats
   _moveSpeed: 4
   _maxHealth: 100
-  _attackRange: 4
+  _attackRange: 8
   _attackDamage: 10
   _attackCooldown: 1
   _attackSpeed: 1

@@ -7,7 +7,7 @@ namespace SurveHive.Player
     {
         [SerializeField] private float _moveSpeed = 4f;
         [SerializeField] private float _maxHealth = 100f;
-        [SerializeField] private float _attackRange = 4f;
+        [SerializeField] private float _attackRange = 8f;
         [SerializeField] private float _attackDamage = 10f;
         [SerializeField] private float _attackCooldown = 1f;
         // Attack rate multiplier: higher = faster. Effective delay between shots is
@@ -45,9 +45,11 @@ namespace SurveHive.Player
         [SerializeField] private int _pierceLevel;
         [SerializeField] private int _pierceMaxLevel = 3;
         // Damage penalty starts here and lightens by _piercePenaltyStep per level,
-        // gone entirely at max level: −30% / −20% / −0% over 3 levels.
+        // settling on _pierceMaxLevelPenalty at max level: −30% / −25% / −20% over 3
+        // levels (70% / 75% / 80% damage — max-level pierce is never free).
         [SerializeField] private float _pierceBasePenalty = 0.30f;
-        [SerializeField] private float _piercePenaltyStep = 0.10f;
+        [SerializeField] private float _piercePenaltyStep = 0.05f;
+        [SerializeField] private float _pierceMaxLevelPenalty = 0.20f;
 
         // Burning Stinger (fire DoT): chance + damage/tick, both grow per level.
         [SerializeField, Range(0f, 100f)] private float _burnStingerChance;
@@ -127,11 +129,13 @@ namespace SurveHive.Player
         public int BasicAttackPierce => SurveHive.Combat.CombatMath.PierceCount(_pierceLevel, _pierceMaxLevel);
 
         public float PierceDamageMultiplier =>
-            SurveHive.Combat.CombatMath.PierceDamageMultiplier(_pierceLevel, _pierceMaxLevel, _pierceBasePenalty, _piercePenaltyStep);
+            SurveHive.Combat.CombatMath.PierceDamageMultiplier(_pierceLevel, _pierceMaxLevel, _pierceBasePenalty, _piercePenaltyStep, _pierceMaxLevelPenalty);
 
         public float PierceBasePenalty => _pierceBasePenalty;
 
         public float PiercePenaltyStep => _piercePenaltyStep;
+
+        public float PierceMaxLevelPenalty => _pierceMaxLevelPenalty;
 
         public float BurnStingerChance => _burnStingerChance;
 

@@ -44,4 +44,4 @@ MonoBehaviour:
   _spawnRadiusMin: 11
   _spawnRadiusMax: 14
   _healthScalePerMinute: 0.15
-  _damageScalePerMinute: 0.06
+  _damageScalePerMinute: 0.12

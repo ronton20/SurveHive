@@ -18,8 +18,8 @@ MonoBehaviour:
   _armorPercent: 0
   _physicalShield: 0
   _magicShield: 0
-  _moveSpeed: 3.3
-  _contactDamage: 5
+  _moveSpeed: 4.3
+  _contactDamage: 20
   _contactDamageInterval: 1
   _expReward: 10
   _currencyDropChance: 0.15

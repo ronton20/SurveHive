@@ -28,7 +28,7 @@ namespace SurveHive.Combat.Skills
         private const int ZonePoolId = PoolIds.HoneyPuddle;
         private const float ZoneTickInterval = 0.5f;
         private static readonly Color PoisonPoolTint = new Color(0.42f, 0.78f, 0.28f, 0.85f);
-        private static readonly Color HoneySlickTint = new Color(1f, 0.78f, 0.18f, 0.85f);
+        private static readonly Color HoneySlickTint = new Color(0.91f, 0.62f, 0.11f, 0.85f);
 
         public static void OnEnemyDied(EnemyController victim)
         {

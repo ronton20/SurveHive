@@ -452,6 +452,12 @@ accents where relevant, dark outline, flat shading, transparent background.
 - **Usage:** intro cinematic / world-transition narration, if the game ever adds voice
 - **Generation prompt (ElevenLabs Voice/TTS):** "a weathered, weary narrator voice, grim and atmospheric, reading a short line about a hive turned against its own kin — mid-range male or androgynous voice, minimal processing, no music bed"
 
+#### 4.7 Bomber Bee countdown beep
+- **Status:** 🟡 placeholder (reuses `SfxId.UIClick` as the countdown tick — see the reworked `BomberAttack.cs`; no dedicated `SfxId`/clip yet)
+- **Spec:** a single very short tick (`bomberbeep_00.wav`, ~0.08–0.15s); the code plays it repeatedly on an accelerating cadence, so it must sit well when spammed fast. Add as a new appended `SfxId.BomberBeep` + `AudioLibrarySO` entry when generated.
+- **Usage:** plays each tick of the Bomber Bee's 3-second detonation countdown, speeding up as the blast nears
+- **Generation prompt (ElevenLabs Sound Effects):** "a short, sharp electronic countdown beep, single tick, dry and urgent like a bomb timer, retro arcade tone, 0.1 seconds"
+
 ---
 
 ## Change log for this document

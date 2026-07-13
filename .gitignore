@@ -106,3 +106,9 @@ InitTestScene*.unity*
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 /VerifyShots/
+
+# macOS Finder metadata
+.DS_Store
+
+# graphify skill output
+/graphify-out/

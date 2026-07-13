@@ -75,14 +75,15 @@ namespace SurveHive.Tests
         }
 
         [Test]
-        public void PierceDamageMultiplier_PenaltyLightensAndVanishesAtMax()
+        public void PierceDamageMultiplier_PenaltyLightensAndSettlesAtMax()
         {
             const int max = 3;
-            // Unowned: no penalty. L1 −30%, L2 −20%, L3 (max) restored to full.
-            Assert.AreEqual(1f, CombatMath.PierceDamageMultiplier(0, max, 0.30f, 0.10f), 0.0001f);
-            Assert.AreEqual(0.70f, CombatMath.PierceDamageMultiplier(1, max, 0.30f, 0.10f), 0.0001f);
-            Assert.AreEqual(0.80f, CombatMath.PierceDamageMultiplier(2, max, 0.30f, 0.10f), 0.0001f);
-            Assert.AreEqual(1f, CombatMath.PierceDamageMultiplier(3, max, 0.30f, 0.10f), 0.0001f);
+            const float maxPenalty = 0.20f;
+            // Unowned: no penalty. L1 −30%, L2 −25%, L3 (max) settles at −20% (80% dmg).
+            Assert.AreEqual(1f, CombatMath.PierceDamageMultiplier(0, max, 0.30f, 0.05f, maxPenalty), 0.0001f);
+            Assert.AreEqual(0.70f, CombatMath.PierceDamageMultiplier(1, max, 0.30f, 0.05f, maxPenalty), 0.0001f);
+            Assert.AreEqual(0.75f, CombatMath.PierceDamageMultiplier(2, max, 0.30f, 0.05f, maxPenalty), 0.0001f);
+            Assert.AreEqual(0.80f, CombatMath.PierceDamageMultiplier(3, max, 0.30f, 0.05f, maxPenalty), 0.0001f);
         }
     }
 }

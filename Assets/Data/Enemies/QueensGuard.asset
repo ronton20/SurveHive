@@ -19,7 +19,7 @@ MonoBehaviour:
   _physicalShield: 0
   _magicShield: 30
   _moveSpeed: 2.4
-  _contactDamage: 12
+  _contactDamage: 45
   _contactDamageInterval: 1
   _expReward: 20
   _currencyDropChance: 0.4

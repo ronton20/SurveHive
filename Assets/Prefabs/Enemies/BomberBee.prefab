@@ -545,9 +545,9 @@ MonoBehaviour:
   _enemyController: {fileID: 3264633050039872034}
   _health: {fileID: 8536010198482483162}
   _renderer: {fileID: 4972720434205192137}
-  _fuseTriggerRange: 1.6
-  _fuseSeconds: 0.55
-  _blastRadius: 2.2
+  _fuseTriggerRange: 3
+  _fuseSeconds: 3
+  _blastRadius: 2.8
   _blastDamageMultiplier: 2.5
   _blastVfxPoolId: 29
 --- !u!1 &6866629067587500656

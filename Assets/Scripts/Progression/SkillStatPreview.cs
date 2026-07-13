@@ -179,9 +179,9 @@ namespace SurveHive.Progression
             sb.Append('\n');
 
             float before = (1f - CombatMath.PierceDamageMultiplier(
-                currentLevel, maxLevel, stats.PierceBasePenalty, stats.PiercePenaltyStep)) * 100f;
+                currentLevel, maxLevel, stats.PierceBasePenalty, stats.PiercePenaltyStep, stats.PierceMaxLevelPenalty)) * 100f;
             float after = (1f - CombatMath.PierceDamageMultiplier(
-                newLevel, maxLevel, stats.PierceBasePenalty, stats.PiercePenaltyStep)) * 100f;
+                newLevel, maxLevel, stats.PierceBasePenalty, stats.PiercePenaltyStep, stats.PierceMaxLevelPenalty)) * 100f;
             AppendPercentLine(sb, "Attack DMG Penalty", before, after);
         }
 

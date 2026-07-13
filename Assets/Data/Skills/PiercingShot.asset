@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: SurveHive.Runtime::SurveHive.Data.SkillDefinitionSO
   _id: PiercingStinger
   _displayName: Piercing Stinger
-  _description: Attacks pierce through enemies for a small damage penalty. At max
-    level they pierce everything.
+  _description: Attacks pierce through enemies for a damage penalty that lightens
+    per level. At max level they pierce everything at 80% damage.
   _effectType: 15
   _lane: 1
   _element: 0
