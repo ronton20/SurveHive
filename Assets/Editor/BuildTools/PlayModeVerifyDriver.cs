@@ -418,7 +418,7 @@ namespace SurveHive.BuildTools
         private static void ClickFeedbackToggle(string buttonName)
         {
             UI.FeedbackToggleUI[] toggles = Object.FindObjectsByType<UI.FeedbackToggleUI>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
+                FindObjectsInactive.Include);
             foreach (UI.FeedbackToggleUI toggle in toggles)
             {
                 if (toggle.gameObject.name == buttonName)
@@ -468,7 +468,7 @@ namespace SurveHive.BuildTools
 
             string lockedSuffix = Core.Loc.Get(Core.LocKeys.DifficultyLockedSuffix);
             UI.DifficultyItemHover[] rows = Object.FindObjectsByType<UI.DifficultyItemHover>(
-                FindObjectsSortMode.None);
+                FindObjectsInactive.Exclude);
             foreach (UI.DifficultyItemHover row in rows)
             {
                 var label = row.GetComponentInChildren<TMPro.TMP_Text>(true);

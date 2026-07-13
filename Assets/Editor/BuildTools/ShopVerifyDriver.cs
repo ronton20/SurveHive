@@ -100,7 +100,7 @@ namespace SurveHive.BuildTools
 
         private static void SelectUnmaxedIcon()
         {
-            var icons = Object.FindObjectsByType<MetaShopIconUI>(FindObjectsSortMode.None);
+            var icons = Object.FindObjectsByType<MetaShopIconUI>(FindObjectsInactive.Exclude);
             var persistentStore = UnityEditor.AssetDatabase.LoadAssetAtPath<SurveHive.Data.PersistentMetaProgressionStoreSO>(
                 "Assets/Data/Progression/PersistentMetaProgressionStore.asset");
             for (int i = 0; i < icons.Length; i++)

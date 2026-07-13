@@ -358,8 +358,8 @@ namespace SurveHive.Tests
                 // not a runtime hot path.
                 if (realTime >= _nextPickupRefresh)
                 {
-                    _pickups = Object.FindObjectsByType<PickupItem>(FindObjectsSortMode.None);
-                    _itemDrops = Object.FindObjectsByType<ItemDrop>(FindObjectsSortMode.None);
+                    _pickups = Object.FindObjectsByType<PickupItem>(FindObjectsInactive.Exclude);
+                    _itemDrops = Object.FindObjectsByType<ItemDrop>(FindObjectsInactive.Exclude);
                     _nextPickupRefresh = realTime + PickupRefreshSeconds;
                 }
 

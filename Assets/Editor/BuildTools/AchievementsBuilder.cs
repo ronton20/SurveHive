@@ -467,7 +467,7 @@ namespace SurveHive.BuildTools
                 return;
             }
 
-            var playerExperience = Object.FindFirstObjectByType<PlayerExperience>();
+            var playerExperience = Object.FindAnyObjectByType<PlayerExperience>();
             if (playerExperience == null)
             {
                 Debug.LogError("AchievementsBuilder: PlayerExperience not found in Beehive scene.");

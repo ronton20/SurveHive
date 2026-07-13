@@ -127,7 +127,7 @@ namespace SurveHive.BuildTools
 
             // Each scene carries exactly one settings panel (SettingsPanelUI host).
             SettingsPanelUI[] panels = Object.FindObjectsByType<SettingsPanelUI>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
+                FindObjectsInactive.Include);
             if (panels.Length != 1)
             {
                 Debug.LogError($"EnhancedOptionsBuilder: expected 1 SettingsPanelUI in {scenePath}, found {panels.Length}.");

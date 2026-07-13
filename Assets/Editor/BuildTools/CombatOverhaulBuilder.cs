@@ -984,7 +984,7 @@ namespace SurveHive.BuildTools
                 sequence = go.AddComponent<BossDeathSequence>();
             }
 
-            var shaker = Object.FindFirstObjectByType<CameraShaker>();
+            var shaker = Object.FindAnyObjectByType<CameraShaker>();
             var so = new SerializedObject(sequence);
             so.FindProperty("_shaker").objectReferenceValue = shaker;
             so.FindProperty("_shockwavePoolId").intValue = PoolIds.NukeVfx;
@@ -1013,7 +1013,7 @@ namespace SurveHive.BuildTools
                 return;
             }
 
-            var experience = Object.FindFirstObjectByType<SurveHive.Progression.PlayerExperience>();
+            var experience = Object.FindAnyObjectByType<SurveHive.Progression.PlayerExperience>();
             var so = new SerializedObject(bossSpawner);
             so.FindProperty("_playerExperience").objectReferenceValue = experience;
             so.ApplyModifiedPropertiesWithoutUndo();

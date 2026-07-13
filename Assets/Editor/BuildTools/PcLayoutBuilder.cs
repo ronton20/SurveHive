@@ -40,7 +40,7 @@ namespace SurveHive.BuildTools
 
                 int retargeted = 0;
                 CanvasScaler[] scalers = Object.FindObjectsByType<CanvasScaler>(
-                    FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    FindObjectsInactive.Include);
                 foreach (CanvasScaler scaler in scalers)
                 {
                     if (scaler.uiScaleMode != CanvasScaler.ScaleMode.ScaleWithScreenSize)

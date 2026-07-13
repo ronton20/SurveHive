@@ -35,7 +35,7 @@ namespace SurveHive.BuildTools
 
                 int added = 0;
                 Button[] buttons = Object.FindObjectsByType<Button>(
-                    FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    FindObjectsInactive.Include);
                 foreach (Button button in buttons)
                 {
                     if (!button.TryGetComponent(out UIClickSfx _))
@@ -50,7 +50,7 @@ namespace SurveHive.BuildTools
                 // (and their option-list template item) the selectable-agnostic SFX.
                 int dropdowns = 0;
                 TMP_Dropdown[] dds = Object.FindObjectsByType<TMP_Dropdown>(
-                    FindObjectsInactive.Include, FindObjectsSortMode.None);
+                    FindObjectsInactive.Include);
                 foreach (TMP_Dropdown dd in dds)
                 {
                     dropdowns += EnsureSelectableSfx(dd.gameObject);
