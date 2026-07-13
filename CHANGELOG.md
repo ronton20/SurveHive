@@ -7,6 +7,34 @@ suggested next steps. Dates are the day the work landed.
 The format is loosely based on [Keep a Changelog](https://keepachangelog.com/).
 This project targets mobile (PC-first, mobile-ready) on Unity 6000.5.2f1 (URP 2D).
 
+### Phase 6B — Hive honeycomb floor (2026-07-12)
+
+The Beehive arena reads as a place now, not a void — a warm honeycomb floor tiles the whole
+play area under the gameplay.
+
+- **Procedural seamless honeycomb tile.** `HiveFloorBuilder` draws `Assets/Sprites/Tiles/
+  HiveFloor.png` (432×432 @ PPU 48 = one 9-world-unit tile — a big honeycomb block) as a
+  toroidal Voronoi comb over a flat-top hex lattice: large soft hexes (~3 units), a low-contrast
+  warm palette, and anti-aliased seams (rendered at 6× then box-downsampled) so it reads calm
+  and easy on the eyes rather than a busy grid. Soft honey puddles in varied warm tones (amber,
+  gold, nectar, caramel) are baked over the comb, wrapped toroidally so they stay seamless.
+  Wrapped in `HiveFloorTile.asset`. The PNG is written **only when missing**, so final
+  hand-drawn/AI art can overwrite it in place without touching the builder.
+- **Grid + Tilemap in the Beehive scene**, filled at sorting order −100 so it renders beneath
+  every gameplay sprite (zones sit at −1).
+- **Endless floor on a following camera.** The run camera follows the player unbounded, so a
+  finite fill would expose the void at the edges. The new zero-GC `View/InfiniteTileFloor`
+  snaps the grid to the camera each LateUpdate in whole-tile steps; since every honeycomb tile
+  is identical, the pattern looks fixed in world space while the grid quietly re-centres — a
+  modest fill covers an arbitrarily long run.
+- **Generation over PixelLab.** The tile is code-drawn rather than AI-generated: the boss-art
+  trial credits are scarce and a self-verifying demo was wanted. A real tile can drop straight
+  in over the PNG (see `ASSET_GENERATION.md` §1.3).
+- **Idempotent build.** All applied by the additive `HiveFloorBuilder`
+  (`SurveHive/Phase 6B — Hive Floor Tileset`), which rebuilds only its own `HiveFloorGrid`. The
+  scene validator now asserts the grid/tilemap fill, sub-−1 sorting, and the camera-wired
+  follow.
+
 ### Phase 6C — Bloom "magic honey" glow pass (2026-07-12)
 
 Honey and magic VFX now glow. A high-threshold URP Bloom lights up only the effects that were

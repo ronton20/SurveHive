@@ -144,7 +144,7 @@ above are locked so new content drops into a stable framework rather than a movi
 ## Meta & Content
 11. ~~**Menus** — main menu, level/world selection, difficulty selection.~~ *(done in Phase 4B: MainMenu boot scene with home/world select/shop/settings-shell panels; Garden+Woods shown locked; difficulty dropdown seam fixed to Normal until a difficulty system exists.)*
 12. ~~**Meta progression** — the persistent between-run currency spend + upgrade system and its UI (the `IMetaProgressionStore` seam already exists for this).~~ *(done in Phases 4A+4B: JSON save, six escalating-cost stat upgrades applied at run start, purchase transactions, and the Hive Upgrades shop UI.)*
-13. **Art & polish** — ~~real sprites, animations, VFX, and proper UI elements to replace placeholders~~ *(done in Phase 1: PixelFantasy bee rig + animations, death VFX, pixel UI kit + BoldPixels TMP. Remaining: hive floor/tileset, custom Aseprite hero/boss art.)*
+13. **Art & polish** — ~~real sprites, animations, VFX, and proper UI elements to replace placeholders~~ *(done in Phase 1: PixelFantasy bee rig + animations, death VFX, pixel UI kit + BoldPixels TMP. Hive honeycomb floor landed as a procedural placeholder in Phase 6B — the arena now reads as a place, not a void; final art can overwrite `Assets/Sprites/Tiles/HiveFloor.png`. Remaining: custom Aseprite/AI hero + boss art (Phase 6A).)*
 
 ---
 

@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 
 namespace SurveHive.BuildTools
 {
@@ -220,6 +221,7 @@ namespace SurveHive.BuildTools
             ok &= ValidateAchievementTracker();
             // 6C: bloom glow — camera post-processing (Beehive-scoped) + profile Bloom.
             ok &= ValidateBloomGlow();
+            ok &= ValidateHiveFloor();
             ok &= ValidatePhase4MetaAndMenus(player);
             ok &= ValidateEnemyVariety();
             ok &= ValidateLocalization();
@@ -254,6 +256,48 @@ namespace SurveHive.BuildTools
                 bool hasBloom = profile.TryGet(out Bloom bloom);
                 ok &= Check(hasBloom && bloom.active && bloom.intensity.value > 0f,
                     "6C: default profile Bloom is active with intensity > 0");
+            }
+
+            return ok;
+        }
+
+        // --- Phase 6B (PLAN.md): honeycomb floor tilemap in the Beehive scene ---
+        private static bool ValidateHiveFloor()
+        {
+            bool ok = true;
+
+            // Assumes Beehive is the active scene at call time.
+            var gridGo = GameObject.Find("HiveFloorGrid");
+            ok &= Check(gridGo != null, "6B: HiveFloorGrid exists");
+            if (gridGo == null)
+            {
+                return ok;
+            }
+
+            ok &= Check(gridGo.TryGetComponent(out Grid _), "6B: HiveFloorGrid has a Grid");
+
+            var tilemapGo = gridGo.transform.Find("Tilemap");
+            ok &= Check(tilemapGo != null, "6B: HiveFloorGrid has a Tilemap child");
+            if (tilemapGo != null && tilemapGo.TryGetComponent(out Tilemap tilemap))
+            {
+                ok &= Check(tilemap.GetUsedTilesCount() > 0, "6B: Tilemap is filled with floor tiles");
+                if (tilemapGo.TryGetComponent(out TilemapRenderer renderer))
+                {
+                    ok &= Check(renderer.sortingOrder < -1,
+                        "6B: floor renders beneath gameplay (sortingOrder < -1)");
+                }
+            }
+
+            // The camera-follow that makes the finite fill read as endless.
+            ok &= Check(gridGo.TryGetComponent(out View.InfiniteTileFloor floor),
+                "6B: HiveFloorGrid has InfiniteTileFloor");
+            if (gridGo.TryGetComponent(out View.InfiniteTileFloor wired))
+            {
+                var so = new SerializedObject(wired);
+                ok &= Check(so.FindProperty("_target").objectReferenceValue is Transform,
+                    "6B: InfiniteTileFloor._target wired to the camera");
+                ok &= Check(so.FindProperty("_period").floatValue > 0f,
+                    "6B: InfiniteTileFloor._period is positive");
             }
 
             return ok;
@@ -2366,7 +2410,7 @@ namespace SurveHive.BuildTools
         private static bool AllScalersLandscape()
         {
             UnityEngine.UI.CanvasScaler[] scalers = Object.FindObjectsByType<UnityEngine.UI.CanvasScaler>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
+                FindObjectsInactive.Include);
             foreach (UnityEngine.UI.CanvasScaler scaler in scalers)
             {
                 if (scaler.uiScaleMode != UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize)

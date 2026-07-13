@@ -590,7 +590,25 @@ interleave with anything; 6D is the real expansion.
   `View/CharacterAnimator.cs`, `ASSET_GENERATION.md`.
 - **Done when:** hero + both bosses run on custom art with no animation regressions.
 
-### 6B — Hive tileset / floor ☐
+### 6B — Hive tileset / floor ✅
+- **Shipped 2026-07-12:** the Beehive arena renders on a real honeycomb floor instead of a
+  void, all via the additive idempotent `HiveFloorBuilder` (`SurveHive/Phase 6B — Hive Floor
+  Tileset`). Three passes: (1) a **procedurally-drawn seamless honeycomb tile** —
+  `Assets/Sprites/Tiles/HiveFloor.png` (432×432 @ PPU 48 = one 9-world-unit tile, a big
+  honeycomb block), a toroidal Voronoi comb over a flat-top hex lattice with large soft hexes
+  (~3 units), a low-contrast warm palette, and anti-aliased seams (6× supersample →
+  box-downsample) so it reads calm; soft honey puddles in varied warm tones are baked over the
+  comb and wrapped toroidally to stay seamless. Written **only when missing** so final art
+  (ASSET_GENERATION §1.3) overwrites it in place; (2) a `HiveFloorTile.asset`; (3) a **Grid +
+  Tilemap** filled in `Beehive.unity` at sorting order −100 (beneath every gameplay sprite). Because the run camera follows the
+  player unbounded, the finite fill is made **endless** by the new zero-GC
+  `View/InfiniteTileFloor`, which snaps the grid to the camera in whole-tile steps — identical
+  tiles hide the jump, so the comb reads as a fixed, boundless floor. Generation was chosen
+  over PixelLab (the boss-art trial budget is scarce and the user wanted a self-verifying demo);
+  a hand-drawn/AI tile can drop straight in over the PNG. Verified: build + `validation PASSED`
+  (new 6B checks assert the grid/tilemap fill, sub-−1 sorting, and the camera-wired follow) +
+  EditMode green + a drive capture showing the honeycomb under gameplay with the HUD crisp on
+  top. Autotile floor/wall/edge variants + a `RuleTile` are an optional richer follow-on.
 - A real honeycomb tileset/floor for the Beehive world replacing the placeholder ground —
   generate via the tileset pipeline, wire with the 2D Tilemap packages already installed.
 - **Touch:** `Assets/Sprites/`, a tilemap in `Assets/Scenes/Beehive.unity` (additive builder

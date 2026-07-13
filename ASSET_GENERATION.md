@@ -143,9 +143,21 @@ crystal — genuinely need different rendering, not just a tint).
 - **Generation prompt:** "A corrupted queen bee boss, ornate crown/thorax pattern, menacing but still readable as a bee, pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Boss tier, 64×64 per frame; hard pixel edges, no anti-aliasing, flat/indexed shading, transparent background. Royal purple and honey-gold coloring; idle/attack/telegraph/hit/die frames."
 
 #### 1.3 Beehive tileset / honeycomb floor
-- **Status:** 🔴 not started (README calls this out explicitly as missing)
-- **Spec:** Tile tier, 16×16 base tile, floor/wall/edge/corner autotile variants
-- **Usage:** Beehive scene background/level geometry (currently flat background, no tileset)
+- **Status:** 🟡 placeholder (Phase 6B landed 2026-07-12 — the Beehive arena now has a real
+  honeycomb floor instead of a void). `HiveFloorBuilder` procedurally draws a **seamless 432×432
+  honeycomb tile** (`Assets/Sprites/Tiles/HiveFloor.png`, PPU 48 → one 9-world-unit block — a
+  toroidal Voronoi comb on a flat-top hex lattice with large soft hexes, a low-contrast warm
+  palette, and anti-aliased seams, plus soft scattered honey puddles in varied warm tones baked
+  in; written **only when missing** so final art can overwrite it in place), wraps it
+  in `HiveFloorTile.asset`, and fills a Grid+Tilemap in the Beehive scene (sorting order −100,
+  beneath all gameplay). The finite fill reads as **endless** because the new zero-GC
+  `View/InfiniteTileFloor` snaps the grid to the run camera in whole-tile steps (identical
+  tiles hide the jump). **To land final art: overwrite `HiveFloor.png`** (keep it a single
+  seamless tile) — or, for a richer set, replace with floor/wall/edge/corner autotile variants
+  and extend the builder to author a `RuleTile`.
+- **Spec:** Tile tier — a seamless 16×16 (or 32/48×) base tile; optional floor/wall/edge/corner
+  autotile variants for a richer set. Warm comb-brown and wax-cream palette.
+- **Usage:** Beehive scene floor (world-space Grid+Tilemap under the gameplay entities).
 - **Generation prompt:** "A seamless honeycomb floor tileset with floor/wall/edge/corner autotile variants, pixel art for SurveHive — a 16-PPU top-down-plane bee/honey survival-action game (Vampire-Survivors-style); Tile tier, 16×16 base tile; hard pixel edges, no anti-aliasing, flat/indexed shading. Warm comb-brown and wax-cream palette, hexagonal honeycomb texture."
 
 #### 1.4 Basic-attack stinger dart
