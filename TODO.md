@@ -171,6 +171,9 @@ above are locked so new content drops into a stable framework rather than a movi
     (Recorded 2026-07-11 from playtest feedback on 5C — tints accepted as the placeholder.)
 
 ## Combat feel & power-up depth 2.1 *(added 2026-07-14 from playtest feedback)*
+> **Now sequenced in `PLAN.md`:** #39 → **Phase A1**, #38 → **A2**, #42 → **A3**;
+> #40 → **Phase B1**, #41 → **B2**, #43 → **B3**. The open #25 owned-power-ups menu rework and
+> #37 transformable hero sprites are folded into **Phase C** (C2 blocked on the postponed 6A art).
 38. **Abilities feel weak / unimpressive — make them hit harder and *look* impressive.** The 8
     actives currently read as minor background chip damage rather than build-defining payoffs.
     Suggested improvements (mix of numbers + juice, pick per-ability):

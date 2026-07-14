@@ -3,12 +3,13 @@
 The phased, **do-one-thing-at-a-time** execution plan for the open backlog in `TODO.md`,
 ordered by importance and dependency. Each **sub-phase** is a self-contained unit of work you
 can pick up, ship, and verify on its own. Do them top-to-bottom within a phase; phases are also
-ordered, but later phases can be interleaved where noted.
+ordered, but independent sub-phases can be interleaved where noted.
 
-Everything from the previous plan (Combat 2.0 lanes, boss/wave drama, damage typing + enemy
-defenses + set effects, enemy variety) has **shipped** — see `CHANGELOG.md`. This plan covers
-what remains: balance, the release-polish wishlist, mobile readiness, meta/retention systems,
-and content expansion.
+The active work below is the **Combat feel & power-up depth 2.1** pass (`TODO.md` #38–43, added
+2026-07-14 from playtest feedback) plus the open non-mobile UI/art leftovers. Everything from the
+prior plan — Combat 2.0 lanes, boss/wave drama, damage typing + defenses + set effects, enemy
+variety, balance, the PC UI overhaul, and the meta/retention systems — has **shipped**; see the
+**Shipped** summary below and `CHANGELOG.md` for the detail.
 
 - `TODO.md` — the backlog/wishlist and rationale (why each item exists). Item numbers below (#N) refer to it.
 - `README.md` — living design doc; **update it in the same session** as any scope/mechanics change.
@@ -25,650 +26,236 @@ sub-phase edits/adds; they are a starting map, not an exhaustive diff.
 > Extend via new, additive, idempotent builder passes or targeted edits, and keep
 > `BeehiveSceneValidator` green.
 
----
-
-## Phase 1 — Balance & difficulty (make the game *fair* before making it pretty)
-
-All the systems the balance pass was waiting on (lanes, defenses, sets, enemy variety) now
-exist. Tune the baseline first, then build the difficulty tiers on top of it, then expand the
-meta shop — meta upgrades shift the curve, so they land last and get folded into the numbers.
-
-### 1A — Difficulty / curve tuning pass ✅
-The dedicated balance pass the whole backlog has been deferring to.
-- **Round 1 shipped (2026-07-08, playtest feedback):** honey income cut ~60% across every
-  enemy drop table (the shop maxed out in ~6–8 runs — far too fast); base crit chance 5% → **0%**
-  (all crit now comes from Keen Eye / future meta upgrade); **Keen Eye** reworked to 5 levels
-  totalling **5/10/15/20/30%** via a new per-level magnitude table on `SkillDefinitionSO`.
-- **Round 2 shipped (2026-07-09, simulation-verified):** built `BalanceRunTest` — an
-  `[Explicit]` PlayMode harness that plays full unattended runs at 6× speed with a kiting
-  bot (injected via the `PlayerMovement.Initialize` seam) and checks both targets
-  statistically (run `unity.sh test PlayMode SurveHive.Tests.BalanceRunTest`). 12 sim
-  rounds drove these changes: mid-game density was the real killer (not stat ramps) —
-  spawn-interval ramp 0.2→0.12/min, concurrent cap 60→48, swarmling packs 6→5, ring wave
-  24→16; ramps softened (HP +18%→+15%/min, damage +10%→+6%/min), spawn curve eased-in
-  (same 1×→3.5× endpoints); drip-rank contact damage −25%; Queen 3500→4500 HP, 25→36
-  contact, plus a new **anti-stall enrage** (damage →2.5×, patterns 5s→2s after a minute
-  of fight time) because the boss-frozen drip + summon heal-drops made her grindable by
-  infinite patience at any power level. Verified: maxed-meta clears at ~12 min; fresh runs
-  never clear and die at the mid-game crunch or at the Queen. The bot underestimates a
-  human's mid-game survival by ~2 min (rigid melee-range hover, random picks), so its
-  5.5–6.5-min crunch deaths correspond to the human 8–12 target — **confirm the feel in
-  the next real playtest** and re-tune from the balance harness if it's off.
-- Playtest-driven tuning of: EXP curve (`LevelCurveSO`), enemy HP/damage/speed scaling and the
-  per-minute ramp, stage spawn-rate curve, drop-table rates, miniboss/Queen HP and pattern
-  timing, and per-lane power-up numbers (esp. Enhancement damage factors and set-bonus potency).
-- **Target:** a first-time (no meta) player dies around **minute 8–12**; a meta-invested player
-  can **clear** the Queen. Verify both ends with real runs (use `PlayModeVerifyDriver` for
-  repeatable checks where possible).
-- **Document what changed and why** — a short balance log in the commit and a `CHANGELOG.md`
-  entry; note deliberate over/under-tuning left for 1B's difficulty tiers.
-- **Touch:** `Assets/Data/**` (curve/stats/stage/wave/skill assets — data-only where possible),
-  `Data/LevelCurveSO.cs` / `Data/EnemyStatsSO.cs` / `Data/StageConfigSO.cs` only if a knob is missing.
-- **Done when:** both targets hold across a few runs each, and the changes are written down.
-
-### 1B — Working stage difficulty — TODO #30 ✅
-Turn the Phase-4B dropdown seam (currently fixed to Normal) into a real system.
-- **Shipped 2026-07-08:** `DifficultySO` tier table (`Assets/Data/Progression/DifficultySettings.asset`,
-  created by the additive `DifficultyBuilder` pass which never overwrites an existing 4-row
-  table — tune in the inspector freely). Easy 0.75×HP/0.75×dmg/0.75×honey → Extreme
-  2.25×/1.9×/2.25× (+1.15×/1.3× spawn rate on Hard/Extreme). Selection flows dropdown →
-  `DifficultySelectUI` → static `RunSession.SelectedDifficulty` → `EnemySpawner` (all spawn
-  paths incl. bosses) + `RunCurrencyWallet` honey multiplier; persisted as save v2. Placeholder
-  icons wired (ASSET_GENERATION §2.7); EditMode tests + validator checks cover the wiring.
-- Four tiers: **Easy / Normal / Hard / Extreme**. Each scales enemy HP + damage (and optionally
-  spawn rate) but **increases honey gain** as compensation — a `DifficultySO` (or a tier table
-  on a config SO) holding the multipliers, so tuning stays data-driven.
-- Selected tier flows: MainMenu dropdown → `RunSession` (carry into the scene load) → applied at
-  run start where enemy stats and currency awards are computed (`EnemyController`/`EnemyStatsSO`
-  read path, `RunCurrencyWallet` gain path).
-- Per-difficulty icons: spec'd in `ASSET_GENERATION.md` (#29 ties in) — wire placeholders now,
-  swap art later.
-- Persist last-selected difficulty in the save (`SaveData` + `SaveDataSerializer` version bump).
-- **Touch:** new `Data/DifficultySO.cs` (or tier table), `Core/RunSession.cs`,
-  `UI/MainMenuController.cs` (un-fix the dropdown), `Enemies/EnemyController.cs`,
-  `Currency/RunCurrencyWallet.cs`, `Persistence/SaveData.cs`.
-- **Tests:** EditMode — tier multipliers apply to enemy HP/damage and honey gain; save
-  round-trips the selection.
-- **Done when:** all four tiers are selectable, visibly change enemy toughness and honey
-  income, and survive a restart.
-
-### 1C — Meta shop expansion — TODO #28 ✅
-Way more modifiers to buy; gives the honey from 1B somewhere to go.
-- **Shipped 2026-07-08:** 7 new upgrades (EXP gain, ability power, cooldown cut, crit chance
-  +2%/rank ×20 = 40% cap, crit damage, item drop rate, **Waggle Dance** rerolls at
-  400/1,520/5,776) via the additive `MetaShopExpansionBuilder`; shop panel converted to a
-  scrollable 2-column 13-card grid; rerolls are per-card REROLL buttons + remaining count on
-  the offer screen (hidden until a rank is owned), re-picking one card and never duplicating a
-  shown one. Existing 6 upgrade costs left as-is — the cross-shop cost rebalance folds into
-  1A round 2 once post-nerf playtest income data exists.
-- New purchasable upgrades: **EXP gain, ability power, cooldown reduction, crit chance, crit
-  damage, item drop rate**, and **power-up rerolls** — each is a `MetaUpgradeSO` +
-  `MetaStatType` entry (append-only enum) + an application in `MetaUpgradeApplier`.
-- **Crit chance** (user-mandated 2026-07-08): **+2% per rank, 20 ranks, 40% cap**. Stacks on a
-  0% base (set in 1A) and on Keen Eye's in-run 30% — full investment tops out at 70%.
-- **Rerolls** are the one new *mechanic*: max **3 per run** (bought rank = per-run stock); each
-  reroll replaces **1 offered card** (not all 3). UI: a reroll button + remaining count on the
-  level-up screen; rerolling re-picks a single eligible skill excluding the ones already shown.
-  **Cost-gate it hard** (user-mandated 2026-07-08 — the feature is really strong): rank 1 pricey
-  but reachable after a couple of post-nerf runs, later ranks way higher — e.g. base cost ~400
-  with ~3.8× growth (≈400 / 1,520 / 5,776); tune against post-nerf income, don't cheapen.
-- Drop-rate upgrade multiplies the drop-table roll in `EnemyLoot`; EXP gain multiplies awards in
-  `PlayerExperience`; the rest extend `PlayerStats` application the same way existing ones do.
-- Rebalance upgrade costs across the (now larger) shop; fold results back into 1A's numbers.
-- **Touch:** `Data/MetaUpgradeSO.cs`, `Data/MetaStatType.cs`, `Player/MetaUpgradeApplier.cs`,
-  `Progression/MetaShop.cs` + `MetaUpgradeMath.cs`, `UI/MetaShopUI.cs`/`MetaShopRowUI.cs`,
-  `UI/LevelUpUIController.cs` + `Progression/SkillOfferSelector.cs` (reroll),
-  `Enemies/EnemyLoot.cs`, `Progression/PlayerExperience.cs`, new `Assets/Data/Meta/*` assets.
-- **Tests:** EditMode — reroll replaces exactly one card, respects stock, never duplicates a
-  shown card; each new stat applies at run start.
-- **Done when:** all new upgrades are buyable and take effect; rerolls work in-run with a
-  visible remaining count.
-
-> **After Phase 1:** update `README.md` (difficulty tiers, meta shop roster) and `CHANGELOG.md`.
-> New builder work goes in an additive pass (e.g. `DifficultyAndShopBuilder`), not the old builders.
+> **Mobile is abandoned (PC-only, 2026-07-08).** The old Phase 4 "Mobile readiness" and the
+> `TODO.md` "Mobile UI Overhaul" items (#14–17, #24) are **struck, not built**. Ignore them; all
+> new UI/layout work targets PC (1920×1080 landscape) only.
 
 ---
 
-## Phase 2 — Combat readability & depth polish
+## Shipped (see `CHANGELOG.md` for detail)
 
-Two self-contained follow-ups from the playtest wishlist. Independent of Phase 1; interleave
-freely.
-
-### 2A — Status-effect visual pass — TODO #26 ✅
-- **Shipped 2026-07-09:** per-status signature tints + display priority (hard CC > DoT >
-  movement) in a pure, EditMode-tested `StatusTintPalette`; stacked statuses pulse between
-  the top two tints; hit flashes hue-shift toward the active status (`_FlashColor` on the
-  SpriteFlash shader). Root-caused why tints never read: the rig's animation clips keyframe
-  the renderer color every frame, clobbering all direct `renderer.color` writes — including
-  the elite **rank tints**, which this fixes too — so the tint moved into a new `_Tint`
-  shader property driven by MaterialPropertyBlock (zero-GC, no prefab edits). Verified by
-  screenshot drive (per-status tints, visible pulse alternation, hue-kept flash). The
-  optional elite/boss status icon over the health bar was skipped — revisit with 3B's
-  health-bar polish if playtests still want it.
-- Replace the basic priority tint in `StatusEffectReceiver` with a proper, readable scheme:
-  per-status tint colors (burn orange, poison green, slow/freeze blue, stun yellow) with a
-  clear priority/blend rule, plus a lightweight pulse or overlay so stacked statuses read.
-  Keep it zero-GC (no per-frame material instantiation — use `MaterialPropertyBlock`s or the
-  existing `HitFlash` property path).
-- Optional cheap add: a tiny status icon above the enemy health bar for elites/bosses (reuse
-  `Assets/ThirdParty/FantasyStatusIcons/` slices).
-- **Touch:** `Combat/Status/StatusEffectReceiver.cs`, `View/HitFlash.cs` (shared tint plumbing),
-  `UI/EnemyHealthBarUI.cs` (optional icon).
-- **Done when:** you can tell at a glance which status an enemy is under, including during hit
-  flashes, with no new per-frame allocations.
-
-### 2B — Enhanced set bonuses — TODO #27 ✅
-Richer per-element payoffs beyond the current potency/duration scaling — make the 4-piece tier
-a build-defining moment.
-- **Shipped 2026-07-09:** one signature effect per element at the 4-piece tier, appended to
-  `SetBonusSO` (new `SetSignatureType` enum + radius/potency/duration/description fields, authored
-  by the additive `SetSignatureBuilder` pass — idempotent, never touches the 3C-tuned tiers).
-  Five fire off the victim's death via a new `ElementalSetSignatures` dispatcher called from
-  `EnemyController.HandleDied` (after unregister, so nothing re-targets the corpse): **Fire**
-  spreads Burn to the nearest enemy, **Frost** shatters chilled/frozen enemies for 25%-max-HP AoE
-  magic damage (keyed on Cold||Freeze so a damage-broken freeze still counts), **Electric** arcs
-  the Stun to the nearest enemy, **Poison** drops a toxic pool, **Honey** drops a sticky slow zone
-  (pools/slicks reuse the existing honey-puddle zone pool — no new prefab/pool wiring). **Physical**
-  is a basic-attack hook instead: `Projectile` executes enemies below 15% HP via a new
-  `HealthComponent.Kill` that bypasses the shield/armor pipeline, gated by a single cached
-  `ElementSets.ExecuteThresholdFraction` field read. The unlocked signature shows as a `✦` line
-  under its set on the offer-panel `SetTierHUD`. EditMode tests cover shatter damage + top-tier
-  gating; the validator now asserts every set carries a signature. Zero-GC (registry walks +
-  pooled zones, no allocations).
-- Design one signature effect per element at the top tier, e.g.: **fire** — burns spread to a
-  nearby enemy on death; **frost** — frozen enemies shatter on kill (AoE); **electric** — stun
-  arcs chain once; **poison** — pools on death; **honey** — slow zones stick; **physical** —
-  basic-attack executes low-HP enemies. Exact roster is a design pass — keep each one
-  implementable on the existing status/pool systems.
-- Extend `SetBonusSO` with a tier-effect payload (append-only serialized fields) and implement
-  the effects via the existing seams (`StatusEffectReceiver` death hooks, `PoolManager` VFX/zones,
-  `DamageService`).
-- Surface the unlocked signature effect on the HUD set-tier line (`SetTierHUD`).
-- **Touch:** `Data/SetBonusSO.cs`, `Progression/ElementSets.cs`, `Combat/Status/*`,
-  `Enemies/EnemyController.cs` (on-death hooks), `UI/SetTierHUD.cs`, `Assets/Data/SetBonuses/*`.
-- **Tests:** EditMode where the effect is computable (spread target selection, shatter damage).
-- **Done when:** each element's 4-piece tier does something visibly new, shown on the HUD.
+- **Combat 2.0 (pre-plan)** ✅ — three power-up lanes (Passives / Enhancements / Abilities) with
+  caps + banners, element tagging, damage typing (physical/magic), enemy defenses
+  (armor/physical-shield/magic-shield pipeline), elemental set effects, and enemy variety
+  (Spitter / Bomber / Swarmling).
+- **Phase 1 — Balance & difficulty** ✅ — 1A curve/economy tuning (`BalanceRunTest` sim harness),
+  1B four-tier `DifficultySO` system, 1C meta-shop expansion (13 upgrades + per-run rerolls).
+- **Phase 2 — Combat readability** ✅ — 2A status-effect visual pass (shader `_Tint`/MPB, per-status
+  tints + stacked pulse + hue-kept flash), 2B enhanced set bonuses (per-element 4-piece signatures
+  via `ElementalSetSignatures`).
+- **Phase 3 — UI overhaul (PC-first)** ✅ — 3A localization seam (`Loc`/`StringTableSO`), 3B full PC
+  UI overhaul (landscape retarget, tabbed shop, click/hover SFX, motion layer, health-bar polish),
+  3C enhanced options (five feedback toggles via `FeedbackSettings`).
+- **Phase 5 — Meta & retention** ✅ — 5A codex, 5B Royal Jelly currency, 5C Hive Style cosmetics,
+  5D achievements (+ `IAchievementBackend` Steam seam), 5E rotating daily DEALS shop.
+- **Phase 6 (art) partial** — 6B hive honeycomb floor ✅, 6C bloom / "magic honey" glow ✅.
 
 ---
 
-## Phase 3 — UI overhaul (PC-first)
+## Phase A — Ability impact & feel
 
-The #25 wishlist pass. **Do 3A first** — the localization seam only gets more expensive once
-3B/Phase 4 start touching every string.
+Make abilities *land*. The playtest verdict is that the 8 actives read as background chip damage,
+not build-defining payoffs. **Do A1 first** — it fixes the status-damage model that A2/A3 and every
+future ability read; rebalancing ability numbers on top of a tangled DoT formula would mean
+retuning twice.
 
-### 3A — Localization seam ✅
-- **Shipped 2026-07-09:** every user-facing UI-chrome literal now resolves through `Loc.Get`
-  against a flat key→string table. Keys are `const`s in `Core/LocKeys.cs`; the authoritative
-  English lives in `Core/LocDefaults.cs`, which the additive idempotent `LocalizationBuilder`
-  pass authors into `Assets/Resources/StringTable.asset` (a `Data/StringTableSO`, append-only
-  so hand edits / future locales survive re-runs). `Loc` resolves table → code default → raw
-  key, lazy-loading the Resources asset once (zero-GC after: dictionary lookups return cached
-  refs). **Decision:** SO-authored content stays authoritative — skill/upgrade/set names +
-  descriptions and enemy display names remain on their SOs; the table covers UI chrome only
-  (banners, prefixes, labels, buttons), so a future translation localizes both together. Swept
-  11 UI scripts (level-up offer, meta shop, settings, results, wave banner, owned-build view,
-  difficulty select, exp bar). Roman tier numerals and pure markup/punctuation left as-is.
-  EditMode tests (137 total) cover the fallback chain, table override, and a reflection guard
-  keeping `LocKeys` ↔ `LocDefaults` in lockstep; the scene validator now asserts the table
-  exists and carries every key.
-- Route all user-facing strings through one string-table asset (a `StringTableSO` or similar
-  key→string lookup) instead of hardcoded literals. Actual translation deferred — English-only
-  table for now.
-- Sweep: HUD labels, level-up cards (names/descriptions live in `SkillDefinitionSO` — decide
-  whether SO text stays authoritative and the table covers *UI chrome* only, or SOs hold keys),
-  menus, pause/settings, results screens, warnings/banners.
-- Zero-GC rule still applies: resolve strings once at bind time, never per-frame.
-- **Touch:** new `Core/`/`Data/` string-table asset + accessor, every `UI/*.cs` with a literal,
-  `Editor/BuildTools/` validator check for stray literals (optional).
-- **Done when:** grep for user-facing literals in `UI/` comes back clean and the game reads
-  identically from the table.
+### A1 — Status DoT scales on player level + set effects only — TODO #39 ☐
+Re-model status-effect (DoT) tick damage so it is driven **purely by (a) player level and (b) active
+elemental set bonuses** — nothing else. Attack power, ability power, crit, etc. must **not** touch
+DoT damage. This turns DoT into a clean, predictable investment axis and is the foundation the rest
+of Phase A rebalances against.
+- Audit every path that currently feeds DoT tick damage (stinger/ability appliers stamping burn,
+  poison, etc.) and cut the attack/ability/crit entanglement; route tick magnitude through a single
+  formula `f(playerLevel, setTier)`.
+- **Leave a hook** for future dedicated status upgrades (a "Venom Potency"-style passive/meta line)
+  that *can* boost status damage — but those don't exist yet, so only level + sets feed it now. The
+  formula should take an extra multiplier that defaults to 1× until such an upgrade lands.
+- Keep it zero-GC: the tick math runs in the status update loop — value-type, no per-tick allocation.
+- **Touch:** `Combat/Status/StatusEffect*.cs`, `Combat/Status/StatusEffectReceiver.cs` (tick math),
+  the stinger/ability status appliers (`Combat/*`, `Projectile.cs`), `Progression/ElementSets.cs`
+  (set-tier read), `Progression/PlayerExperience.cs`/`PlayerStats` (level read).
+- **Tests:** EditMode pinning the formula — DoT tick damage rises with player level and with set
+  tier, and is **invariant** to attack power / ability power / crit changes; the future-upgrade hook
+  multiplies cleanly at 1× default.
+- **Done when:** burn/poison/etc. tick damage moves only with level and set tier, a test pins the
+  formula, and nothing in the attack/ability stat lines changes it.
 
-### 3B — Complete UI overhaul — TODO #25 ✅
-Fit to PC, enlarge text, smoother animations, click sounds, health bars — the playtest polish
-list. Sliced into ship-and-verify units; do them in any order.
+### A2 — Abilities hit harder and look impressive — TODO #38 ☐
+The core combat-feel pass: rebalance the 8 actives upward and give them the juice to match, so they
+visibly clear trash and dent elites instead of tickling.
+- **Numbers:** rebalance the per-ability damage tables upward, make **Ability Power** matter more,
+  and scale ability damage with **player level** too (so a leveled ability stays relevant). Scale
+  **count/area with level more aggressively** for the Vampire-Survivors screen-filling fantasy
+  (more projectiles, wider zones at high level).
+- **Distinct fantasy per ability** — lean into each element instead of "another projectile": e.g.
+  Stinger Barrage fires more/faster + knocks back; Frost Nova freezes a wide ring; Static Wings
+  chains further + stuns harder; Pollen Cloud stacks poison fast. Keep each implementable on the
+  existing status/pool systems.
+- **Juice:** bigger, punchier impact VFX; screen-shake + hit-stop on the heavy hits (Honey Bomb,
+  Ember Sting, Ball Lightning); a bloom flash on cast (6C's HDR bloom is live); and the **missing
+  skill SFX** (`ASSET_GENERATION.md` §4.1) so casts feel like they land. Consider a cast/impact
+  telegraph + a short slow-mo on the biggest hits.
+- Respect the 3C feedback toggles (shake/hit-stop/damage-numbers gate through `FeedbackSettings`).
+  All juice stays zero-GC — pooled VFX, no per-cast allocation.
+- **Touch:** `Data/ActiveSkillSO.cs` + per-ability data assets (`Assets/Data/**`), the active-skill
+  runtime/appliers, `PoolManager` (VFX), `View/CameraShaker.cs`, `Core/HitStop.cs`,
+  `Core/AudioService.cs` + `Data/SfxId.cs` (skill SFX), `ASSET_GENERATION.md` §4.1.
+- **Tests:** EditMode where computable — ability damage scales with level + ability power on the new
+  tables; count/area growth curves hit their authored endpoints.
+- **Done when:** each ability visibly clears trash / dents elites, the heavy hits shake + sound, and
+  a leveled ability floods the screen — verified in a drive capture.
 
-#### 3B-1 — Meta-shop tab rework ✅
-- **Shipped 2026-07-09:** the Hive Upgrades shop is now the TODO #25 tabbed layout — category
-  tabs on the left (**Combat / Survival / Utility**), a detail pane up top for the selected
-  upgrade (icon, name, description, rank/max, the concrete stat transition, cost, BUY), and a
-  bottom grid of just that category's upgrade icons each with `rank/max`. Tab → grid → select →
-  detail → buy, all driven from the 13-upgrade catalog. Categories are derived purely from each
-  upgrade's stat (`Progression/MetaShopCategories`, EditMode-tested — no per-asset authoring); a
-  new `_icon` field on `MetaUpgradeSO` carries a placeholder picto per upgrade (final art tracked
-  in `ASSET_GENERATION.md` §2.11). New `UI/MetaShopIconUI` (grid cell) + `UI/MetaShopDetailUI`
-  (detail pane); `MetaShopUI` rewritten to drive them; built by the additive idempotent
-  `MetaShopTabsBuilder` (removes the old scroll+cards, rebuilds tab column / detail / grid).
-  Validator + PlayMode flow test updated to the new components; EditMode covers the category map.
+### A3 — Max-level ability signature upgrades — TODO #42 ☐
+When an ability reaches its final level (**Lv. 5**), unlock a **signature upgrade**: a visual
+glow-up plus a mechanical twist — the per-ability mirror of the elemental set signatures. Gives
+leveling an ability *all the way* a real payoff.
+- One signature per ability, e.g.: Ember Sting max → leaves a lingering fire pool; Ball Lightning
+  max → orbs split on expiry; Honey Bomb max → double blast. Exact roster is a design pass; keep
+  each implementable on the existing status/pool seams.
+- Mirror the `ElementalSetSignatures` dispatcher pattern but keyed per-ability on reaching Lv5;
+  append-only serialized signature fields on `ActiveSkillSO` (enum + payload), authored by an
+  additive idempotent builder pass so tuned data survives.
+- Surface the unlocked signature on the offer card / owned-power-ups view (a ✦-style line, matching
+  the set-signature treatment).
+- **Touch:** `Data/ActiveSkillSO.cs` (append-only signature payload), new `Combat/` per-ability
+  signature dispatcher, the level-up/offer + owned-power-ups UI, new `Assets/Editor/BuildTools/`
+  additive pass, `Assets/Data/**` assets.
+- **Tests:** EditMode — the signature fires only at Lv5, and its computable effect (pool spawn,
+  split count, double blast) resolves correctly.
+- **Done when:** taking any ability to Lv5 does something visibly + mechanically new, shown on the
+  card, with no per-frame allocations.
 
-- **Playtest follow-up (2026-07-11): cost on the BUY button + currency glyphs.** The detail
-  pane's COST line sat at the exact panel offset the bottom-anchored BUY button covers — the
-  shop never visibly showed a price. Folded the price into the BUY button itself (honey glyph +
-  number; "MAX" when topped out) and deleted the dead cost text. Also built the game-wide
-  **currency glyph** system: `CurrencyGlyphsBuilder` authors a two-cell sprite sheet (the
-  shipped honey drop ×4 + a procedural pearly royal-comb jelly cell) into a `TMP_SpriteAsset`
-  registered as the TMP **default sprite asset**, so any text renders a currency as its image
-  via `<sprite name="honey"/"jelly">` (`Core/CurrencyGlyphs` holds the tags). Shop header
-  balances and the results screen's banked/earned lines now lead with the icons; the
-  balance/cost prefixes left the string table (icon+number has no words to translate).
-
-"Remaining PC polish" is four independent workstreams — sliced below and taken in the
-order chosen 2026-07-09: **layout/text → click sounds → motion → health bars**.
-
-#### 3B-2a — Layout + text fit (landscape PC) ✅
-- **Shipped 2026-07-09:** retargeted both canvases (MainMenu + Beehive HUD) from the mobile-era
-  **portrait** reference resolution (1080×1920) to a **landscape** PC one (**1920×1080, match
-  height**) via the additive idempotent `PcLayoutBuilder` pass. On a 16:9 desktop the old
-  portrait reference shrank every canvas to ~56% scale — the exact "text too small / doesn't fit
-  PC" playtest complaint — so this single retarget restores ~1.0 scale at 1080p (and scales up
-  cleanly to 1440p), enlarging all in-run text (damage numbers, counters, card text) and meters
-  to their authored size without per-element bumps. Verified by a repurposed `PlayModeVerifyDriver`
-  layout capture: HUD chrome (corner-anchored bars / timer / stage progress / counters), the
-  level-up offer (all three lane card types + set-tier line), and the death results screen all read
-  legibly and compose correctly at the new scale. The scene validator now asserts every
-  scale-with-screen canvas in both scenes uses a landscape reference.
-  **Correction (3B-2c follow-up, 2026-07-10):** this retarget changed only the *reference
-  resolution* — it did **not** reposition any element, so panels authored in portrait coordinates
-  (the meta shop, the menu panels) still overflowed / read as narrow mobile columns on a landscape
-  screen. The actual element relayout landed in the 3B-2c follow-up (`MetaShopTabsBuilder` rework +
-  new `PcMenuLayoutBuilder`).
-
-#### 3B-2b — Click / hover sounds ✅
-- **Shipped 2026-07-10:** audit confirmed **click coverage was already blanket** — every
-  button-creating builder (`BeehiveSceneBuilder`, `CombatOverhaulBuilder`, `Phase4MetaAndMenusBuilder`,
-  `MetaShopExpansionBuilder`, `MetaShopTabsBuilder`) attaches `UIClickSfx`, including the level-up
-  cards. So the work was the missing **hover** cue: `UIClickSfx` now also implements
-  `IPointerEnterHandler` and plays a new `SfxId.UIHover` on pointer-enter (gated on
-  `IsInteractable()` so greyed-out/unaffordable cards stay silent) — routing hover through the
-  same per-button component gives it the same blanket coverage for free, no builder rewiring.
-  New `uihover_00.wav` synthesized via `Tools/Audio/synth.py` (soft 28ms triangle tick, quieter
-  than the click; inserted after the click clip — `blip` uses no RNG so every existing wav stays
-  byte-identical). Library entry authored by the additive `Phase5AudioBuilder` (array 15→16),
-  quiet (0.35) + throttled (0.05s min-interval) so cursor sweeps across a button row read as a
-  light texture, not a rattle. `SfxId.UIHover` **appended** (enum is int-serialized in
-  `AudioLibrary.asset`). Verified: build + `validation PASSED` + EditMode 141/141.
-- **Click/hover sounds** on all interactive UI via the existing `UIClickSfx`/`AudioService`
-  path — audit every button (menus, shop, pause, cards) for coverage; add a hover SFX.
-- **Touch:** `UI/UIClickSfx.cs`, `Data/SfxId.cs`, `Core/AudioService.cs`, builder button wiring.
-
-#### 3B-2c — UI motion / transitions ✅
-- **Shipped 2026-07-10:** a shared, zero-GC motion layer — `Core/Easing.cs` (pure `OutCubic` /
-  `OutBack` curves, EditMode-tested for pinned endpoints + the pop's overshoot) and `UI/UiAnim.cs`
-  (reusable `FadeIn`/`FadeOut` coroutines on **unscaled** time so they play at `timeScale 0` on the
-  paused level-up/pause screens). The **level-up offer** now deals its cards in: the panel
-  CanvasGroup fades while each active card scales (0.82→1) and slides up from below on a per-card
-  stagger, all value-type/`LerpUnclamped` math with a clean interrupt path for chained level-ups
-  (snap-to-rest). **Pause** (pause/settings/power-ups) and **main-menu** (home/world/shop/settings)
-  panels fade in on every switch — controllers get-or-add a `CanvasGroup` at runtime and host the
-  coroutine themselves, so **no scene/builder wiring changed** (validator untouched); hides stay
-  instant to avoid swap races. All tests click via `onClick.Invoke`, so the motion is transparent to
-  them. Verified: `validation PASSED`, EditMode green, drive capture of the animated offer/menus.
-- **Playtest follow-up (2026-07-10):** fixed two things the PC pass missed. (1) Most MainMenu
-  buttons were **silent** — the scene predated the `UIClickSfx` line in its builder and was never
-  rebuilt; new additive `UISoundCoverageBuilder` sweeps both scenes and adds the component wherever
-  missing (12 MainMenu + 14 Beehive buttons were silent, so the 3B-2b "blanket coverage" claim was
-  wrong). (2) The **meta shop fell off-screen** and the menus were mobile-narrow — 3B-2a only
-  retargeted the canvas *reference resolution*, never the element coordinates, so the portrait-era
-  ShopPanel and the ~900-wide menu panels didn't fit/PC-read on 1920×1080. Reworked
-  `MetaShopTabsBuilder` to a landscape 3-column shop (tabs · 5-wide icon grid · detail pane) and
-  added `PcMenuLayoutBuilder` to widen WorldSelect/Settings and re-lay the home screen (title
-  top-left, buttons in a bottom-left vertical stack at 75% size, panel made transparent so a
-  background can show). Also fixed the world-select **difficulty dropdown** having no sound —
-  `UIClickSfx` requires a Button, so added `UISelectableSfx` (click/hover on any Selectable) and
-  swept it onto dropdowns in `UISoundCoverageBuilder`. All verified by drive capture.
-- **Motion:** consistent, cheap UI transitions (card slide/scale-in on the level-up screen,
-  panel fades for pause/menus) — tween via coroutines or a tiny easing helper, no allocations.
-- **Touch:** `UI/LevelUpUIController.cs`, pause/menu panels, a small easing helper.
-
-#### 3B-2d — Health-bar readability ✅
-- **Shipped 2026-07-10:** a readability pass across all three health bars, driven by the additive
-  idempotent `HealthBarPolishBuilder` (finds the already-built bars — never rebuilds — and wires
-  the new fields). **Player bar:** bigger + framed for contrast, fill now **health-graded**
-  green→amber→red via the pure, EditMode-tested `HealthColorGradient` so danger reads from colour
-  not just length, a **numeric HP readout** ("87 / 100", alloc-free `StringBuilder`+TMP `SetText`,
-  only rebuilt when the integer changes), a **critical pulse** under 25% HP, and a lagging
-  **damage trail**. **Boss bar:** the same damage trail (dramatic on big hits) plus a low-HP
-  colour shift from its authored purple toward danger red under 35%. **Enemy bars:** bigger canvas
-  (100×14 → 120×18), opaque background, and an inset fill so a dark frame always shows for contrast
-  — shield tints untouched. The trail is a shared, zero-GC `UIBarTrail` helper owned by the player +
-  boss bars: a second image behind the fill that holds briefly then eases down to the new value on
-  **unscaled** time (so it animates on the paused level-up screen), snapping up instantly on heals;
-  its Update early-outs once settled. EditMode covers the gradient (endpoints + monotonic red rise)
-  and the trail (hold-then-drain on damage, snap-up on heal); the validator now asserts the player
-  readout/trail and the boss trail are wired.
-- **Health bars:** readability pass on player + enemy bars (size, contrast, shield-tint clarity
-  from Phase 3B-old); boss bar polish.
-- **Touch:** `UI/HealthBarUI.cs`, `UI/EnemyHealthBarUI.cs`, `UI/BossHealthBarUI.cs`, HUD prefabs.
-- **Done when (3B overall):** a full run (menu → run → level-ups → pause → death/victory → shop)
-  looks deliberate at 1080p, every click makes a sound, and text is comfortably readable.
-
-### 3C — Enhanced options — TODO #36 ✅
-- **Shipped 2026-07-10:** five feedback-layer toggles — **enemy HP bars, damage numbers, screen
-  shake, hit-stop, status colors** — in both settings panels (MainMenu + pause), persisted in the
-  save (v4; field initializers migrate old saves to all-on) and applied **live** through the new
-  static `Core/FeedbackSettings` (pushed by the persistent store on load + every settings save, so
-  hot paths gate on plain bools). Gates sit at each system's single entry point:
-  `DamagePopupSpawner.Spawn`, `CameraShaker.Shake`, `HitStop.Request`,
-  `StatusEffectReceiver.RefreshTint` (parks on the base tint, repaints on re-enable), and
-  `EnemyHealthBarUI` (disables the bar's Canvas; re-checks on `FeedbackSettings.Changed`, so a
-  mid-run re-enable reaches pooled bars instantly). UI is a reusable `UI/FeedbackToggleUI` row
-  ("NAME: ON/OFF" button, localized keys) built by the additive idempotent
-  `EnhancedOptionsBuilder`, which also relays both settings panels into two columns (audio/general
-  left, feedback right; the portrait-era pause panel widened to 1500×900). Validator asserts all
-  ten rows wired; EditMode covers the save round-trip, the v3→v4 migration, and the
-  `FeedbackSettings` apply/Changed semantics.
-- **Playtest follow-up (2026-07-10):** settings-screen cleanup — every control shrunk (500-wide
-  buttons/sliders, 28–30pt labels, shorter slider handles so a mid-track handle no longer crowds
-  the MUSIC/SFX captions), both columns start below the panel title (the first toggle had clipped
-  "SETTINGS"), and every menu **BACK button moved to its panel's top-left corner** (world select,
-  shop, menu settings, pause settings — the old bottom-center spot sat flush with the panel edge).
-  All re-asserted idempotently by the same `EnhancedOptionsBuilder`; verified by drive captures of
-  all four panels.
-- **Playtest follow-up 2 (2026-07-10): shared tooltip system.** The locked-difficulty tooltip was a
-  panel pinned "just right of" the world-select panel — off-screen once the panel was widened to
-  1720. Replaced with the game-wide `UI/TooltipUI`: one per scene on a dedicated top-sorted overlay
-  canvas (no GraphicRaycaster, never blocks the pointer), shows on hover, sizes itself to its text,
-  **follows the mouse** (pure `TooltipLayout.Clamp` keeps it on screen — EditMode-tested), hidden on
-  hover-out/row teardown. The difficulty unlock tasks route through it; a generic `TooltipTrigger`
-  (Inspector text or `SetText` at bind time) is ready for status/set-effect info later. Also fixed
-  the row hover relay, dead since 1B: `TMP_Dropdown` instantiates row clones at the scene root
-  before parenting them, so `DifficultyItemHover`'s Awake-cached parent lookup was always null —
-  now lazy at event time, with hides going straight to `TooltipUI.Hide()`. Built by the
-  additive `TooltipBuilder` (also deletes the legacy pinned panel); `DifficultyBuilder` no longer
-  authors one; validator asserts the tooltip canvas in both scenes and that the legacy panel stays
-  gone.
-- Settings toggles for feedback layers: **enemy HP bars**, **damage numbers**, screen shake,
-  hit-stop, and (once 2A lands) status tints. Each toggle gates the corresponding system at
-  its spawn/update entry point, persisted in `SaveData` alongside existing settings.
-- **Touch:** `UI/SettingsPanelUI.cs`, `Persistence/SaveData.cs`, `Combat/DamagePopupSpawner.cs`,
-  `UI/EnemyHealthBarUI.cs`, `View/CameraShaker.cs`, `Core/HitStop.cs`.
-- **Done when:** each toggle takes effect live and survives a restart.
-
-> **After Phase 3:** update `README.md` (options, UI behavior) and `CHANGELOG.md`.
+> **After Phase A:** update `README.md` (ability behavior + max-level signatures, DoT model) and
+> `CHANGELOG.md`.
 
 ---
 
-## Phase 4 — Mobile readiness (TODO #14–17, #24)
+## Phase B — Build breadth & synergy
 
-> **⚠ Superseded 2026-07-08:** the game is pivoting **PC-only — mobile support is being
-> abandoned** (see TODO #25 scope additions). Do not build this phase; fold any still-useful
-> bits (e.g. general layout audit) into Phase 3's PC UI overhaul and drop the rest.
+Widen the build space, then reward combining it. **B1 first** (more raw options), then **B2**
+(detect + reward pairs), then **B3** (the highest-tier fused combos, which build on B2's registry).
+Independent of Phase A but reads its new DoT/ability model, so it slots after.
 
-The gap for "mobile-ready". Wants 3A/3B done first so it lays out the *final* text/UI, not
-text that's about to change. Verify each step in the Device Simulator (iPhone notch profile +
-a tall 19.5:9+ Android profile).
+### B1 — More power-ups across all three lanes — TODO #40 ☐
+Add Passives, Enhancements, and Abilities to widen build variety — the lanes have room (passives
+beyond the current 10, enhancements beyond 7, more per-element abilities).
+- Author each via the **`/power-up` skill** / idempotent builder passes (full spec: name, lane,
+  element, appearance, status effect, per-level stats) so they register + verify cleanly.
+- New abilities must follow the **A1 DoT model** and the **A2 damage/juice bar** — don't reintroduce
+  weak chip-damage actives. New abilities should ship with an **A3 Lv5 signature**.
+- Mind the lane caps (5 passives / 3 enhancements / 5 abilities distinct) — more *options*, same
+  caps; `LaneEligibility` gating already handles this.
+- **Touch:** `Data/SkillDefinitionSO.cs` / `Data/ActiveSkillSO.cs` + new `Assets/Data/**` assets,
+  new additive builder passes (per the `/power-up` flow), `README.md` roster.
+- **Tests:** EditMode — new skills register, respect their lane/cap, and apply their per-level stats
+  at run start (extend the existing lane-eligibility / offer tests).
+- **Done when:** the new power-ups are offered, pick correctly within their lane caps, take effect,
+  and are listed in `README.md`.
 
-### 4A — Safe-area support — TODO #14 ☐
-Most urgent: the notch/punch-hole currently hides HUD meters.
-- A reusable `SafeAreaFitter` component (applies `Screen.safeArea` to a RectTransform, once +
-  on orientation/resolution change — not per-frame) applied to every HUD anchor group:
-  health/EXP bars, timer, counters, stage progress, boss bar, joystick zone.
-- **Touch:** new `UI/SafeAreaFitter.cs`, HUD canvas/prefab wiring (builder pass).
-- **Done when:** no HUD element sits under the notch/punch-hole on either simulator profile,
-  both orientations.
+### B2 — Power-up synergies — TODO #41 ☐
+A data-driven **synergy layer**: pairs/sets of owned power-ups that combine into something greater
+than the sum, surfaced so players can *aim* for them.
+- Examples: Multishot + Piercing → a wall of piercing shots; Frost Stinger + a fire ability →
+  "shatter burns"; crit + lifesteal → burst self-heal. Design the roster as a design pass on top of
+  the existing element set-bonus system.
+- **Data model:** a `SynergySO` (or table) keyed on required owned power-up ids/tags + the bonus
+  effect it grants; a run-scoped detector that watches owned-per-lane state (the same state
+  `LaneEligibility` / the level-up controller track) and applies/removes the bonus when the
+  combination is completed/broken. Zero-GC — evaluate on pick, not per-frame.
+- **Surface it:** show active + aim-able synergies on the HUD and/or offer cards (so a pick that
+  *completes* a synergy is legible), reusing the set-tier HUD treatment.
+- **Touch:** new `Data/SynergySO.cs` + `Progression/SynergyTracker.cs`, `Progression/ElementSets.cs`
+  / `LaneEligibility` (owned-state read), the offer-card + HUD UI (`UI/SetTierHUD.cs` neighbours),
+  new additive builder pass, `Assets/Data/**`.
+- **Tests:** EditMode — a synergy activates exactly when its required combination is owned,
+  deactivates when broken, and its bonus applies once (no double-count).
+- **Done when:** completing a designed combination visibly grants its bonus and the synergy reads on
+  the HUD/offer card so players can target it.
 
-### 4B — UI scale pass for small screens — TODO #15 ☐
-- `CanvasScaler` reference-resolution/match rework + per-element size bumps so HUD bars,
-  counters, damage numbers, and card text are legible at phone DPI.
-- **Touch:** canvas settings across HUD/menu scenes, `UI/DamageNumberPopup.cs` sizing.
-- **Done when:** all in-run text passes an arm's-length readability check in the simulator.
+### B3 — Combo skills for ability combinations — TODO #43 ☐
+Higher-tier than B2: owning specific **ability combinations** grants a new emergent **combo** effect
+or a fused ability — a distinct combined *behavior*, not just a stat bonus.
+- Examples: Honey Splash + Static Wings → electrified honey that stuns slowed enemies; Frost Nova +
+  Ember Sting → thermal-shock AoE. Roster is a design pass; each combo needs its own VFX/telegraph.
+- **Data model:** a combo registry keyed on owned ability sets (build on B2's synergy plumbing), each
+  entry spawning/enabling a fused behavior (a new pooled projectile/zone or a modifier on an existing
+  one). Detect on ability pick; zero-GC.
+- Surface the unlocked combo on the HUD/owned-power-ups view like the synergies + signatures.
+- **Touch:** new `Data/ComboSO.cs` + `Progression/ComboRegistry.cs` (extends B2's tracker), new
+  fused-behavior `Combat/` component(s) + pool ids, VFX (`PoolManager`), HUD/owned UI, additive
+  builder pass, `Assets/Data/**`.
+- **Tests:** EditMode — a combo unlocks only with its full ability set owned, and its computable
+  effect resolves; it tears down when an ability is (theoretically) absent.
+- **Done when:** a designed ability pair produces a new fused effect on-screen, gated on owning both,
+  shown on the HUD.
 
-### 4C — Skill-card relayout for portrait/mobile — TODO #16 ☐
-- Cards become **horizontal rows** (icon left, name/description right) **stacked vertically**,
-  replacing the three tall side-by-side columns when on a portrait/narrow aspect. Keep lane
-  banner + element cue + owned/cap counter readable in the new shape.
-- **Touch:** level-up card prefab(s), `UI/LevelUpUIController.cs` layout switch, builder pass.
-- **Done when:** the level-up screen is comfortably tappable one-handed in portrait.
-
-### 4D — Mobile layout audit + sanity pass — TODO #17 + #24 ☐
-- Audit the remaining screens on tall aspects in both orientations: boss bar/banner, stage
-  progress markers, results screens, pause/settings, shield/aura indicators, owned-power-ups
-  panel.
-- Then the on-device sanity pass: joystick + tap flows on both profiles, texture memory
-  check, and a profiling pass at target-ish resolution — **zero-GC and frame-rate regression
-  check** after everything Phases 1–3 added.
-- **Touch:** whatever the audit flags; no new systems expected.
-- **Done when:** both simulator profiles play a full run with no clipped/overlapped UI and the
-  profiler shows no per-frame allocations in steady-state combat.
-
----
-
-## Phase 5 — Meta & retention systems
-
-The wishlist's long-game features. Ordered by dependency: currency → cosmetics that spend it →
-achievements that award it → the shop that rotates them. The codex is independent — slot it
-anywhere. This phase can start any time after Phase 1 (it only touches meta/menu surfaces).
-
-### 5A — Codex — TODO #35 ✅
-- An encyclopedia of everything **encountered**: power-ups (all lanes), set effects, enemies,
-  items — entry unlocks the first time the player meets/picks the thing, persisted in the save.
-- Data comes from existing SOs (`SkillDefinitionSO`, `SetBonusSO`, `EnemyStatsSO`, item types);
-  a codex panel in the main menu lists entries by category, locked entries shown as silhouettes.
-- **Touch:** new `Progression/CodexTracker.cs` + `UI/CodexUI.cs`, `Persistence/SaveData.cs`
-  (unlock flags, version bump), `UI/MainMenuController.cs`, builder pass for the panel.
-- **Done when:** playing a run visibly fills the codex, and unlocks persist.
-
-- **Playtest follow-up (2026-07-11): codex depth pass.** Three information upgrades, all
-  behind the existing per-entry discovery gate (silhouette + "???" until met, then everything —
-  per user: sets stay exactly on that model). (1) **Power-ups list what every level grants**:
-  new pure `Progression/CodexSkillLevels` (EditMode-tested) formats "Lv n — …" lines menu-safe
-  from the skill assets alone — per-level magnitude increments for passives/enhancements
-  (pierce shows count → ALL), and DMG/count/area/CD/status per level from the active-skill
-  growth tables. (2) **Sectioned tabs**: power-ups group under PASSIVES / ENHANCEMENTS /
-  ABILITIES headers, enemies under one header per world (`CodexCatalogSO` moved from a flat
-  enemy array to named `EnemyGroup`s — Garden+ append as new groups); the entry grid became a
-  ScrollRect of stacked section blocks so grown tabs scroll. (3) **Enemies describe behavior
-  instead of stats**: HP/DMG rows dropped (they scale with difficulty and run time); each
-  `EnemyStatsSO` gained a `_codexDescription` blurb, authored by `CodexBuilder` only where
-  empty so hand edits survive.
-
-### 5B — Premium currency "Royal Jelly" — TODO #31 ✅
-- **Shipped 2026-07-11:** jelly mirrors the honey pipeline end-to-end but stays deliberately
-  scarce — `RunCurrencyWallet` grew a separate jelly pool that **no gain multiplier touches**
-  (meta Currency Gain and difficulty compensation apply to honey only). Payouts live in the
-  pure, EditMode-tested `Progression/RoyalJellyAwards`: **+1 per miniboss kill, +3 per Queen
-  kill** (every kill, hooked in `BossSpawner.CompleteBossDeath` before victory banks), and a
-  **one-time first-clear bonus per stage+difficulty** (10/15/20/25 Easy→Extreme, checked in
-  `RunSession.EndRun` against `HasStageClear` before the clear is recorded). Jelly banks on
-  both death and victory paths alongside honey; save schema **v6** (`bankedJelly`, initializer
-  = migration, negative-clamped). The store seam grew `BankedJelly`/`BankJelly`/`TrySpendJelly`
-  (both store SOs + the interface) — **the spend path is ready for 5C/5E** but nothing sells
-  yet. UI: a pearly-cream **ROYAL JELLY** balance beside the shop's honey readout (additive
-  `RoyalJellyBuilder`, validator-asserted) and a `Royal Jelly  +N` results line that only
-  appears on runs that earned some. Icon still text-only — ASSET_GENERATION §2.8.
-- Second currency, earned in **very small amounts** through gameplay (e.g. first-clear per
-  difficulty, boss kills, later achievements from 5D); spent on cosmetics/revives. Icon spec
-  lives in `ASSET_GENERATION.md` §2.8 (royal comb cell, distinct from Honey).
-- Wallet + persistence mirror the honey path (`RunCurrencyWallet` → banked into
-  `MetaProgressionState`); a counter in the menu/shop header.
-- **Touch:** `Currency/` (jelly wallet or generalize the existing one), `Persistence/*`,
-  `UI/CurrencyCounterUI.cs` variant, award hooks in `Stage/BossSpawner.cs` / results flow.
-- **Done when:** jelly is earned, displayed, banked, and spendable (by 5C).
-
-### 5C — Character customization — TODO #32 ✅
-- **Shipped 2026-07-11:** the **Hive Style** panel (main-menu STYLE button, shop's tabbed
-  mold) sells purely-visual cosmetics for Royal Jelly across three slots — **Colors** (5 tints,
-  3–5 jelly), **Hats** (crown/top hat/daisy, 8–15) and **Stingers** (gold/crystal/thorn, 8–12).
-  Data: `CosmeticSO` + `CosmeticCatalogSO` authored by the additive `CosmeticsBuilder`
-  (placeholder pixel sprites written only-if-missing; display/cost/offset fields authored only
-  on create so hand tuning survives). Transactions live in the pure, EditMode-tested
-  `Progression/CosmeticShop` (buy = spend jelly + unlock, auto-equip on purchase; equip
-  requires ownership; "" = default look). Save **v7** (`ownedCosmeticIds` +
-  `equippedCosmeticIds` per slot; initializers = migration). In-run, `View/CosmeticApplier`
-  dresses the hero once at Awake: color goes through the SpriteFlash `_Tint` (clip-proof,
-  merges with hit-flash property blocks), hat/stinger are overlay child renderers on the Body
-  so they flip with facing — skin-agnostic, so the 6A hero-art swap won't break it. Panel has
-  per-tab DEFAULT cells, equipped badges, a live hero preview (tint + overlays at exact rig
-  offsets), and a jelly balance; all wiring validator-asserted. Final cosmetic art tracked in
-  `ASSET_GENERATION.md` §2.10.
-- **Playtest follow-up (2026-07-11): preview-on-select + stinger rework.** (1) The hero
-  preview now wears the **selected** entry in its slot before buying/equipping (other slots
-  show what's equipped) — try-before-you-buy. (2) Stinger skins re-skin the **auto-attack
-  projectile** instead of pasting an overlay behind the body: the roster became **3 shapes ×
-  3 colors** (Needle/Barb/Blade × Amber/Sapphire/Venom; one neutral sprite per shape, color =
-  runtime tint; cost = shape base 6/10/14 + color premium 0/2/4), the stinger tab groups
-  skins under one section header per shape (grid became a scrollable section stack, codex
-  mold), and a pooled-safe `View/ProjectileSkin` on the Stinger prefab applies the static
-  `StingerSkin` (set once per run by the applier) on every spawn — enemy/skill projectiles
-  untouched. (3) Recorded for later: color cosmetics are whole-body tints for now; the user
-  wants true **"transformable" sprite variants** once final hero art exists (see
-  `ASSET_GENERATION.md` §2.10 / TODO).
-- Cosmetic layers on the hero: **colors (5 basic)**, hats, stinger skins. Purely visual — a
-  `CosmeticSO` catalog, an equipped-set in the save, applied to the rig at spawn
-  (`CharacterAnimator`/`View` layer; the HeroBee skin-builder work is the art pipeline for this).
-- A customization panel in the main menu; items unlock via jelly purchase (5B) or achievements (5D).
-- **Touch:** new `Data/CosmeticSO.cs`, `View/CharacterAnimator.cs` (+ a cosmetic applier),
-  `Persistence/SaveData.cs`, new `UI/` panel, `ASSET_GENERATION.md` entries for each cosmetic.
-- **Done when:** an equipped color/hat/stinger visibly changes the in-run hero and persists.
-
-### 5D — Achievements — TODO #33 ✅
-- **Shipped 2026-07-12:** a roster of **11 achievements** whose conditions all ride existing
-  signals — kills-in-run 1/250/1,000, level 10/20, survive 5 min, any set tier / top set tier
-  (`ElementSets`), and stage clears on any/Hard/Extreme. Data: `AchievementSO` (id, condition
-  type + threshold, jelly + optional cosmetic reward) + `AchievementCatalogSO`, authored by
-  the additive `AchievementsBuilder` (display/threshold/rewards only on create). Rewards stay
-  5B-scarce: 1–15 jelly each (~53 total); the Extreme clear also grants the **Honey Crown**.
-  The Beehive-scoped `AchievementTracker` scans only the still-locked catalog slice (zero-GC
-  in combat), toasts + reports to `AchievementBackends.Active` immediately on unlock, and
-  defers rewards/save writes to run end (`RunSession.EndRun` → `ReportRunEnd`; death, victory,
-  and abandon all route through it) / teardown — codex mold, no mid-combat file IO. Pure
-  EditMode-tested `Progression/AchievementRules` owns threshold checks + the pay-once grant.
-  Save **v8** (`unlockedAchievementIds`, initializer = migration); store seam grew
-  `IsAchievementUnlocked`/`UnlockAchievement`. UI: in-run toast banner (queued, unscaled-time
-  fades) + a main-menu **AWARDS** panel (scroll list, reward lines with the jelly glyph /
-  cosmetic names, `UNLOCKED n/total` counter). The Steam seam (`Core/IAchievementBackend` +
-  no-op `LocalAchievementBackend` default) compiles with no Steamworks present; all wiring
-  validator-asserted, including cosmetic rewards resolving against the 5C catalog.
-- Achievement definitions as SOs (id, name, condition params, rewards: jelly and/or cosmetic
-  unlocks). A tracker service listens to existing signals (kills, clears, levels, sets
-  completed, difficulty clears) — design conditions around events that already exist.
-- Local-first: progress + unlocked state in the save; toast on unlock. **Steam** integration is
-  a later shim behind an interface (`IAchievementBackend`) — local backend now, Steamworks
-  when a Steam build exists.
-- **Touch:** new `Data/AchievementSO.cs`, `Progression/AchievementTracker.cs`,
-  `Core/IAchievementBackend.cs` (+ local impl), `Persistence/SaveData.cs`, unlock toast UI,
-  menu list panel.
-- **Done when:** a handful of achievements unlock from real play, grant their rewards, persist,
-  and the Steam seam compiles without Steamworks present.
-
-### 5E — Rotating cosmetics shop — TODO #34 ✅
-- **Shipped 2026-07-12:** a main-menu **DEALS** panel featuring up to **3 not-yet-owned
-  cosmetics per local day at 30% off** (round-half-up, min 1 jelly) — the discount is the
-  draw, since the full 5C catalog stays buyable at list price in Hive Style. The pick is
-  date-seeded (yyyymmdd, local, no server) over the unowned catalog slice and **frozen into
-  save v9** (`dailyDealDay`/`dailyDealIds`) on first sight, so it survives restarts and
-  buying one deal never re-rolls the others (bought deals show SOLD until rollover). Cards
-  show icon/name/flavor + struck-through list price → deal price; BUY spends jelly at the
-  deal price (new `CosmeticShop.TryPurchase` price overload) and auto-equips, 5C-style. A
-  once-per-second `NEW DEALS IN HH:MM:SS` countdown tracks local midnight and re-rolls live
-  if the day flips with the panel open; an all-owned catalog shows a "nothing left to
-  discount" line instead. Pure pick/price/rollover logic in `Progression/RotatingShop`
-  (EditMode-tested: determinism, distinctness, caps, price math, migration, discounted
-  purchase); panel built by the additive `RotatingShopBuilder` (8-row home stack); validator
-  asserts panel + all three cards; no new art (reuses 5C sprites + the UI kit).
-- Daily rotation of purchasable cosmetics (spends jelly, from the 5C catalog): a deterministic
-  pick from the catalog seeded by the date (no server), e.g. 3 items/day, excluding owned.
-  Timer showing time-to-next-rotation.
-- **Touch:** new `Progression/RotatingShop.cs` + `UI/` shop tab, `Persistence/SaveData.cs`
-  (purchases), main-menu shop wiring.
-- **Done when:** the shop shows a stable daily selection that changes at rollover and
-  purchases stick.
+> **After Phase B:** update `README.md` (new power-ups, synergy + combo rosters) and `CHANGELOG.md`.
 
 ---
 
-## Phase 6 — Content & art expansion
+## Phase C — Owned-build UI & deferred art
 
-The biggest lift; systems above are locked first so content drops into a stable framework.
-6A/6B/6C are art-pipeline work (see `ASSET_GENERATION.md` + the `create-sprite` skill) and can
-interleave with anything; 6D is the real expansion.
+The open non-mobile leftovers that pair with Phases A/B (players need to *review* the deeper builds
+those phases create).
 
-### 6A — Custom hero/boss art ◐
-- Replace the PixelFantasy placeholder rigs with custom art: hero bee (generation already in
-  progress — `Assets/Sprites/HeroBee*/` + `HeroBeeSkinBuilder`/`HeroBeePersonSkinBuilder`),
-  then Queen + Royal Guard. Keep animator states/timings; swap sprites via the skin-builder
-  pattern. Update `ASSET_GENERATION.md` statuses as each lands.
-- **Touch:** `Assets/Sprites/*`, `Editor/BuildTools/HeroBee*SkinBuilder.cs`,
-  `View/CharacterAnimator.cs`, `ASSET_GENERATION.md`.
-- **Done when:** hero + both bosses run on custom art with no animation regressions.
+### C1 — Owned power-ups menu rework — TODO #25 (open sub-item) ☐
+Rework the in-run owned-power-ups panel (pause menu) to clearly **separate power-ups from set
+effects**, and give both the same hover treatment.
+- Each entry shows only its **name** and `[current level]/[max level]`; the **description + concrete
+  values** appear on mouse **hover** — reuse the game-wide `UI/TooltipUI` / `TooltipTrigger` from 3C.
+- Group power-ups by lane; list active set effects separately. Fold in the A3 Lv5 signatures + the
+  B2/B3 synergies/combos here too, so the panel is the single "what's my build" review surface.
+- Zero-GC: bind strings once at open, not per-frame; tooltips already follow the mouse.
+- **Touch:** the owned-power-ups pause panel UI, `UI/TooltipUI.cs` / `UI/TooltipTrigger.cs`,
+  `Progression/ElementSets.cs` (set-effect read), the additive builder pass that authored the panel.
+- **Done when:** the pause build-review panel lists power-ups and set effects separately, each as
+  name + level, with full detail on hover — legible at 1080p.
 
-### 6B — Hive tileset / floor ✅
-- **Shipped 2026-07-12:** the Beehive arena renders on a real honeycomb floor instead of a
-  void, all via the additive idempotent `HiveFloorBuilder` (`SurveHive/Phase 6B — Hive Floor
-  Tileset`). Three passes: (1) a **procedurally-drawn seamless honeycomb tile** —
-  `Assets/Sprites/Tiles/HiveFloor.png` (432×432 @ PPU 48 = one 9-world-unit tile, a big
-  honeycomb block), a toroidal Voronoi comb over a flat-top hex lattice with large soft hexes
-  (~3 units), a low-contrast warm palette, and anti-aliased seams (6× supersample →
-  box-downsample) so it reads calm; soft honey puddles in varied warm tones are baked over the
-  comb and wrapped toroidally to stay seamless. Written **only when missing** so final art
-  (ASSET_GENERATION §1.3) overwrites it in place; (2) a `HiveFloorTile.asset`; (3) a **Grid +
-  Tilemap** filled in `Beehive.unity` at sorting order −100 (beneath every gameplay sprite). Because the run camera follows the
-  player unbounded, the finite fill is made **endless** by the new zero-GC
-  `View/InfiniteTileFloor`, which snaps the grid to the camera in whole-tile steps — identical
-  tiles hide the jump, so the comb reads as a fixed, boundless floor. Generation was chosen
-  over PixelLab (the boss-art trial budget is scarce and the user wanted a self-verifying demo);
-  a hand-drawn/AI tile can drop straight in over the PNG. Verified: build + `validation PASSED`
-  (new 6B checks assert the grid/tilemap fill, sub-−1 sorting, and the camera-wired follow) +
-  EditMode green + a drive capture showing the honeycomb under gameplay with the HUD crisp on
-  top. Autotile floor/wall/edge variants + a `RuleTile` are an optional richer follow-on.
-- A real honeycomb tileset/floor for the Beehive world replacing the placeholder ground —
-  generate via the tileset pipeline, wire with the 2D Tilemap packages already installed.
-- **Touch:** `Assets/Sprites/`, a tilemap in `Assets/Scenes/Beehive.unity` (additive builder
-  pass — do not regenerate the scene), `ASSET_GENERATION.md`.
-- **Done when:** the hive interior reads as a place, not a void, at gameplay zoom.
+### C2 — Transformable hero color sprites — TODO #37 ☐ (blocked on 6A)
+Replace the 5C whole-body color **tints** with real per-region sprite transformations (base /
+stripes / antler tips / wings — the `ASSET_GENERATION.md` §2.10 slots) via a palette/mask approach
+or swapped sprite variants.
+- **Blocked:** needs the final hero art from the postponed **6A**. `CosmeticApplier` is already
+  skin-agnostic, so this is a swap of the color path (shader `_Tint` → palette/mask) once 6A lands —
+  do it *with* 6A, not before.
+- **Touch:** `View/CosmeticApplier.cs` (color path), hero sprite/material assets, `ASSET_GENERATION.md` §2.10.
+- **Done when:** an equipped color re-skins the hero per-region (not a flat multiply) and persists.
 
-### 6C — Bloom / "magic honey" glow pass ✅
-- **Shipped 2026-07-12:** a "magic honey" glow pass, all applied by the additive idempotent
-  `BloomGlowBuilder` (`SurveHive/Phase 6C — Bloom Glow Pass`). Three coordinated parts: (1)
-  **Bloom tuned** on the URP default volume profile to a **high threshold (1.0)** with
-  intensity 1.0, tighter scatter 0.6, and a warm-honey tint — so only HDR (>1) pixels bloom and
-  the pixel art stays crisp. (2) **Camera post-processing enabled** on the Beehive Main Camera —
-  the missing gate: the camera had a PixelPerfectCamera but no `UniversalAdditionalCameraData`,
-  so bloom rendered nothing; the builder adds it with `renderPostProcessing = true`. (3) A
-  **curated honey/magic VFX set pushed to HDR** by brightening past 1.0 so they (and only they)
-  cross the threshold: the three magic particle bursts (EmberExplosion / HoneySplash / RoyalNuke,
-  start-color ×1.9, hue-preserved) and eight active-skill sprite projectiles/zones (EmberBolt,
-  BallLightningOrb, ZapArc, HoneyGlob, HoneyPuddle, NovaWave, SkillLance, SkillStinger — color
-  ×1.7, uniform brighten of their own palette). Idempotent: bloom params are set to fixed values
-  and HDR brightening is guarded on "already > 1.05", so a re-run is a no-op. Verified: build +
-  `validation PASSED` (new 6C checks assert camera post-processing + an active Bloom with
-  intensity > 0) + EditMode 213/213 + a GUI capture (`BloomGlowVerifyDriver`) showing the magic
-  orbs/bolts/nova glowing while the background and HUD stay crisp. Per-effect intensity is easily
-  re-tuned via the builder's factor constants. 2D hive-interior lights left as an optional
-  follow-on for 6B's tileset pass.
-- Dial in the URP Bloom on the Global Volume: **high threshold** so only deliberately-bright
-  VFX pixels bloom without smearing the pixel art; tag the honey/magic VFX with HDR-bright
-  colors where they should glow. Optional follow-on: 2D lights for hive-interior mood.
-- **Touch:** `Assets/Settings/` volume profile, VFX material/color tweaks.
-- **Done when:** honey/magic effects glow, sprites stay crisp, and mobile frame rate is
-  unaffected (verify — Bloom is a mobile cost).
+---
 
-### 6D — Additional worlds ☐
-One sub-effort **per world**, in story order: **Garden → Woods → City → Alien Ship**. Per world:
-- A stage config + timeline (waves, strong-wave beats, miniboss, final boss), an enemy roster
-  (reuse behavior components — chase/ranged/bomber/swarm — with new stats/art), a boss, a
-  tileset/backdrop, music, and the world unlocked in the menu's world select (currently
-  showing Garden/Woods locked).
-- Each world is its own scene built by its own additive builder pass; narrative beats go in
-  `README.md`.
-- **Touch:** new `Assets/Scenes/*`, `Assets/Data/Stage|Enemies|Waves/*` per world, world-select
-  unlock flow in `UI/MainMenuController.cs` + `Persistence/SaveData.cs`, `ASSET_GENERATION.md`
-  for every new asset.
-- **Done when (per world):** the world is selectable, plays a full timeline to a unique boss,
-  and clearing it unlocks the next.
+## Postponed
+
+Deferred by explicit decision (2026-07-14) — kept in the plan, not being built right now.
+
+### 6A — Custom hero/boss art ◐ (postponed)
+Hero-bee art generation is in progress (`Assets/Sprites/HeroBee*/` + the `HeroBee*SkinBuilder`
+passes); Queen + Royal Guard custom art still pending. Keep animator states/timings; swap sprites
+via the skin-builder pattern. Unblocks **C2** when it lands. **Touch:** `Assets/Sprites/*`,
+`Editor/BuildTools/HeroBee*SkinBuilder.cs`, `View/CharacterAnimator.cs`, `ASSET_GENERATION.md`.
+
+### 6D — Additional worlds ☐ (postponed)
+The big content lift: **Garden → Woods → City → Alien Ship**, one world per sub-effort (stage config
++ timeline, enemy roster reusing behavior components, a boss, a tileset/backdrop, music, and the
+world-select unlock flow). Each world is its own scene built by its own additive builder pass;
+narrative beats go in `README.md`. **Touch:** new `Assets/Scenes/*`,
+`Assets/Data/Stage|Enemies|Waves/*` per world, `UI/MainMenuController.cs` + `Persistence/SaveData.cs`
+unlock flow, `ASSET_GENERATION.md`.
 
 ---
 
 ## Notes / carry-overs
 
-- **Enum append-only rule:** `SkillEffectType`, `ActiveSkillBehavior`, `MetaStatType`,
-  `PowerUpLane`, `SkillElement`, `StatusEffectType` (and any new enums like difficulty tiers or
-  cosmetic slots) are serialized by integer index in `.asset` files — always append, never
-  insert or reorder.
+- **Enum append-only rule:** `SkillEffectType`, `ActiveSkillBehavior`, `MetaStatType`, `PowerUpLane`,
+  `SkillElement`, `StatusEffectType` (and any new enums — ability-signature types, synergy/combo
+  ids, etc.) are serialized by integer index in `.asset` files — always append, never insert/reorder.
 - **Builder passes:** prefer new additive `Assets/Editor/BuildTools/` passes (idempotent) over
-  editing the from-scratch builders; keep `BeehiveSceneValidator` green. Never re-run the old
-  phase builders on the tuned scene/data.
-- **Save version bumps:** 1B, 3C, 5A–5E all extend `SaveData` — bump the version and keep the
-  corrupt→fresh-start path working each time.
-- **Status/element icons:** placeholder pack at `Assets/ThirdParty/FantasyStatusIcons/`;
-  reference, don't edit in place. Swap for custom art later without changing lookup wiring.
-- **Zero-GC bar holds everywhere:** new UI (toasts, codex, shop rotation timers) must not
-  allocate per-frame; 4D's profiling pass is the enforcement gate.
+  editing the from-scratch builders; keep `BeehiveSceneValidator` green. Never re-run the old phase
+  builders on the tuned scene/data.
+- **Save version bumps:** if any Phase A–C work extends `SaveData` (e.g. new unlock/toggle state),
+  bump the version and keep the corrupt→fresh-start path working.
+- **Status/element icons:** placeholder pack at `Assets/ThirdParty/FantasyStatusIcons/`; reference,
+  don't edit in place. Swap for custom art later without changing lookup wiring.
+- **Zero-GC bar holds everywhere:** new synergy/combo detectors, DoT tick math, ability VFX, and
+  build-review UI must not allocate per-frame — evaluate on pick/level-up, bind strings at open.
+- **`/power-up` skill** drives B1's authoring; the `create-sprite` skill + `ASSET_GENERATION.md`
+  drive any new art (skill SFX for A2 live in §4.1).
